@@ -3299,3 +3299,167 @@ select {
   flex-direction: row;
   gap: 12px;
 }
+
+.recent-matches {
+  display: grid;
+  gap: 12px;
+}
+.last-match {
+  max-width: 620px;
+}
+.last-match h2 {
+  margin-bottom: 14px;
+}
+.control-heading {
+  justify-content: flex-start;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+}
+.control-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.control-illustration {
+  width: 88px;
+  height: 65px;
+  flex: 0 0 88px;
+}
+.briefing {
+  padding-top: 24px;
+}
+.briefing blockquote {
+  margin: 16px 0 0;
+  padding: 22px;
+  border-left: 4px solid var(--gold);
+  border-radius: 0 12px 12px 0;
+  background: #f3f6fc;
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--ink);
+}
+.jersey-mode .tunnel-header {
+  display: none;
+}
+.jersey-mode .tunnel-body {
+  max-width: 900px;
+  padding-top: 18px;
+}
+.jersey-preview {
+  min-height: calc(100dvh - 125px);
+}
+.jersey-opponents {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.jersey-opponents > section {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #dce4ef;
+  border-radius: 14px;
+  background: #fff;
+}
+.jersey-opponents h2 {
+  font-family: inherit;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.jersey-opponent-roles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.jersey-opponent-roles > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-size: 11px;
+  min-width: 0;
+}
+.jersey-opponent-roles svg {
+  width: 64px;
+  height: 64px;
+}
+.jersey-opponent-roles span {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.jersey-choice {
+  text-align: center;
+  padding: 24px 12px;
+}
+.jersey-choice h1 {
+  font-size: 44px;
+  margin: 8px 0 10px;
+}
+.jersey-choice-art {
+  width: min(240px, 55vw);
+  height: min(240px, 55vw);
+  margin: 0 auto 15px;
+}
+.jersey-choice-art > svg,
+.jersey-choice-art .equipment-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 14px;
+}
+.jersey-choice p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 10px auto;
+  max-width: 490px;
+}
+.jersey-verdict {
+  font-size: 16px;
+  color: #247053;
+}
+.jersey-verdict.verdict-check,
+.jersey-verdict.verdict-avoid {
+  color: #8b5e22;
+}
+.jersey-choice .jersey-packed {
+  font-size: 11px;
+}
+@media (max-width: 600px) {
+  .control-illustration {
+    width: 72px;
+    height: 54px;
+    flex-basis: 72px;
+  }
+  .control-heading {
+    gap: 12px;
+  }
+  .briefing blockquote {
+    padding: 16px;
+    font-size: 16px;
+  }
+  .jersey-opponents {
+    gap: 8px;
+  }
+  .jersey-opponents > section {
+    padding: 10px 8px;
+  }
+  .jersey-opponents h2 {
+    font-size: 12px;
+  }
+  .jersey-opponent-roles svg {
+    width: 52px;
+    height: 52px;
+  }
+  .jersey-opponent-roles {
+    gap: 4px;
+  }
+  .jersey-opponent-roles > div {
+    font-size: 10px;
+  }
+  .jersey-choice {
+    padding: 20px 0;
+  }
+  .jersey-choice h1 {
+    font-size: 36px;
+  }
+}

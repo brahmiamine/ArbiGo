@@ -21,6 +21,10 @@ async function finishMatch(page: Page) {
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
   for (let i = 0; i < 10; i++) {
     await page.getByRole('button', { name: 'Suivant', exact: true }).click();
+    if (i === 3) {
+      await expect(page.locator('.jersey-preview')).toBeVisible();
+      await page.getByRole('button', { name: 'Suivant', exact: true }).click();
+    }
     await expect(page.locator('.tunnel-step-position')).toContainText(
       `ÉTAPE ${String(i + 2).padStart(2, '0')}`,
     );

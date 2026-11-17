@@ -130,6 +130,7 @@ export function rankOutfits(outfits: Outfit[], bag: BagItem[], colors: KitColors
         opponents.some((opp) => family[c] && family[c] === family[opp]),
       );
       const complete =
+        !!outfit.primaryColor.trim() &&
         Object.values(colors).every((v) => v.length > 0) &&
         mine.every((c) => family[c]) &&
         opponents.every((c) => family[c]);
@@ -174,4 +175,30 @@ export function previousTeamColors(matches: Match[], current: Match): Partial<Ki
     result[keeper] = [...previous.colors[home ? 'homeKeeper' : 'awayKeeper']];
   }
   return result;
+}
+
+/** Compare real shirts in this match bag, including keeper and secondary colors. */
+export function rankMatchShirts(m: Pick<Match, 'bag' | 'colors' | 'outfits' | 'selectedOutfitId'>) {
+  const shirts = m.bag.filter((i) => i.type === 'SHIRT');
+  const selected = m.outfits.find((o) => o.id === m.selectedOutfitId);
+  const ranked = rankOutfits(
+    shirts.map((i) => ({
+      id: i.id,
+      name: i.label,
+      itemIds: [i.id],
+      primaryColor: i.colors[0] ?? '',
+      secondaryColor: i.colors[1],
+    })),
+    shirts.map((i) => ({ ...i, packed: true })),
+    m.colors,
+  );
+  const order = { RECOMMENDED: 0, CHECK: 1, AVOID: 2 };
+  return ranked
+    .map((o) => ({ ...o, item: shirts.find((i) => i.id === o.id)! }))
+    .sort(
+      (a, b) =>
+        order[a.rating] - order[b.rating] ||
+        Number(b.item.packed) - Number(a.item.packed) ||
+        Number(!!selected?.itemIds.includes(b.id)) - Number(!!selected?.itemIds.includes(a.id)),
+    );
 }

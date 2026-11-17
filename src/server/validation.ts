@@ -20,6 +20,7 @@ export const actionSchema = z.discriminatedUnion('type', [
     photoId: z.uuid().optional(),
   }),
   z.object({ type: z.literal('COMPLETE'), stepCode: z.string().max(40) }),
+  z.object({ type: z.literal('BRIEFING'), stepCode: z.enum(['captains', 'assistants']) }),
   z.object({
     type: z.literal('ISSUE_UPDATE'),
     issueId: z.string().max(100),

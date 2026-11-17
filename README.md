@@ -10,6 +10,8 @@ PWA mobile de préparation d’avant-match pour arbitres : matchs, inventaire et
 - Football à 11, football à 8 et futsal : snapshots de modèles distincts, versionnés et identifiés comme brouillons tant que la revue applicable n’est pas achevée.
 - Inventaire personnalisable, photos réencodées, tenues complètes et sac indépendant pour chaque match.
 - Tunnel sans onglets, contrôles manuels, anomalies et revérification, deux compteurs et navigation sans validation implicite.
+- Navigation du tunnel uniquement avec Précédent/Suivant en bas ; contrôles illustrés hors ligne, exemples de consignes avec confirmation unique et aperçu plein écran du maillot avant la prise en charge de la feuille. La suggestion compare les maillots du sac aux couleurs des joueurs et gardiens ; les couleurs manquantes restent à vérifier.
+- Sans rencontre à venir, l’accueil affiche les trois derniers matchs et la liste présente le plus récent.
 - Quatre phases d’échauffement 3/4/3/3 minutes, démarrage/pause/reprise/fin manuels.
 - Bilan, coup d’envoi confirmé manuellement, annulation/report et nouveau brouillon lié, notes distinctes après clôture.
 - [Débrief d’après-match](docs/DEBRIEF.md) par rencontre jouée : huit sections, sauvegarde et synchronisation, PDF avec logos, copie du texte et OCR local des désignations.

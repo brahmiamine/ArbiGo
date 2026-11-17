@@ -52,7 +52,9 @@ test('offline tunnel survives reload with local queue', async ({ page, context }
   await expect(page.getByRole('heading', { name: 'Tour du terrain' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Tour du terrain' })).toBeVisible();
-  await expect(page.locator('.adjacent-step.previous')).toContainText('Validée');
+  await expect(page.locator('.adjacent-step')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Précédent', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Étape validée' })).toBeVisible();
   await context.setOffline(false);
 });
 test('no horizontal overflow and accessible dashboard at 320px', async ({ page }) => {
@@ -86,7 +88,8 @@ test('create match with free teams and optional stadium', async ({ page }) => {
     .click();
   await expect(page.getByText('Mon équipe libre', { exact: true })).toBeVisible();
   await page.locator('.match-card').first().click();
-  await expect(page.getByText('Modèle en brouillon', { exact: true })).toBeVisible();
+  await expect(page.getByText('Modèle en brouillon', { exact: true })).toHaveCount(0);
+  await expect(page.locator('.detail-actions')).toHaveCount(0);
 });
 
 for (const width of [320, 390, 471]) {
@@ -165,6 +168,10 @@ for (const width of [320, 390, 471]) {
     await page.screenshot({ path: `test-results/kits-${width}.png`, fullPage: true });
     for (let i = 0; i < 3; i++) {
       await page.getByRole('button', { name: 'Suivant', exact: true }).click();
+      if (i === 0) {
+        await expect(page.locator('.jersey-preview')).toBeVisible();
+        await page.getByRole('button', { name: 'Suivant', exact: true }).click();
+      }
       await expect(page.locator('.tunnel-step-position')).toContainText(`0${i + 5}`);
     }
     await expect(page.getByRole('heading', { name: 'Échauffement', exact: true })).toBeVisible();

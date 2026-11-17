@@ -124,6 +124,15 @@ export function applyOperation(match: Match, op: Operation): Match {
         });
       break;
     }
+    case 'BRIEFING': {
+      const step = m.template.steps.find((s) => s.code === a.stepCode);
+      if (!step || !['captains', 'assistants'].includes(step.code)) throw new Error('STEP_UNKNOWN');
+      const run = m.runs[step.code];
+      // Keep earlier answers and unresolved issues from existing match journals.
+      for (const control of step.controls) run.answers[control.code] ??= { value: 'OK', at };
+      run.completedAt = at;
+      break;
+    }
     case 'COMPLETE': {
       const step = m.template.steps.find((s) => s.code === a.stepCode);
       if (!step || step.kind === 'final') throw new Error('STEP_UNKNOWN');

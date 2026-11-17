@@ -49,7 +49,9 @@ Erreur : `{ "error": { "code": "...", "message": "..." }, "serverTime": "ISO UTC
 }
 ```
 
-Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `NAVIGATE`, `BAG`, `ANSWER`, `COMPLETE`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `CLOSE`, `NOTE`.
+Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `NAVIGATE`, `BAG`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
+
+`BRIEFING` prend `stepCode: "captains" | "assistants"`. Une confirmation marque atomiquement les consignes données : les réponses manquantes du snapshot sont renseignées et l’étape est terminée, sans navigation. Les anciennes réponses et anomalies restent conservées. L’action respecte les mêmes contrôles de propriété de l’appareil, version et idempotence que les autres commandes du tunnel.
 
 Des routes explicites partagent le même contrat `Operation` : `/bag`, `/tunnel/start`, `/steps/{code}/responses`, `/steps/{code}/complete`, `/kickoff`, `/close-without-kickoff`, `/notes` sous un match. L’interface utilise principalement le batch pour unifier parcours connecté et hors ligne. Les routes CRUD unitaires d’équipement proposées dans le cahier ne sont pas exposées : l’écriture d’inventaire est groupée et validée.
 

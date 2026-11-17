@@ -124,6 +124,7 @@ export type OperationInput =
       photoId?: string;
     }
   | { type: 'COMPLETE'; stepCode: string }
+  | { type: 'BRIEFING'; stepCode: 'captains' | 'assistants' }
   | { type: 'ISSUE_UPDATE'; issueId: string; status: Issue['status']; comment?: string }
   | { type: 'COLORS'; colors: KitColors; selectedOutfitId?: string }
   | { type: 'WARMUP'; phase: number; command: 'START' | 'PAUSE' | 'RESUME' | 'FINISH' }

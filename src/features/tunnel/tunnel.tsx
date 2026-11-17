@@ -2,14 +2,15 @@
 import { FileDropzone } from '@/components/file-dropzone';
 import { StageAlerts } from './alerts';
 import { JerseyArt } from '@/components/equipment-art';
+import { ControlIllustration } from '@/components/control-illustration';
+import { JerseyPreview } from './jersey-preview';
+import { Briefing } from './briefing';
 import { MediaPhoto } from '../media';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import {
   ArrowDown,
   ArrowUp,
   Check,
-  ChevronDown,
-  ChevronUp,
   Flag,
   Volume2,
   VolumeX,
@@ -94,14 +95,35 @@ export function Tunnel({ match: m }: { match: Match }) {
     [menu, setMenu] = useState(false),
     [closing, setClosing] = useState(false),
     [busy, setBusy] = useState(false);
-  const touch = useRef<{ x: number; y: number } | null>(null);
+  const previewKey = `arbigo:jersey-preview:${app.profile?.id}:${m.id}`;
+  const [jerseyPreview, setJerseyPreview] = useState(() => {
+    try {
+      return typeof window !== 'undefined' && sessionStorage.getItem(previewKey) === '1';
+    } catch {
+      return false;
+    }
+  });
   const readonly = m.ownerDeviceId !== app.deviceId;
+  const showJersey = !readonly && step.kind === 'kit' && jerseyPreview;
+  const briefing = step.code === 'captains' || step.code === 'assistants';
+  const body = useRef<HTMLElement>(null);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    body.current?.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
+  }, [m.currentStep, showJersey]);
+  function preview(open: boolean) {
+    setJerseyPreview(open);
+    try {
+      if (open) sessionStorage.setItem(previewKey, '1');
+      else sessionStorage.removeItem(previewKey);
+    } catch {}
+  }
   async function act(a: OperationInput) {
     setBusy(true);
     try {
       await app.dispatch(m.id, a);
       if (
-        ['COMPLETE', 'ANSWER', 'KICKOFF'].includes(a.type) ||
+        ['COMPLETE', 'BRIEFING', 'ANSWER', 'KICKOFF'].includes(a.type) ||
         (a.type === 'WARMUP' && a.command === 'FINISH')
       )
         beep(muted);
@@ -112,9 +134,16 @@ export function Tunnel({ match: m }: { match: Match }) {
       setBusy(false);
     }
   }
-  const go = (index: number) => void act({ type: 'NAVIGATE', index });
+  async function go(index: number) {
+    if (readonly || busy) return;
+    if (step.kind === 'kit' && m.template.steps[index]?.code === 'sheet' && !showJersey) {
+      preview(true);
+      return;
+    }
+    if (await act({ type: 'NAVIGATE', index })) preview(false);
+  }
   return (
-    <div className="tunnel">
+    <div className={`tunnel ${showJersey ? 'jersey-mode' : ''}`}>
       <StageAlerts match={m} muted={muted} />
       <header className="tunnel-header">
         <div className="tunnel-match">
@@ -175,165 +204,156 @@ export function Tunnel({ match: m }: { match: Match }) {
           label="Progression de la préparation"
         />
       </header>
-      <main className="tunnel-body">
-        <div className="tunnel-step-position">
-          <span>
-            ÉTAPE {String(m.currentStep + 1).padStart(2, '0')} / {m.template.steps.length}
-          </span>
-          <span>{formatTime(scheduledAt(m.kickoffAt, step.offset), m.timezone)} prévu</span>
-        </div>
-        {readonly && (
-          <Notice>
-            Ce tunnel appartient à un autre appareil. Vous pouvez le consulter.{' '}
-            <Button
-              variant="secondary"
-              disabled={!app.online}
-              onClick={() => void app.transfer(m).catch((e) => app.setError(e.message))}
-            >
-              Transférer sur cet appareil
-            </Button>
-          </Notice>
-        )}
-        <button
-          className="adjacent-step previous"
-          disabled={!previous || readonly}
-          onClick={() => previous && go(m.currentStep - 1)}
-        >
-          <ChevronUp size={20} />
-          <span>{previous ? previous.title : 'Début de votre préparation'}</span>
-          {previous && <StepStatusBadge match={m} step={previous} />}
-        </button>
-        <section
-          className={`step-card step-${step.kind}`}
-          key={step.code}
-          onTouchStart={(e) => {
-            if ((e.target as HTMLElement).closest('button,input,textarea,select,.control')) return;
-            touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-          }}
-          onTouchEnd={(e) => {
-            if (!touch.current || readonly) return;
-            const dy = e.changedTouches[0].clientY - touch.current.y,
-              dx = e.changedTouches[0].clientX - touch.current.x;
-            touch.current = null;
-            if (Math.abs(dy) > 90 && Math.abs(dx) < 60) {
-              if (dy < 0 && next) go(m.currentStep + 1);
-              if (dy > 0 && previous) go(m.currentStep - 1);
-            }
-          }}
-        >
-          <div className="step-title">
-            <span className="step-icon">
-              {step.kind === 'warmup' ? (
-                <Activity />
-              ) : step.kind === 'kit' ? (
-                <Shirt />
-              ) : step.kind === 'final' ? (
-                <Flag />
-              ) : (
-                <Check />
-              )}
-            </span>
-            <div>
-              <div className="eyebrow">VOTRE AVANT-MATCH, PAS À PAS</div>
-              <h1>{step.title}</h1>
+      <main className="tunnel-body" ref={body}>
+        {showJersey ? (
+          <JerseyPreview match={m} />
+        ) : (
+          <>
+            <div className="tunnel-step-position">
+              <span>
+                ÉTAPE {String(m.currentStep + 1).padStart(2, '0')} / {m.template.steps.length}
+              </span>
+              <span>{formatTime(scheduledAt(m.kickoffAt, step.offset), m.timezone)} prévu</span>
             </div>
-            <StepStatusBadge match={m} step={step} />
-          </div>
-          <p className="step-description">
-            {step.kind === 'kit'
-              ? 'Repérez les couleurs et votre tenue si besoin, puis vérifiez le ballon.'
-              : step.description}
-          </p>
-          <fieldset className="step-fieldset" disabled={readonly || busy}>
-            {step.kind === 'kit' && <KitControl m={m} act={act} />}
-            {step.kind === 'warmup' && <Warmup m={m} act={act} />}
-            {step.controls.map((control) => (
-              <CheckControl key={control.code} match={m} step={step} control={control} act={act} />
-            ))}
-            {step.kind === 'arrival' && (
-              <div className="arrival-details">
-                <MapMark />
-                <p>
-                  Arrivée prévue à{' '}
-                  <strong>{formatTime(scheduledAt(m.kickoffAt, step.offset), m.timezone)}</strong>
-                </p>
-                <p className="muted">
-                  {m.stadium || 'Votre stade'} · Prenez le temps de vous présenter.
-                </p>
-              </div>
+            {readonly && (
+              <Notice>
+                Ce tunnel appartient à un autre appareil. Vous pouvez le consulter.{' '}
+                <Button
+                  variant="secondary"
+                  disabled={!app.online}
+                  onClick={() => void app.transfer(m).catch((e) => app.setError(e.message))}
+                >
+                  Transférer sur cet appareil
+                </Button>
+              </Notice>
             )}
-            {step.kind === 'final' ? (
-              <FinalReview m={m} act={act} />
-            ) : (
-              <Button
-                className="validate-step"
-                disabled={!!m.runs[step.code].completedAt || busy || readonly}
-                onClick={() => void act({ type: 'COMPLETE', stepCode: step.code })}
-              >
-                <Check size={19} />
-                {m.runs[step.code].completedAt
-                  ? 'Étape validée'
-                  : step.kind === 'arrival'
-                    ? 'Confirmer mon arrivée'
-                    : 'Valider cette étape'}
-              </Button>
-            )}
-          </fieldset>
-          {m.issues
-            .filter((i) => i.stepCode === step.code && i.status !== 'RESOLVED')
-            .map((issue) => (
-              <div className="issue-card" key={issue.id}>
-                <AlertTriangle size={20} />
+            <section className={`step-card step-${step.kind}`} key={step.code}>
+              <div className="step-title">
+                <span className="step-icon">
+                  {step.kind === 'warmup' ? (
+                    <Activity />
+                  ) : step.kind === 'kit' ? (
+                    <Shirt />
+                  ) : step.kind === 'final' ? (
+                    <Flag />
+                  ) : (
+                    <Check />
+                  )}
+                </span>
                 <div>
-                  <strong>
-                    {issue.critical ? 'Sécurité · ' : ''}
-                    {issue.reason}
-                  </strong>
-                  <p>{issue.comment || 'Correction demandée'}</p>
-                  <div className="issue-actions">
-                    <Button
-                      variant="ghost"
-                      disabled={readonly}
-                      onClick={() =>
-                        void act({ type: 'ISSUE_UPDATE', issueId: issue.id, status: 'WAITING' })
-                      }
-                    >
-                      En attente
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      disabled={readonly}
-                      onClick={() =>
-                        void act({
-                          type: 'ISSUE_UPDATE',
-                          issueId: issue.id,
-                          status: 'RESOLVED',
-                          comment: issue.comment,
-                        })
-                      }
-                    >
-                      Revérifiée et résolue
-                    </Button>
-                  </div>
+                  <div className="eyebrow">VOTRE AVANT-MATCH, PAS À PAS</div>
+                  <h1 tabIndex={-1}>{step.title}</h1>
                 </div>
+                <StepStatusBadge match={m} step={step} />
               </div>
-            ))}
-        </section>
-        <button
-          className="adjacent-step next"
-          disabled={!next || readonly}
-          onClick={() => next && go(m.currentStep + 1)}
-        >
-          <ChevronDown size={20} />
-          <span>{next ? next.title : 'Dernière étape'}</span>
-          {next && <time>{formatTime(scheduledAt(m.kickoffAt, next.offset), m.timezone)}</time>}
-        </button>
+              {!briefing && (
+                <p className="step-description">
+                  {step.kind === 'kit'
+                    ? 'Repérez les couleurs et votre tenue si besoin, puis vérifiez le ballon.'
+                    : step.description}
+                </p>
+              )}
+              <fieldset className="step-fieldset" disabled={readonly || busy}>
+                {step.kind === 'kit' && <KitControl m={m} act={act} />}
+                {step.kind === 'warmup' && <Warmup m={m} act={act} />}
+                {briefing && <Briefing match={m} step={step} />}
+                {!briefing &&
+                  step.controls.map((control) => (
+                    <CheckControl
+                      key={control.code}
+                      match={m}
+                      step={step}
+                      control={control}
+                      act={act}
+                    />
+                  ))}
+                {step.kind === 'arrival' && (
+                  <div className="arrival-details">
+                    <MapMark />
+                    <p>
+                      Arrivée prévue à{' '}
+                      <strong>
+                        {formatTime(scheduledAt(m.kickoffAt, step.offset), m.timezone)}
+                      </strong>
+                    </p>
+                    <p className="muted">
+                      {m.stadium || 'Votre stade'} · Prenez le temps de vous présenter.
+                    </p>
+                  </div>
+                )}
+                {step.kind === 'final' ? (
+                  <FinalReview m={m} act={act} />
+                ) : (
+                  <Button
+                    className="validate-step"
+                    disabled={!!m.runs[step.code].completedAt || busy || readonly}
+                    onClick={() =>
+                      void act(
+                        briefing
+                          ? { type: 'BRIEFING', stepCode: step.code as 'captains' | 'assistants' }
+                          : { type: 'COMPLETE', stepCode: step.code },
+                      )
+                    }
+                  >
+                    <Check size={19} />
+                    {m.runs[step.code].completedAt
+                      ? 'Étape validée'
+                      : step.kind === 'arrival'
+                        ? 'Confirmer mon arrivée'
+                        : briefing
+                          ? 'Confirmer les consignes données'
+                          : 'Valider cette étape'}
+                  </Button>
+                )}
+              </fieldset>
+              {m.issues
+                .filter((i) => i.stepCode === step.code && i.status !== 'RESOLVED')
+                .map((issue) => (
+                  <div className="issue-card" key={issue.id}>
+                    <AlertTriangle size={20} />
+                    <div>
+                      <strong>
+                        {issue.critical ? 'Sécurité · ' : ''}
+                        {issue.reason}
+                      </strong>
+                      <p>{issue.comment || 'Correction demandée'}</p>
+                      <div className="issue-actions">
+                        <Button
+                          variant="ghost"
+                          disabled={readonly}
+                          onClick={() =>
+                            void act({ type: 'ISSUE_UPDATE', issueId: issue.id, status: 'WAITING' })
+                          }
+                        >
+                          En attente
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          disabled={readonly}
+                          onClick={() =>
+                            void act({
+                              type: 'ISSUE_UPDATE',
+                              issueId: issue.id,
+                              status: 'RESOLVED',
+                              comment: issue.comment,
+                            })
+                          }
+                        >
+                          Revérifiée et résolue
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </section>
+          </>
+        )}
       </main>
       <footer className="tunnel-footer">
         <Button
           variant="secondary"
           disabled={!previous || readonly || busy}
-          onClick={() => go(m.currentStep - 1)}
+          onClick={() => (showJersey ? preview(false) : void go(m.currentStep - 1))}
         >
           <ArrowUp size={18} />
           Précédent
@@ -341,7 +361,7 @@ export function Tunnel({ match: m }: { match: Match }) {
         <span>
           {summary.done} / {summary.total} validées
         </span>
-        <Button disabled={!next || readonly || busy} onClick={() => go(m.currentStep + 1)}>
+        <Button disabled={!next || readonly || busy} onClick={() => void go(m.currentStep + 1)}>
           Suivant
           <ArrowDown size={18} />
         </Button>
@@ -467,8 +487,11 @@ function CheckControl({
       className={`control ${answer?.value === 'OK' ? 'ok' : answer?.value === 'PROBLEM' ? 'problem' : ''}`}
     >
       <div className="control-heading">
-        <strong>{control.label}</strong>
-        {control.critical && <span className="tiny">Point de sécurité</span>}
+        <ControlIllustration code={control.code} label={control.label} />
+        <div>
+          <strong>{control.label}</strong>
+          {control.critical && <span className="tiny">Point de sécurité</span>}
+        </div>
       </div>
       <div className="answer-options">
         <button
@@ -658,13 +681,7 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
           </section>
         ))}
       </div>
-      <h3>Les tenues emportées</h3>
-      {!ranked.length && (
-        <Notice>
-          Aucune tenue complète dans ce sac. Vérifiez votre matériel. Pour une prochaine rencontre,
-          assemblez vos tenues dans « Mon sac » avant de créer le match.
-        </Notice>
-      )}
+      {ranked.length > 0 && <h3>Les tenues emportées</h3>}
       <div className="kit-recommendations">
         {ranked.map((o) => (
           <button
@@ -705,11 +722,6 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
           </button>
         ))}
       </div>
-      <p className="tiny muted">
-        Si les deux gardiens ont la même couleur et ne disposent pas d’un autre maillot, l’exception
-        prévue par la Loi 4 doit être appréciée par l’arbitre. Elle ne garantit pas l’absence
-        d’autres conflits.
-      </p>
     </div>
   );
 }
@@ -816,15 +828,11 @@ function FinalReview({ m, act }: { m: Match; act: (a: OperationInput) => Promise
       <div className="review-steps">
         {m.template.steps
           .filter((s) => s.kind !== 'final')
-          .map((s, i) => (
-            <button
-              type="button"
-              key={s.code}
-              onClick={() => void act({ type: 'NAVIGATE', index: i })}
-            >
+          .map((s) => (
+            <div key={s.code}>
               <span>{s.title}</span>
               <StepStatusBadge match={m} step={s} />
-            </button>
+            </div>
           ))}
       </div>
       {summary.openIssues.map((i) => (

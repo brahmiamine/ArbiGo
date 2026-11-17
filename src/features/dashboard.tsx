@@ -1,5 +1,4 @@
 'use client';
-import { updateDraft } from './matches/update-draft';
 import { useState } from 'react';
 import {
   ArrowUpRight,
@@ -13,8 +12,6 @@ import {
   Backpack,
   Flag,
   ChevronRight,
-  Pencil,
-  RefreshCw,
 } from 'lucide-react';
 import { useApp } from './app-provider';
 import { Button, Badge, Modal, Progress, Empty } from '@/components/ui';
@@ -121,8 +118,11 @@ export function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void 
 export function Dashboard() {
   const app = useApp();
   const [creating, setCreating] = useState(false);
-  const next = app.matches.find((m) => m.status === 'DRAFT' || m.status === 'ACTIVE');
-  const finished = app.matches.filter((m) => !['DRAFT', 'ACTIVE'].includes(m.status));
+  const upcoming = app.matches.filter((m) => ['DRAFT', 'ACTIVE'].includes(m.status));
+  const next = upcoming.find((m) => m.status === 'ACTIVE') ?? upcoming[0];
+  const finished = app.matches
+    .filter((m) => !['DRAFT', 'ACTIVE'].includes(m.status))
+    .sort((a, b) => Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt));
   return (
     <div className="dashboard-home">
       <div className="page-heading">
@@ -153,7 +153,11 @@ export function Dashboard() {
             className="hero-link"
             onClick={() => (next ? app.setActiveId(next.id) : setCreating(true))}
           >
-            {next ? 'Préparer ma prochaine rencontre' : 'Créer ma première rencontre'}
+            {next
+              ? 'Préparer ma prochaine rencontre'
+              : finished.length
+                ? 'Créer une nouvelle rencontre'
+                : 'Créer ma première rencontre'}
             <ArrowUpRight size={21} />
           </button>
         </div>
@@ -197,7 +201,13 @@ export function Dashboard() {
       <div className="dashboard-grid">
         <section>
           <div className="section-heading">
-            <h2>Prochaine rencontre</h2>
+            <h2>
+              {next
+                ? 'Prochaine rencontre'
+                : finished.length
+                  ? 'Derniers matchs'
+                  : 'Prochaine rencontre'}
+            </h2>
             <button className="text-button" onClick={() => app.setTab('matches')}>
               Tous mes matchs
               <ArrowRight size={16} />
@@ -205,6 +215,12 @@ export function Dashboard() {
           </div>
           {next ? (
             <MatchCard match={next} onOpen={() => app.setActiveId(next.id)} />
+          ) : finished.length ? (
+            <div className="recent-matches">
+              {finished.slice(0, 3).map((m) => (
+                <MatchCard key={m.id} match={m} onOpen={() => app.setActiveId(m.id)} />
+              ))}
+            </div>
           ) : (
             <Empty
               title="Le terrain vous attend"
@@ -278,6 +294,12 @@ export function Matches() {
   const filtered = app.matches.filter((m) =>
     history ? !['DRAFT', 'ACTIVE'].includes(m.status) : ['DRAFT', 'ACTIVE'].includes(m.status),
   );
+  const last =
+    !history && !filtered.length
+      ? app.matches
+          .filter((m) => !['DRAFT', 'ACTIVE'].includes(m.status))
+          .sort((a, b) => Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt))[0]
+      : undefined;
   return (
     <>
       <div className="page-heading">
@@ -314,7 +336,13 @@ export function Matches() {
           <MatchCard key={m.id} match={m} onOpen={() => app.setActiveId(m.id)} />
         ))}
       </div>
-      {!filtered.length && (
+      {last && (
+        <section className="last-match">
+          <h2>Dernier match</h2>
+          <MatchCard match={last} onOpen={() => app.setActiveId(last.id)} />
+        </section>
+      )}
+      {!filtered.length && !last && (
         <Empty
           title={history ? 'Votre journal commence ici' : 'Aucune rencontre à venir'}
           description={
@@ -334,8 +362,7 @@ export function Matches() {
 }
 export function MatchDetail({ match: m }: { match: Match }) {
   const app = useApp();
-  const [starting, setStarting] = useState(false),
-    [editing, setEditing] = useState(false);
+  const [starting, setStarting] = useState(false);
   const packed = m.bag.filter((i) => i.packed).length;
   async function start() {
     setStarting(true);
@@ -351,54 +378,7 @@ export function MatchDetail({ match: m }: { match: Match }) {
       <button className="text-button" onClick={() => app.setActiveId(null)}>
         ← Mes rencontres
       </button>
-      <div className="detail-actions">
-        <Button
-          variant="secondary"
-          aria-label="Modifier la rencontre"
-          onClick={() => setEditing(true)}
-        >
-          <Pencil size={14} />
-          Modifier
-        </Button>
-        <Button
-          variant="ghost"
-          aria-label="Mon inventaire"
-          onClick={() => {
-            app.setActiveId(null);
-            app.setTab('bag');
-          }}
-        >
-          <Backpack size={14} />
-          Inventaire
-        </Button>
-        <Button
-          variant="ghost"
-          aria-label="Actualiser le sac depuis l’inventaire"
-          onClick={async () => {
-            try {
-              await updateDraft(m, m, app.inventory, app.store!, app.demo);
-              await app.refresh();
-            } catch (e) {
-              app.setError(e instanceof Error ? e.message : 'Actualisation impossible');
-            }
-          }}
-        >
-          <RefreshCw size={14} />
-          Actualiser le sac
-        </Button>
-      </div>
-      {editing && (
-        <Modal title="Modifier la rencontre" onClose={() => setEditing(false)}>
-          <MatchForm initial={m} onDone={() => setEditing(false)} />
-        </Modal>
-      )}
       <div className="detail-banner">
-        <div className="detail-badges">
-          <Badge>{practiceLabels[m.practice]}</Badge>
-          <Badge tone={m.template.status === 'VERIFIED' ? 'green' : 'amber'}>
-            {m.template.status === 'VERIFIED' ? 'Modèle vérifié' : 'Modèle en brouillon'}
-          </Badge>
-        </div>
         <h1>
           {m.homeTeam}
           <span>vs</span>

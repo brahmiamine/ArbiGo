@@ -83,6 +83,8 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   const origin = new URL(page.url()).origin;
   for (const action of [
     { type: 'START' },
+    { type: 'BRIEFING', stepCode: 'captains' },
+    { type: 'BRIEFING', stepCode: 'assistants' },
     { type: 'KICKOFF', acknowledged: true },
     { type: 'FINISH_MATCH' },
     {
@@ -115,6 +117,8 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   expect(afterDebrief.matches[0].state.debrief.form.objective).toBe(
     'Débrief synchronisé du compte réel',
   );
+  expect(afterDebrief.matches[0].state.runs.captains.completedAt).toBeTruthy();
+  expect(afterDebrief.matches[0].state.runs.assistants.completedAt).toBeTruthy();
   const photo = await page.request.post('/api/media', {
     headers: { Origin: origin },
     multipart: {
