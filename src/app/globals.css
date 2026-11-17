@@ -3300,6 +3300,34 @@ select {
   gap: 12px;
 }
 
+.match-countdown {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #edf3ff;
+  color: var(--blue);
+}
+.match-countdown > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.match-countdown strong {
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.match-countdown.due {
+  color: var(--amber);
+  background: #fbf4e7;
+}
+
 /* Application headers share a title and the action needed on that screen. */
 .topbar {
   height: 44px;

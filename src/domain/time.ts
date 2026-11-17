@@ -6,6 +6,16 @@ export function countdown(target: string, now = Date.now()) {
   const hours = Math.floor(seconds / 3600);
   return `${Date.parse(target) < now ? '+' : ''}${hours ? `${String(hours).padStart(2, '0')}:` : ''}${String(Math.floor(seconds / 60) % 60).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 }
+export function kickoffCountdown(target: string, now = Date.now()) {
+  const targetTime = Date.parse(target);
+  if (!Number.isFinite(targetTime)) return '—';
+  const seconds = Math.max(0, Math.ceil((targetTime - now) / 1000));
+  const days = Math.floor(seconds / 86400);
+  const clock = [Math.floor(seconds / 3600) % 24, Math.floor(seconds / 60) % 60, seconds % 60]
+    .map((value) => String(value).padStart(2, '0'))
+    .join(':');
+  return days ? `${days} j ${clock}` : clock;
+}
 export function localDateParts(iso: string, timezone = 'Europe/Paris') {
   const parts = new Intl.DateTimeFormat('fr-CA', {
     timeZone: timezone,

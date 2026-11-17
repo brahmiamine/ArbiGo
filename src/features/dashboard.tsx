@@ -16,6 +16,7 @@ import { useApp } from './app-provider';
 import { Button, Badge, Modal, Progress, Empty, PageHeader } from '@/components/ui';
 import { MatchForm } from './matches/match-form';
 import { EquipmentImage } from './media';
+import { MatchCountdown } from '@/components/match-countdown';
 import { practiceLabels } from '@/domain/templates';
 import { formatTime } from '@/domain/time';
 import type { Match } from '@/domain/types';
@@ -102,6 +103,7 @@ export function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void 
         </span>
         <ChevronRight size={20} />
       </div>
+      {['DRAFT', 'ACTIVE'].includes(match.status) && <MatchCountdown kickoffAt={match.kickoffAt} />}
       <div className="bag-mini">
         <Backpack size={15} />
         <span>
