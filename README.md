@@ -73,3 +73,5 @@ Voir [l’exploitation](docs/DEPLOYMENT.md), [les contrats API](docs/API.md), [l
 Le tunnel inclut après l’arrivée le vestiaire de l’arbitre, puis ceux des deux équipes. Les numéros sont propres au match et sauvegardés hors ligne. L’indicateur de préparation compare la première étape non validée à son horaire : en avance à plus d’une minute, à l’heure dans une marge de ±1 minute, en retard au-delà. Le dernier jalon est le coup d’envoi.
 
 L’en-tête du tunnel rappelle les couleurs déclarées et le vestiaire de chaque équipe. Les étapes voisines affichent leur statut sans navigation au défilement ; les lignes du bilan ouvrent directement la fiche correspondante. Le coup d’envoi nécessite désormais toutes les étapes validées, les anomalies résolues et une confirmation explicite.
+
+Le bilan affiche pour chaque étape l’horaire prévu depuis le coup d’envoi, l’heure de validation enregistrée et l’écart arrondi à la minute (− en avance, + en retard, 0 à l’heure). Les étapes non validées n’ont pas de résultat d’écart. L’indicateur général ouvre directement le bilan, y compris depuis l’aperçu du maillot.

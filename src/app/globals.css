@@ -3955,3 +3955,63 @@ select {
     max-width: 70px;
   }
 }
+
+button.schedule-indicator {
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+button.schedule-indicator:disabled {
+  cursor: default;
+}
+button.schedule-indicator:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.review-timing-legend {
+  margin: 12px 0 0;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.review-step-name,
+.review-step-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.review-step-name {
+  min-width: 0;
+  flex: 1;
+}
+.review-step-times {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.review-step-status {
+  align-items: flex-end;
+  flex: 0 0 auto;
+}
+.step-timing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.step-timing.ahead {
+  color: #075840;
+  background: #d9f5e8;
+}
+.step-timing.on-time {
+  color: #003287;
+  background: #e5eeff;
+}
+.step-timing.late {
+  color: #912d19;
+  background: #ffe7df;
+}

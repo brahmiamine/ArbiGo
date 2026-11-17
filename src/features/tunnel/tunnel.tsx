@@ -6,7 +6,7 @@ import { ControlIllustration } from '@/components/control-illustration';
 import { JerseyPreview } from './jersey-preview';
 import { Briefing } from './briefing';
 import { LockerRooms } from './locker-rooms';
-import { preparationTiming } from '@/domain/preparation-timing';
+import { preparationTiming, stageTiming } from '@/domain/preparation-timing';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import {
   ArrowDown,
@@ -168,16 +168,30 @@ function LockerUpgrade({ match }: { match: Match }) {
     </main>
   );
 }
-function TimingIndicator({ match }: { match: Match }) {
+function TimingIndicator({
+  match,
+  onReview,
+  disabled,
+}: {
+  match: Match;
+  onReview: () => void;
+  disabled: boolean;
+}) {
   const now = useNow();
   const timing = preparationTiming(match, now);
   const Icon =
     timing.state === 'ahead' ? TrendingUp : timing.state === 'late' ? AlertTriangle : CircleCheck;
   return (
-    <span className={`schedule-indicator ${timing.state}`} role="status">
-      <Icon size={15} />
-      <span>{timing.label}</span>
-    </span>
+    <button
+      type="button"
+      className={`schedule-indicator ${timing.state}`}
+      onClick={onReview}
+      disabled={disabled}
+      aria-label={`Ouvrir le bilan · ${timing.label}`}
+    >
+      <Icon size={15} aria-hidden="true" />
+      <span role="status">{timing.label}</span>
+    </button>
   );
 }
 function NextCountdown({ match }: { match: Match }) {
@@ -249,6 +263,14 @@ function TunnelContent({ match: m }: { match: Match }) {
     }
     if (await act({ type: 'NAVIGATE', index })) preview(false);
   }
+  const reviewIndex = m.template.steps.findIndex((item) => item.kind === 'final');
+  function openReview() {
+    if (readonly || busy || reviewIndex < 0) return;
+    if (m.currentStep === reviewIndex && !showJersey) {
+      window.scrollTo(0, 0);
+      body.current?.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
+    } else void go(reviewIndex);
+  }
   return (
     <div className={`tunnel ${showJersey ? 'jersey-mode' : ''}`}>
       <StageAlerts match={m} muted={muted} />
@@ -280,7 +302,11 @@ function TunnelContent({ match: m }: { match: Match }) {
           <Countdown target={m.kickoffAt} label="COUP D’ENVOI DANS" />
           <div className="timer-divider" />
           <NextCountdown match={m} />
-          <TimingIndicator match={m} />
+          <TimingIndicator
+            match={m}
+            onReview={openReview}
+            disabled={readonly || busy || reviewIndex < 0}
+          />
           <span className="tunnel-sync">
             {app.online ? <CloudCheck size={16} /> : <WifiOff size={16} />}
             <span>
@@ -299,7 +325,11 @@ function TunnelContent({ match: m }: { match: Match }) {
       </header>
       {showJersey && (
         <div className="jersey-timing">
-          <TimingIndicator match={m} />
+          <TimingIndicator
+            match={m}
+            onReview={openReview}
+            disabled={readonly || busy || reviewIndex < 0}
+          />
           <span>
             Coup d’envoi <Countdown target={m.kickoffAt} label="" />
           </span>
@@ -872,6 +902,38 @@ function Warmup({ m, act }: { m: Match; act: (a: OperationInput) => Promise<bool
     </div>
   );
 }
+function StepTimingDetails({ match, step }: { match: Match; step: Step }) {
+  const timing = stageTiming(match, step);
+  const planned = scheduledAt(match.kickoffAt, step.offset);
+  return (
+    <small className="review-step-times">
+      Prévu {formatTime(planned, match.timezone)}
+      {timing ? (
+        <> · Validé {formatTime(timing.completedAt, match.timezone)}</>
+      ) : match.runs[step.code]?.completedAt ? (
+        ' · Heure de validation indisponible'
+      ) : (
+        ' · Non validée'
+      )}
+    </small>
+  );
+}
+function StepTimingBadge({ match, step }: { match: Match; step: Step }) {
+  const timing = stageTiming(match, step);
+  if (!timing) return null;
+  const Icon =
+    timing.state === 'ahead' ? TrendingUp : timing.state === 'late' ? AlertTriangle : CircleCheck;
+  return (
+    <span
+      className={`step-timing ${timing.state}`}
+      aria-label={`${timing.label} · ${timing.value}`}
+      title={`${timing.label} · écart arrondi à la minute`}
+    >
+      <Icon size={12} aria-hidden="true" />
+      {timing.value}
+    </span>
+  );
+}
 function FinalReview({
   m,
   act,
@@ -891,6 +953,9 @@ function FinalReview({
           ? 'Préparation complète. Vous pouvez confirmer le coup d’envoi.'
           : `${summary.missing.length} étape(s) non validée(s), ${summary.openIssues.length} anomalie(s) à suivre.${!summary.safe ? ' Un danger de sécurité reste ouvert.' : ''}`}
       </Notice>
+      <p className="review-timing-legend">
+        Écart à la validation, arrondi à la minute : − en avance, + en retard.
+      </p>
       <div className="review-steps">
         {m.template.steps
           .filter((s) => s.kind !== 'final')
@@ -900,8 +965,14 @@ function FinalReview({
               key={s.code}
               onClick={() => void go(m.template.steps.findIndex((step) => step.code === s.code))}
             >
-              <span>{s.title}</span>
-              <StepStatusBadge match={m} step={s} />
+              <span className="review-step-name">
+                <span>{s.title}</span>
+                <StepTimingDetails match={m} step={s} />
+              </span>
+              <span className="review-step-status">
+                <StepStatusBadge match={m} step={s} />
+                <StepTimingBadge match={m} step={s} />
+              </span>
             </button>
           ))}
       </div>
