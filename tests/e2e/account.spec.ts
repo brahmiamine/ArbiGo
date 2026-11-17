@@ -206,6 +206,78 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   expect(afterDebrief.matches[0].state.runs.captains.completedAt).toBeTruthy();
   expect(afterDebrief.matches[0].state.runs.assistants.completedAt).toBeTruthy();
   expect(afterDebrief.matches[0].state.selectedShirtId).toBe('shirt-red');
+  // Fill two different reports through the UI, then open them in a browser with no local data.
+  const secondResponse = await page.request.post('/api/matches', {
+    headers: { Origin: origin },
+    data: {
+      ...match,
+      homeTeam: 'Deuxième domicile',
+      awayTeam: 'Deuxième visiteur',
+      kickoffAt: '2026-12-13T14:00:00Z',
+    },
+  });
+  expect(secondResponse.ok()).toBe(true);
+  let secondMatch = (await secondResponse.json()).data;
+  for (const action of [
+    { type: 'START' },
+    ...preparationActions(secondMatch),
+    { type: 'KICKOFF', acknowledged: true },
+    { type: 'SPORTCASH_CHECKOUT' },
+    { type: 'FINISH_MATCH' },
+  ]) {
+    const response = await page.request.post('/api/sync/batch', {
+      headers: { Origin: origin },
+      data: {
+        operations: [
+          {
+            id: crypto.randomUUID(),
+            matchId: secondMatch.id,
+            deviceId,
+            expectedVersion: secondMatch.version,
+            fencingVersion: secondMatch.fencingVersion,
+            occurredAt: new Date().toISOString(),
+            action,
+          },
+        ],
+      },
+    });
+    expect(response.ok()).toBe(true);
+    const result = (await response.json()).data.results[0];
+    expect(result.status).toBe('APPLIED');
+    secondMatch = result.match;
+  }
+  const reportUrl = (id: string) => `/app?page=matches&match=${id}&view=debrief`;
+  for (const [id, objective] of [
+    [match.id, 'Mon bilan du premier match'],
+    [secondMatch.id, 'Mon bilan du deuxième match'],
+  ]) {
+    await page.goto(reportUrl(id));
+    await page.getByLabel('Objectif du prochain match', { exact: true }).fill(objective);
+    await expect
+      .poll(async () => {
+        const response = await page.request.get(`/api/matches/${id}`);
+        expect(response.ok()).toBe(true);
+        return (await response.json()).data.debrief?.form.objective;
+      })
+      .toBe(objective);
+  }
+  const freshContext = await page.context().browser()!.newContext();
+  try {
+    await freshContext.addCookies(await page.context().cookies());
+    const freshPage = await freshContext.newPage();
+    for (const [id, objective] of [
+      [match.id, 'Mon bilan du premier match'],
+      [secondMatch.id, 'Mon bilan du deuxième match'],
+    ]) {
+      await freshPage.goto(`${origin}${reportUrl(id)}`);
+      await expect(freshPage.getByLabel('Objectif du prochain match', { exact: true })).toHaveValue(
+        objective,
+      );
+    }
+  } finally {
+    await freshContext.close();
+  }
+
   const photo = await page.request.post('/api/media', {
     headers: { Origin: origin },
     multipart: {
