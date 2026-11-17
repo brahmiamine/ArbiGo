@@ -1,0 +1,185 @@
+'use client';
+import Link from 'next/link';
+import {
+  Home,
+  CalendarDays,
+  Backpack,
+  UserRound,
+  ArrowUpRight,
+  Wifi,
+  WifiOff,
+  X,
+  Flag,
+} from 'lucide-react';
+import { AppProvider, useApp } from './app-provider';
+import { Dashboard, Matches, MatchDetail } from './dashboard';
+import { InventoryScreen } from './bag/inventory';
+import { Profile } from './profile';
+import { Tunnel } from './tunnel/tunnel';
+import { History } from './history/history';
+const navigation = [
+  { id: 'home', label: 'Accueil', icon: Home },
+  { id: 'matches', label: 'Mes matchs', icon: CalendarDays },
+  { id: 'bag', label: 'Mon sac', icon: Backpack },
+  { id: 'profile', label: 'Profil', icon: UserRound },
+] as const;
+export function AppRoot({ demo = false }: { demo?: boolean }) {
+  return (
+    <AppProvider demo={demo}>
+      <Shell />
+    </AppProvider>
+  );
+}
+function Shell() {
+  const app = useApp();
+  const active = app.matches.find((m) => m.id === app.activeId);
+  if (!app.ready)
+    return (
+      <main className="loading-screen">
+        <div className="brand">
+          ArbiGo<span>.</span>
+        </div>
+        <p>Préparation de votre espace…</p>
+      </main>
+    );
+  if (!app.profile)
+    return (
+      <main className="loading-screen">
+        <h1>Votre espace est indisponible</h1>
+        <p>{app.error}</p>
+        <Link href="/auth/login">Se connecter</Link>
+      </main>
+    );
+  const toast = app.error && (
+    <div role="alert" className="toast">
+      <span>{app.error}</span>
+      <button
+        className="icon-button"
+        aria-label="Fermer le message"
+        onClick={() => app.setError('')}
+      >
+        <X size={18} />
+      </button>
+    </div>
+  );
+  if (active?.status === 'ACTIVE')
+    return (
+      <>
+        {toast}
+        <Tunnel match={active} />
+      </>
+    );
+  return (
+    <div className="app-layout">
+      <aside className="sidebar">
+        <Link href={app.demo ? '/demo' : '/app'} className="brand">
+          ArbiGo<span>.</span>
+        </Link>
+        <span className="sidebar-caption">VOTRE AVANT-MATCH</span>
+        <nav aria-label="Navigation principale">
+          {navigation.map((n) => (
+            <button
+              key={n.id}
+              className={app.tab === n.id ? 'active' : ''}
+              aria-current={app.tab === n.id ? 'page' : undefined}
+              onClick={() => {
+                app.setActiveId(null);
+                app.setTab(n.id);
+              }}
+            >
+              <n.icon size={21} />
+              <span>{n.label}</span>
+              {app.tab === n.id && <span className="nav-dot" />}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-bottom">
+          <div className="sidebar-card">
+            <Flag size={25} />
+            <strong>
+              L’esprit libre.
+              <br />
+              Le terrain en tête.
+            </strong>
+            <span>
+              Votre carnet de préparation,
+              <br />à portée de main.
+            </span>
+          </div>
+          <div className="sidebar-user">
+            <div className="avatar">{app.profile.name[0]}</div>
+            <div>
+              <strong>{app.profile.name}</strong>
+              <span>Arbitre de football</span>
+            </div>
+            <ArrowUpRight size={17} />
+          </div>
+        </div>
+      </aside>
+      <div className="app-main">
+        <header className="topbar">
+          <span>{navigation.find((n) => n.id === app.tab)?.label}</span>
+          <div>
+            {app.demo && (
+              <Link href="/auth/register" className="demo-label">
+                Démonstration · Créer mon compte
+                <ArrowUpRight size={14} />
+              </Link>
+            )}
+            <span className="connectivity">
+              {app.online ? <Wifi size={15} /> : <WifiOff size={15} />}
+              <span>
+                {app.pending ? `${app.pending} en attente` : app.online ? 'Connecté' : 'Hors ligne'}
+              </span>
+            </span>
+            <span className="topbar-date">
+              {new Intl.DateTimeFormat('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              }).format(new Date())}
+            </span>
+          </div>
+        </header>
+        <main className="page-content">
+          {active ? (
+            active.status === 'DRAFT' ? (
+              <MatchDetail match={active} />
+            ) : (
+              <History match={active} />
+            )
+          ) : app.tab === 'home' ? (
+            <Dashboard />
+          ) : app.tab === 'matches' ? (
+            <Matches />
+          ) : app.tab === 'bag' ? (
+            <InventoryScreen />
+          ) : (
+            <Profile />
+          )}
+        </main>
+        <footer className="app-footer">
+          <span>ArbiGo · La préparation fait la différence.</span>
+          <Link href="/privacy">Confidentialité</Link>
+        </footer>
+      </div>
+      <nav className="bottom-nav" aria-label="Navigation mobile">
+        {navigation.map((n) => (
+          <button
+            key={n.id}
+            aria-current={app.tab === n.id ? 'page' : undefined}
+            className={app.tab === n.id ? 'active' : ''}
+            onClick={() => {
+              app.setActiveId(null);
+              app.setTab(n.id);
+            }}
+          >
+            <n.icon size={21} />
+            <span>{n.label}</span>
+          </button>
+        ))}
+      </nav>
+      {toast}
+    </div>
+  );
+}

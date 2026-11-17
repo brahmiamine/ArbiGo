@@ -1,0 +1,10 @@
+node_modules
+.next
+src/generated
+package-lock.json
+docs/ArbiGo_Cahier_des_charges_V1.md
+playwright-report
+test-results
+.superpowers
+
+next-env.d.ts

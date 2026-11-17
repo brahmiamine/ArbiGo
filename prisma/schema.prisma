@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+}
+datasource db {
+  provider = "mysql"
+}
+model User {
+  id String @id @default(uuid()) @db.VarChar(36)
+  email String @unique @db.VarChar(191)
+  name String @db.VarChar(100)
+  passwordHash String @db.VarChar(255)
+  emailVerifiedAt DateTime?
+  sessionVersion Int @default(0)
+  preferences Json
+  inventory Json
+  createdAt DateTime @default(now())
+  tokens AccountToken[]
+  devices Device[]
+  matches Match[]
+  operations SyncOperation[]
+  media MediaAsset[]
+}
+model AccountToken {
+  id String @id @default(uuid()) @db.VarChar(36)
+  userId String @db.VarChar(36)
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  hash String @unique @db.Char(64)
+  purpose String @db.VarChar(16)
+  expiresAt DateTime
+  usedAt DateTime?
+  @@index([userId,purpose])
+}
+model Device {
+  id String @id @db.VarChar(36)
+  userId String @db.VarChar(36)
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  label String @db.VarChar(100)
+  lastSeenAt DateTime @default(now())
+  revokedAt DateTime?
+  subscriptions PushSubscription[]
+  @@index([userId])
+}
+model Match {
+  id String @id @db.VarChar(36)
+  userId String @db.VarChar(36)
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  kickoffAt DateTime
+  status String @db.VarChar(16)
+  version Int @default(0)
+  state Json
+  createdAt DateTime @default(now())
+  events MatchEvent[]
+  jobs NotificationJob[]
+  @@index([userId,kickoffAt,status])
+}
+model MatchEvent {
+  id String @id @default(uuid()) @db.VarChar(36)
+  matchId String @db.VarChar(36)
+  match Match @relation(fields:[matchId], references:[id], onDelete:Cascade)
+  operationId String @unique @db.VarChar(36)
+  actorDeviceId String @db.VarChar(36)
+  type String @db.VarChar(32)
+  payload Json
+  occurredAt DateTime
+  receivedAt DateTime @default(now())
+  @@index([matchId,occurredAt])
+}
+model SyncOperation {
+  id String @id @db.VarChar(36)
+  userId String @db.VarChar(36)
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  deviceId String @db.VarChar(36)
+  matchId String @db.VarChar(36)
+  status String @db.VarChar(16)
+  payload Json
+  reason String? @db.VarChar(100)
+  receivedAt DateTime @default(now())
+  @@index([userId,status])
+}
+model MediaAsset {
+  id String @id @db.VarChar(36)
+  userId String @db.VarChar(36)
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  storageKey String @unique @db.VarChar(191)
+  size Int
+  hash String @db.Char(64)
+  createdAt DateTime @default(now())
+  @@index([userId])
+}
+model PushSubscription {
+  id String @id @default(uuid()) @db.VarChar(36)
+  deviceId String @db.VarChar(36)
+  device Device @relation(fields:[deviceId], references:[id], onDelete:Cascade)
+  endpoint String @unique @db.VarChar(512)
+  keys Json
+  active Boolean @default(true)
+}
+model NotificationJob {
+  id String @id @default(uuid()) @db.VarChar(36)
+  matchId String @db.VarChar(36)
+  match Match @relation(fields:[matchId], references:[id], onDelete:Cascade)
+  stepCode String? @db.VarChar(32)
+  kind String @db.VarChar(16)
+  scheduledAt DateTime
+  dedupeKey String @unique @db.VarChar(191)
+  claimedAt DateTime?
+  sentAt DateTime?
+  canceledAt DateTime?
+  attempts Int @default(0)
+  deliveries NotificationDelivery[]
+  @@index([scheduledAt,sentAt,canceledAt])
+}
+model NotificationDelivery {
+  id String @id @default(uuid()) @db.VarChar(36)
+  jobId String @db.VarChar(36)
+  job NotificationJob @relation(fields:[jobId],references:[id],onDelete:Cascade)
+  subscriptionId String @db.VarChar(36)
+  sentAt DateTime @default(now())
+  @@unique([jobId,subscriptionId])
+}
+model TemplateVersion {
+  code String @id @db.VarChar(100)
+  practice String @db.VarChar(16)
+  season String @db.VarChar(16)
+  version Int
+  status String @db.VarChar(16)
+  content Json
+  approvedAt DateTime?
+}
+model RateLimit {
+  key String @id @db.Char(64)
+  count Int @default(1)
+  resetAt DateTime
+}

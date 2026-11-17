@@ -1,0 +1,80 @@
+name: arbigo
+services:
+  db:
+    image: mariadb:11.8
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: arbigo
+      MARIADB_USER: arbigo
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?set MARIADB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?set MARIADB_ROOT_PASSWORD}
+    volumes: [db_data:/var/lib/mysql]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [internal]
+  migrate:
+    build: .
+    image: arbigo:local
+    env_file: .env
+    command:
+      [
+        sh,
+        -c,
+        './node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/tsx prisma/seed.ts',
+      ]
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [internal]
+  app:
+    image: arbigo:local
+    restart: unless-stopped
+    env_file: .env
+    ports: ['127.0.0.1:3000:3000']
+    volumes: [media_data:/app/data/media]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [internal, edge]
+  worker:
+    image: arbigo:local
+    restart: unless-stopped
+    env_file: .env
+    command: [./node_modules/.bin/tsx, scripts/worker.ts]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    networks: [internal, edge]
+  mailpit:
+    image: axllent/mailpit:v1.27
+    profiles: [dev]
+    ports: ['127.0.0.1:8025:8025']
+    networks: [internal]
+  caddy:
+    image: caddy:2
+    profiles: [https]
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment: { DOMAIN: '${DOMAIN}' }
+    volumes: ['./Caddyfile:/etc/caddy/Caddyfile:ro', caddy_data:/data, caddy_config:/config]
+    depends_on: [app]
+    networks: [edge]
+volumes:
+  db_data:
+  media_data:
+  caddy_data:
+  caddy_config:
+networks:
+  internal: { internal: true }
+  edge:

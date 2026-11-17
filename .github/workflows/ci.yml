@@ -1,0 +1,43 @@
+name: ArbiGo CI
+on: [push, pull_request]
+permissions: { contents: read }
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          {
+            MARIADB_DATABASE: arbigo_test,
+            MARIADB_USER: arbigo,
+            MARIADB_PASSWORD: test-password,
+            MARIADB_ROOT_PASSWORD: root-password,
+          }
+        ports: ['3306:3306']
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      DATABASE_URL: mysql://arbigo:test-password@127.0.0.1:3306/arbigo_test
+      AUTH_SECRET: ci-only-secret-not-for-production-123456789
+      AUTH_TRUST_HOST: 'true'
+      APP_URL: http://127.0.0.1:3000
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run db:migrate
+      - run: npm run db:seed
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:integration
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: failure-evidence, path: test-results/, retention-days: 7 }

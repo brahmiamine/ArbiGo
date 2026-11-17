@@ -1,0 +1,345 @@
+'use client';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { useRouter } from 'next/navigation';
+import { errorMessage } from '@/domain/errors';
+import { LocalStore } from '@/lib/local-store';
+import { api, ApiError } from '@/lib/api';
+import { createMatch } from '@/domain/match';
+import { templates } from '@/domain/templates';
+import { defaultEquipment } from '@/domain/equipment';
+import { signOut } from 'next-auth/react';
+import type { Match, MatchInput, Inventory, OperationInput } from '@/domain/types';
+interface Profile {
+  id: string;
+  name: string;
+  email: string;
+  preferences: { soundEnabled: boolean; pushEnabled: boolean; timezone: string; locale: 'fr' };
+  vapidPublicKey: string;
+}
+type Tab = 'home' | 'matches' | 'bag' | 'profile';
+interface AppContextType {
+  matches: Match[];
+  inventory: Inventory;
+  profile: Profile | null;
+  deviceId: string;
+  ready: boolean;
+  online: boolean;
+  pending: number;
+  error: string;
+  setError: (s: string) => void;
+  tab: Tab;
+  setTab: (t: Tab) => void;
+  activeId: string | null;
+  setActiveId: (s: string | null) => void;
+  demo: boolean;
+  conflicts: Awaited<ReturnType<LocalStore['conflicts']>>;
+  dispatch: (id: string, a: OperationInput) => Promise<void>;
+  create: (i: MatchInput) => Promise<Match>;
+  saveInventory: (v: Inventory) => Promise<void>;
+  sync: () => Promise<void>;
+  transfer: (m: Match) => Promise<void>;
+  resolve: (id: string) => Promise<void>;
+  logout: () => Promise<void>;
+  store: LocalStore | null;
+  refresh: () => Promise<void>;
+}
+const AppContext = createContext<AppContextType | null>(null);
+export function useApp() {
+  const v = useContext(AppContext);
+  if (!v) throw new Error('APP_CONTEXT');
+  return v;
+}
+export function AppProvider({ children, demo = false }: { children: ReactNode; demo?: boolean }) {
+  const router = useRouter();
+  const [localStore, setLocalStore] = useState<LocalStore | null>(null);
+  const [matches, setMatches] = useState<Match[]>([]),
+    [inventory, setInventory] = useState<Inventory>({ equipment: [], outfits: [] }),
+    [profile, setProfile] = useState<Profile | null>(null),
+    [ready, setReady] = useState(false),
+    [online, setOnline] = useState(true),
+    [pending, setPending] = useState(0),
+    [error, setError] = useState(''),
+    [tab, setTab] = useState<Tab>('home'),
+    [activeId, setActiveId] = useState<string | null>(null),
+    [deviceId, setDeviceId] = useState(''),
+    [conflicts, setConflicts] = useState<AppContextType['conflicts']>([]);
+  const storeRef = useRef<LocalStore | null>(null),
+    syncing = useRef(false),
+    demoRef = useRef(demo);
+  const refresh = useCallback(async () => {
+    const store = storeRef.current;
+    if (!store) return;
+    const ms = await store.matches();
+    setMatches(ms.sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt)));
+    setInventory((await store.inventory()) ?? { equipment: [], outfits: [] });
+    setPending((await store.pending()).length);
+    setConflicts(await store.conflicts());
+    const active = ms.find((m) => m.status === 'ACTIVE');
+    if (active) setActiveId(active.id);
+  }, []);
+  const sync = useCallback(async () => {
+    if (syncing.current || !storeRef.current || !navigator.onLine) return;
+    syncing.current = true;
+    try {
+      const store = storeRef.current;
+      const queue = await store.pending();
+      const blocked = new Set((await store.conflicts()).map((q) => q.operation.matchId));
+      const operations = queue.filter((op) => !blocked.has(op.matchId)).slice(0, 50);
+      if (operations.length) {
+        if (demoRef.current) {
+          for (const op of operations) {
+            const m = (await store.matches()).find((m) => m.id === op.matchId)!;
+            await store.acknowledge(op.id, m);
+          }
+        } else {
+          const { results } = await api<{
+            results: { id: string; status: string; reason?: string; match?: Match }[];
+          }>('sync/batch', 'POST', { operations });
+          for (const result of results) {
+            if (result.status === 'APPLIED' && result.match)
+              await store.acknowledge(result.id, result.match);
+            else {
+              await store.markConflict(
+                result.id,
+                result.reason ?? 'VERSION_CONFLICT',
+                result.match,
+              );
+              setError(
+                'Une action nécessite une résolution dans votre profil. Elle reste conservée sur cet appareil.',
+              );
+            }
+          }
+        }
+      }
+      await refresh();
+    } catch (e) {
+      if (e instanceof ApiError) setError(e.message);
+    } finally {
+      syncing.current = false;
+    }
+  }, [refresh]);
+  useEffect(() => {
+    let canceled = false;
+    async function init() {
+      try {
+        let p: Profile;
+        if (demo) {
+          p = {
+            id: 'demo',
+            name: 'Amine',
+            email: 'demo@arbigo.local',
+            preferences: {
+              soundEnabled: true,
+              pushEnabled: false,
+              timezone: 'Europe/Paris',
+              locale: 'fr',
+            },
+            vapidPublicKey: '',
+          };
+        } else if (navigator.onLine) {
+          p = await api<Profile>('me');
+          localStorage.setItem('arbigo:identity', JSON.stringify(p));
+        } else {
+          const cached = localStorage.getItem('arbigo:identity');
+          if (!cached) {
+            router.replace('/auth/login');
+            return;
+          }
+          p = JSON.parse(cached);
+        }
+        const deviceKey = `arbigo:device:${p.id}`;
+        let did = localStorage.getItem(deviceKey);
+        if (!did) {
+          did = crypto.randomUUID();
+          localStorage.setItem(deviceKey, did);
+        }
+        setDeviceId(did);
+        if (!demo && navigator.onLine)
+          await api('devices', 'POST', {
+            id: did,
+            label: /Android|iPhone/.test(navigator.userAgent) ? 'Mon téléphone' : 'Mon navigateur',
+          });
+        const store = new LocalStore(p.id);
+        storeRef.current = store;
+        setLocalStore(store);
+        if (demo && !(await store.matches()).length) {
+          const inv = {
+            equipment: defaultEquipment(),
+            outfits: [
+              {
+                id: 'kit-blue',
+                name: 'La bleue',
+                itemIds: ['shirt-blue', 'shorts', 'socks', 'shoes'],
+                primaryColor: 'bleu',
+                secondaryColor: 'noir',
+              },
+              {
+                id: 'kit-yellow',
+                name: 'La jaune',
+                itemIds: ['shirt-yellow', 'shorts', 'socks', 'shoes'],
+                primaryColor: 'jaune',
+                secondaryColor: 'noir',
+              },
+            ],
+          };
+          await store.putInventory(inv);
+          const date = new Date();
+          date.setDate(date.getDate() + ((7 - date.getDay()) % 7 || 7));
+          date.setHours(15, 0, 0, 0);
+          const m = createMatch(
+            {
+              homeTeam: 'Paris 13 Atletico',
+              awayTeam: 'FC Belleville',
+              practice: 'FOOT_11',
+              kickoffAt: date.toISOString(),
+              timezone: 'Europe/Paris',
+              stadium: 'Stade Charléty',
+              competition: 'Championnat D4',
+              category: 'Seniors',
+            },
+            inv.equipment,
+            templates.FOOT_11,
+          );
+          m.outfits = inv.outfits;
+          await store.putMatch(m);
+        }
+        if (!demo && navigator.onLine) {
+          const b = await api<{ matches: Match[]; inventory: Inventory }>('sync/bootstrap');
+          await store.bootstrap(b.matches);
+          await store.putInventory(b.inventory);
+          const photos = new Set(
+            [...b.inventory.equipment, ...b.matches.flatMap((m) => m.bag)].flatMap((i) =>
+              i.photoId ? [i.photoId] : [],
+            ),
+          );
+          for (const id of photos) void store.media(id).catch(() => {});
+        }
+        if (canceled) return;
+        if (localStorage.getItem(`arbigo:mute:${p.id}`) === null)
+          localStorage.setItem(`arbigo:mute:${p.id}`, String(!p.preferences.soundEnabled));
+        setProfile(p);
+        setOnline(navigator.onLine);
+        await refresh();
+        setReady(true);
+        void sync();
+        if ('serviceWorker' in navigator) await navigator.serviceWorker.register('/sw.js');
+      } catch (e) {
+        if (e instanceof ApiError && e.code === 'UNAUTHORIZED') {
+          localStorage.removeItem('arbigo:identity');
+          router.replace('/auth/login');
+          return;
+        }
+        setError(e instanceof Error ? e.message : 'Impossible de charger vos données.');
+        setReady(true);
+      }
+    }
+    void init();
+    const onOnline = () => {
+        setOnline(true);
+        void sync();
+      },
+      onOffline = () => setOnline(false);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    const interval = setInterval(() => void sync(), 15000);
+    return () => {
+      canceled = true;
+      clearInterval(interval);
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, [demo, refresh, sync, router]);
+  const dispatch = async (id: string, a: OperationInput) => {
+    try {
+      if (!storeRef.current) return;
+      await storeRef.current.dispatch(id, deviceId, a);
+      await refresh();
+      void sync();
+    } catch (e) {
+      setError(errorMessage(e));
+      throw e;
+    }
+  };
+  const create = async (input: MatchInput) => {
+    if (!storeRef.current) throw new Error('NOT_READY');
+    if (!navigator.onLine && !demo)
+      throw new Error('La création d’un match nécessite une connexion.');
+    const m = demo
+      ? createMatch(input, inventory.equipment, templates[input.practice])
+      : await api<Match>('matches', 'POST', input);
+    if (demo) m.outfits = structuredClone(inventory.outfits);
+    await storeRef.current.putMatch(m);
+    await refresh();
+    return m;
+  };
+  const saveInventory = async (inv: Inventory) => {
+    if (!demo) await api('inventory', 'PUT', inv);
+    await storeRef.current!.putInventory(inv);
+    setInventory(inv);
+  };
+  const transfer = async (m: Match) => {
+    if ((await storeRef.current!.pending()).some((o) => o.matchId === m.id))
+      throw new Error('Résolvez les actions locales avant de transférer.');
+    const next = await api<Match>(`tunnels/${m.id}/transfer`, 'POST', {
+      deviceId,
+      expectedVersion: m.version,
+    });
+    await storeRef.current!.putMatch(next);
+    await refresh();
+  };
+  const resolve = async (id: string) => {
+    const m = await api<Match>(`matches/${id}`);
+    await storeRef.current!.adoptServer(m);
+    setActiveId(m.status === 'ACTIVE' ? m.id : null);
+    await refresh();
+  };
+  const logout = async () => {
+    if (pending) throw new Error('Synchronisez ou résolvez vos actions avant de vous déconnecter.');
+    await storeRef.current?.clear();
+    localStorage.removeItem('arbigo:identity');
+    if ('caches' in window)
+      for (const name of await caches.keys())
+        if (name.startsWith('arbigo')) await caches.delete(name);
+    await signOut({ callbackUrl: '/auth/login' });
+  };
+  return (
+    <AppContext
+      value={{
+        matches,
+        inventory,
+        profile,
+        deviceId,
+        ready,
+        online,
+        pending,
+        error,
+        setError,
+        tab,
+        setTab,
+        activeId,
+        setActiveId,
+        demo,
+        conflicts,
+        dispatch,
+        create,
+        saveInventory,
+        sync,
+        transfer,
+        resolve,
+        logout,
+        store: localStore,
+        refresh,
+      }}
+    >
+      {children}
+    </AppContext>
+  );
+}
