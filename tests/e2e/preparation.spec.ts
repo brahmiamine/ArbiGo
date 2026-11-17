@@ -63,6 +63,9 @@ test('no horizontal overflow and accessible dashboard at 320px', async ({ page }
 test('create match with free teams and optional stadium', async ({ page }) => {
   await page.goto('/demo');
   await page.getByRole('button', { name: 'Nouveau match', exact: true }).click();
+  await page.getByRole('button', { name: 'Football à 8' }).click();
+  await expect(page.getByText(/Foot à 8 : précisez la catégorie/)).toBeVisible();
+  await expect(page.getByText(/modèle de préparation en brouillon/)).toBeVisible();
   await page.getByLabel('Équipe domicile').fill('Mon équipe libre');
   await page.getByLabel('Équipe visiteuse').fill('Équipe invitée');
   await page.getByLabel('Date', { exact: true }).fill('2026-12-12');
@@ -73,4 +76,6 @@ test('create match with free teams and optional stadium', async ({ page }) => {
     .getByRole('button', { name: 'Mes matchs' })
     .click();
   await expect(page.getByText('Mon équipe libre', { exact: true })).toBeVisible();
+  await page.locator('.match-card').first().click();
+  await expect(page.getByText('Modèle en brouillon', { exact: true })).toBeVisible();
 });

@@ -12,6 +12,7 @@ Plan : docs/superpowers/plans/2026-11-17-arbigo-v1.md. Cahier original conservé
 - Résolution de l’environnement de recette : MariaDB Docker partagée avec schéma de test séparé, relais SMTP isolé et Chromium installés ; 28 tests d’intégration et 5 tests E2E réussis.
 - Préversion déployée sur le VPS, schéma dédié `arbigo`, domaine HTTPS via Caddy partagé ; worker, monitor, SMTP, VAPID et sauvegarde chiffrée vérifiés.
 - La production a révélé puis corrigé l’import ESM du worker `web-push` sous Node 24 ; le smoke test de démarrage est désormais exécuté en CI et au build Docker.
+- Le statut « Modèle en brouillon » est visible sur le détail du match ; le formulaire demande de préciser la catégorie pour foot à 8 et futsal sans bloquer l’enregistrement de la préversion.
 - Restent nécessaires avant l’ouverture publique : identité/contact de l’exploitant (reportés à plus tard), validation des profils 11/8/futsal, restauration isolée de sauvegarde, et tests de Push sur appareils Android/iPhone.
 
 La recette décrit les critères vérifiés et non vérifiés ; aucune ligne de plan n’est réputée terminée uniquement sur la présence du code.

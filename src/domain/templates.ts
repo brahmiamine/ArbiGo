@@ -130,7 +130,7 @@ const make = (practice: Practice, steps: Step[], status: Template['status']): Te
   practice,
   season: '2026/27',
   version: 1,
-  organizer: 'District Paris — profil de préparation',
+  organizer: 'Profil de préparation — organisateur à confirmer',
   status,
   sources: [
     'FFF/CFA — Compte à rebours avant-match',

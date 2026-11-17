@@ -386,6 +386,9 @@ export function MatchDetail({ match: m }: { match: Match }) {
       )}
       <div className="detail-banner">
         <Badge>{practiceLabels[m.practice]}</Badge>
+        <Badge tone={m.template.status === 'VERIFIED' ? 'green' : 'amber'}>
+          {m.template.status === 'VERIFIED' ? 'Modèle vérifié' : 'Modèle en brouillon'}
+        </Badge>
         <h1>
           {m.homeTeam}
           <span>vs</span>
@@ -395,6 +398,11 @@ export function MatchDetail({ match: m }: { match: Match }) {
           {dateLabel(m)} · {formatTime(m.kickoffAt, m.timezone)} ·{' '}
           {m.stadium || 'Stade non précisé'}
         </p>
+        {m.template.status === 'DRAFT' && (
+          <p>
+            Ce parcours est un repère de préparation à vérifier pour la catégorie et la compétition.
+          </p>
+        )}
       </div>
       <div className="dashboard-grid">
         <section className="panel">

@@ -12,6 +12,7 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
   const local = initial ? localDateParts(initial.kickoffAt, initial.timezone) : undefined;
   const [busy, setBusy] = useState(false),
     [practice, setPractice] = useState<Practice>(initial?.practice ?? 'FOOT_11'),
+    [category, setCategory] = useState(initial?.category ?? ''),
     [failure, setFailure] = useState('');
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -128,7 +129,8 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
           Catégorie <span className="optional">facultatif</span>
           <input
             name="category"
-            defaultValue={initial?.category}
+            value={category}
+            onChange={(event) => setCategory(event.currentTarget.value)}
             list="categories"
             maxLength={100}
           />
@@ -140,9 +142,21 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
           </datalist>
         </label>
       </div>
+      {practice === 'FOOT_8' && !category.trim() && (
+        <Notice>
+          Foot à 8 : précisez la catégorie pour identifier le cadre applicable. Ce profil reste un
+          brouillon générique tant que ses variantes ne sont pas vérifiées.
+        </Notice>
+      )}
+      {practice === 'FUTSAL' && !category.trim() && (
+        <Notice>
+          Futsal : la catégorie et les consignes de l’organisateur peuvent modifier le parcours. Ce
+          profil reste un brouillon tant que les textes applicables ne sont pas vérifiés.
+        </Notice>
+      )}
       <Notice>
-        Les parcours sont des aides de préparation. Leur validation documentaire pour la saison et
-        la compétition reste à effectuer avant lancement officiel.
+        Ce parcours est un modèle de préparation en brouillon, pas une validation officielle. Sa
+        conformité à la saison, à la catégorie et à la compétition reste à vérifier.
       </Notice>
       {failure && (
         <p className="form-error" role="alert">
