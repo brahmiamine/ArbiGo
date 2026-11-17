@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import sharp from 'sharp';
 
 const mailpit = process.env.E2E_MAILPIT_URL;
 test.skip(!mailpit, 'Requires the isolated SMTP inbox configured in CI.');
@@ -42,7 +43,10 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Créer mon compte' }).click();
-  await expect(page.getByText(/un e-mail de confirmation vous sera envoyé/)).toBeVisible();
+  await expect(
+    page.getByText(/un e-mail de confirmation vous sera envoyé/),
+    await page.locator('body').innerText(),
+  ).toBeVisible();
   await page.goto('/auth/login');
   await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe', { exact: true }).fill(password);
@@ -69,6 +73,34 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   expect(exported.account.email).toBe(email);
   expect(exported.account).not.toHaveProperty('passwordHash');
   expect(exported.matches).toHaveLength(1);
+  const origin = new URL(page.url()).origin;
+  const photo = await page.request.post('/api/media', {
+    headers: { Origin: origin },
+    multipart: {
+      file: {
+        name: 'test.png',
+        mimeType: 'image/png',
+        buffer: await sharp({
+          create: { width: 32, height: 32, channels: 3, background: '#003287' },
+        })
+          .png()
+          .toBuffer(),
+      },
+    },
+  });
+  expect(photo.ok()).toBe(true);
+  const asset = (await photo.json()).data;
+  expect((await page.request.get(`/api/media/${asset.id}`)).headers()['content-type']).toBe(
+    'image/webp',
+  );
+  expect((await request.get(`${origin}/api/media/${asset.id}`)).status()).toBe(401);
+  const invalidPhoto = await page.request.post('/api/media', {
+    headers: { Origin: origin },
+    multipart: {
+      file: { name: 'fake.png', mimeType: 'image/png', buffer: Buffer.from('not an image') },
+    },
+  });
+  expect(invalidPhoto.status()).toBe(403);
   await page.goto('/auth/forgot');
   await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByRole('button', { name: 'Recevoir le lien' }).click();
@@ -88,6 +120,6 @@ test('real account: SMTP verification, authentication, match, reset, export and 
     headers: { Origin: new URL(page.url()).origin },
     data: { password: nextPassword },
   });
-  expect(deleted.ok()).toBe(true);
+  expect(deleted.ok(), await deleted.text()).toBe(true);
   expect((await page.request.get('/api/me')).status()).toBe(401);
 });

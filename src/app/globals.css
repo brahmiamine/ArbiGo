@@ -2748,3 +2748,11 @@ select {
 .hero .gold {
   color: var(--gold);
 }
+
+.step-title > .badge,
+.adjacent-step .badge,
+.review-steps .badge {
+  white-space: normal;
+  max-width: 140px;
+  text-align: center;
+}

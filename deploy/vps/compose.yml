@@ -1,0 +1,70 @@
+name: arbigo
+services:
+  migrate:
+    build: ../..
+    image: arbigo:local
+    env_file: /home/debian/deploy/arbigo/migration.env
+    command:
+      [
+        sh,
+        -c,
+        './node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/tsx prisma/seed.ts',
+      ]
+    networks: [proxy]
+    restart: 'no'
+  web:
+    image: arbigo:local
+    container_name: arbigo-web
+    restart: unless-stopped
+    env_file:
+      - /home/debian/deploy/shared/smtp.env
+      - /home/debian/deploy/arbigo/.env
+    volumes: [media:/app/data/media]
+    networks: [proxy]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: '3' }
+  worker:
+    image: arbigo:local
+    container_name: arbigo-worker
+    restart: unless-stopped
+    env_file: /home/debian/deploy/arbigo/.env
+    command: [./node_modules/.bin/tsx, scripts/worker.ts]
+    networks: [proxy]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "const fs=require('fs');process.exit(Date.now()-fs.statSync('/tmp/arbigo-worker-heartbeat').mtimeMs<60000?0:1)",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: '3' }
+volumes:
+  media:
+networks:
+  proxy:
+    external: true
+    name: clubika_internal

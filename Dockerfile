@@ -1,10 +1,12 @@
 FROM node:24-bookworm-slim AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN npm run db:generate && npm run format:check && npm run lint && npm test && npm run build
+RUN find .next/standalone -maxdepth 1 -name '.env*' -delete
 FROM node:24-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000

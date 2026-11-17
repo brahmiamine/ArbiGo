@@ -27,7 +27,7 @@ import { useApp } from '../app-provider';
 import { Badge, Button, Modal, Notice, Progress } from '@/components/ui';
 import type { Match, Step, Control, OperationInput, KitColors } from '@/domain/types';
 import { countdown, formatTime, scheduledAt } from '@/domain/time';
-import { summarize, activeStage } from '@/domain/match';
+import { summarize, activeStage, stageStatus } from '@/domain/match';
 import { warmupPhases } from '@/domain/templates';
 import { elapsedWarmup } from '@/domain/warmup';
 import { rankOutfits, palette, previousTeamColors } from '@/domain/equipment';
@@ -54,6 +54,11 @@ function Countdown({ target, label }: { target: string; label: string }) {
       <strong>{countdown(target, now)}</strong>
     </div>
   );
+}
+function StepStatusBadge({ match, step }: { match: Match; step: Step }) {
+  const now = useNow();
+  const status = stageStatus(match, step, now);
+  return <Badge tone={status.tone}>{status.label}</Badge>;
 }
 function beep(muted: boolean) {
   if (muted) return;
@@ -93,8 +98,14 @@ export function Tunnel({ match: m }: { match: Match }) {
     setBusy(true);
     try {
       await app.dispatch(m.id, a);
-      if (['COMPLETE', 'ANSWER'].includes(a.type)) beep(muted);
+      if (
+        ['COMPLETE', 'ANSWER', 'KICKOFF'].includes(a.type) ||
+        (a.type === 'WARMUP' && a.command === 'FINISH')
+      )
+        beep(muted);
+      return true;
     } catch {
+      return false;
     } finally {
       setBusy(false);
     }
@@ -188,11 +199,7 @@ export function Tunnel({ match: m }: { match: Match }) {
         >
           <ChevronUp size={20} />
           <span>{previous ? previous.title : 'Début de votre préparation'}</span>
-          {previous && (
-            <Badge tone={m.runs[previous.code].completedAt ? 'green' : 'gray'}>
-              {m.runs[previous.code].completedAt ? 'Validée' : 'Non validée'}
-            </Badge>
-          )}
+          {previous && <StepStatusBadge match={m} step={previous} />}
         </button>
         <section
           className="step-card"
@@ -228,7 +235,7 @@ export function Tunnel({ match: m }: { match: Match }) {
               <div className="eyebrow">VOTRE AVANT-MATCH, PAS À PAS</div>
               <h1>{step.title}</h1>
             </div>
-            {m.runs[step.code].completedAt && <Badge tone="green">Validée</Badge>}
+            <StepStatusBadge match={m} step={step} />
           </div>
           <p className="step-description">{step.description}</p>
           <fieldset className="step-fieldset" disabled={readonly || busy}>
@@ -390,11 +397,12 @@ export function Tunnel({ match: m }: { match: Match }) {
             onSubmit={async (e: FormEvent<HTMLFormElement>) => {
               e.preventDefault();
               const d = new FormData(e.currentTarget);
-              await act({
+              const closed = await act({
                 type: 'CLOSE',
                 reason: String(d.get('reason')) as 'CANCELED' | 'POSTPONED' | 'OTHER',
                 comment: String(d.get('comment')),
               });
+              if (!closed) return;
               setClosing(false);
               app.setActiveId(null);
             }}
@@ -440,7 +448,7 @@ function CheckControl({
   match: Match;
   step: Step;
   control: Control;
-  act: (a: OperationInput) => Promise<void>;
+  act: (a: OperationInput) => Promise<boolean>;
 }) {
   const answer = m.runs[step.code].answers[control.code];
   const [problem, setProblem] = useState(false),
@@ -507,7 +515,7 @@ function CheckControl({
             onSubmit={async (e) => {
               e.preventDefault();
               const d = new FormData(e.currentTarget);
-              await act({
+              const recorded = await act({
                 type: 'ANSWER',
                 stepCode: step.code,
                 controlCode: control.code,
@@ -516,7 +524,7 @@ function CheckControl({
                 comment: String(d.get('comment')),
                 photoId,
               });
-              setProblem(false);
+              if (recorded) setProblem(false);
             }}
           >
             <p>{control.label}</p>
@@ -570,7 +578,7 @@ function CheckControl({
     </div>
   );
 }
-function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<void> }) {
+function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<boolean> }) {
   const { matches } = useApp();
   const suggestions = previousTeamColors(matches, m);
   const [colors, setColors] = useState<KitColors>(m.colors),
@@ -684,7 +692,7 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
     </div>
   );
 }
-function Warmup({ m, act }: { m: Match; act: (a: OperationInput) => Promise<void> }) {
+function Warmup({ m, act }: { m: Match; act: (a: OperationInput) => Promise<boolean> }) {
   const now = useNow();
   const [index, setIndex] = useState(() =>
     Math.max(
@@ -769,7 +777,7 @@ function Warmup({ m, act }: { m: Match; act: (a: OperationInput) => Promise<void
     </div>
   );
 }
-function FinalReview({ m, act }: { m: Match; act: (a: OperationInput) => Promise<void> }) {
+function FinalReview({ m, act }: { m: Match; act: (a: OperationInput) => Promise<boolean> }) {
   const summary = summarize(m);
   const [ack, setAck] = useState(false);
   const app = useApp();
@@ -790,9 +798,7 @@ function FinalReview({ m, act }: { m: Match; act: (a: OperationInput) => Promise
               onClick={() => void act({ type: 'NAVIGATE', index: i })}
             >
               <span>{s.title}</span>
-              <Badge tone={m.runs[s.code].completedAt ? 'green' : 'amber'}>
-                {m.runs[s.code].completedAt ? 'Validée' : 'Non validée'}
-              </Badge>
+              <StepStatusBadge match={m} step={s} />
             </button>
           ))}
       </div>
@@ -809,8 +815,7 @@ function FinalReview({ m, act }: { m: Match; act: (a: OperationInput) => Promise
       <Button
         disabled={!ack}
         onClick={async () => {
-          await act({ type: 'KICKOFF', acknowledged: ack });
-          app.setActiveId(null);
+          if (await act({ type: 'KICKOFF', acknowledged: ack })) app.setActiveId(null);
         }}
       >
         <Flag size={18} />

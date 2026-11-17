@@ -226,6 +226,30 @@ export function activeStage(match: Match) {
     next: match.template.steps[Math.min(activeIndex + 1, match.template.steps.length - 1)],
   };
 }
+export function stageStatus(match: Match, step: Template['steps'][number], now = Date.now()) {
+  const run = match.runs[step.code];
+  if (run.completedAt) {
+    if (match.issues.some((issue) => issue.stepCode === step.code && issue.status !== 'RESOLVED'))
+      return { label: 'Validée avec anomalie à suivre', tone: 'amber' as const };
+    if (
+      step.controls.length &&
+      step.controls.every((control) => run.answers[control.code]?.value === 'NA')
+    )
+      return { label: 'Sans objet', tone: 'gray' as const };
+    return { label: 'Validée', tone: 'green' as const };
+  }
+  if (!['DRAFT', 'ACTIVE'].includes(match.status))
+    return { label: 'Non validée', tone: 'gray' as const };
+  if (now > Date.parse(match.kickoffAt) + step.offset * 60000)
+    return { label: 'En retard · non validée', tone: 'amber' as const };
+  if (
+    Object.keys(run.answers).length ||
+    (step.kind === 'arrival' && match.startedAt) ||
+    (step.kind === 'warmup' && match.warmup.some((phase) => phase.status !== 'IDLE'))
+  )
+    return { label: 'En cours', tone: 'blue' as const };
+  return { label: 'À venir', tone: 'gray' as const };
+}
 export function createRematch(match: Match, kickoffAt: string) {
   if (match.status !== 'POSTPONED') throw new Error('NOT_POSTPONED');
   const next = createMatch({ ...match, kickoffAt }, match.bag, match.template);

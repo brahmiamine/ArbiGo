@@ -22,6 +22,8 @@ export function MediaPhoto({ id, alt }: { id: string; alt: string }) {
     };
   }, [store, id]);
   return url ? (
+    // Private photos use account-scoped offline Blob URLs, already resized on upload.
+    // eslint-disable-next-line @next/next/no-img-element
     <img src={url} alt={alt} className="equipment-photo" loading="lazy" />
   ) : (
     <span

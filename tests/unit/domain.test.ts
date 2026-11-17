@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { createMatch, applyOperation, summarize, createRematch, activeStage } from '@/domain/match';
+import {
+  createMatch,
+  applyOperation,
+  summarize,
+  createRematch,
+  activeStage,
+  stageStatus,
+} from '@/domain/match';
 import { templates } from '@/domain/templates';
 import { defaultEquipment, rankOutfits, previousTeamColors } from '@/domain/equipment';
 import { parseLocalKickoff, scheduledAt, countdown } from '@/domain/time';
@@ -33,6 +40,30 @@ const op = (m: Match, action: OperationInput): Operation => ({
 const act = (m: Match, action: OperationInput) => applyOperation(m, op(m, action));
 
 describe('match preparation', () => {
+  it('keeps unresolved anomalies visible on completed stages and distinguishes whole-stage NA', () => {
+    let m = act(fresh(), { type: 'START' });
+    const pitch = m.template.steps.find((s) => s.code === 'pitch')!;
+    for (const control of pitch.controls)
+      m = act(m, {
+        type: 'ANSWER',
+        stepCode: pitch.code,
+        controlCode: control.code,
+        value: control.code === 'goals' ? 'PROBLEM' : 'OK',
+        reason: control.code === 'goals' ? 'Danger' : undefined,
+      });
+    m = act(m, { type: 'COMPLETE', stepCode: pitch.code });
+    expect(stageStatus(m, pitch).label).toBe('Validée avec anomalie à suivre');
+    const captains = m.template.steps.find((s) => s.code === 'captains')!;
+    for (const control of captains.controls)
+      m = act(m, {
+        type: 'ANSWER',
+        stepCode: captains.code,
+        controlCode: control.code,
+        value: 'NA',
+      });
+    m = act(m, { type: 'COMPLETE', stepCode: captains.code });
+    expect(stageStatus(m, captains).label).toBe('Sans objet');
+  });
   it('keeps the next scheduled deadline independent from the displayed card', () => {
     let m = act(fresh(), { type: 'START' });
     const deadline = activeStage(m).next;

@@ -1,0 +1,4 @@
+arbigo.clubika.com {
+	encode gzip zstd
+	reverse_proxy arbigo-web:3000
+}

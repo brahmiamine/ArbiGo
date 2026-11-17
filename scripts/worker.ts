@@ -3,6 +3,7 @@ import webpush from 'web-push';
 import { db } from '../src/lib/db';
 import { shouldNotify } from '../src/server/notifications';
 import type { Match } from '../src/domain/types';
+import { writeFile } from 'node:fs/promises';
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY)
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT ?? 'mailto:admin@example.fr',
@@ -106,6 +107,7 @@ async function tick() {
 while (!stopped) {
   try {
     await tick();
+    await writeFile('/tmp/arbigo-worker-heartbeat', String(Date.now()));
   } catch (error) {
     console.error('[worker]', error instanceof Error ? error.name : 'UnknownError');
   }
