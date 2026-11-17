@@ -9,9 +9,12 @@ import {
   AlertTriangle,
   Volume2,
   RefreshCw,
+  Pencil,
 } from 'lucide-react';
 import { useApp } from './app-provider';
 import { api } from '@/lib/api';
+import { ProfileAvatar } from './media';
+import { ProfileEditor, BriefingEditor } from './profile-settings';
 import { Button, Badge, Notice, Modal, PageHeader } from '@/components/ui';
 export function Profile() {
   const app = useApp();
@@ -22,7 +25,9 @@ export function Profile() {
     [sound, setSound] = useState(app.profile?.preferences.soundEnabled ?? true),
     [push, setPush] = useState(false),
     [deleting, setDeleting] = useState(false),
-    [deleteBusy, setDeleteBusy] = useState(false);
+    [deleteBusy, setDeleteBusy] = useState(false),
+    [editing, setEditing] = useState(false),
+    [briefings, setBriefings] = useState(false);
   useEffect(() => {
     if (!app.demo && app.online)
       void api<typeof devices>('devices')
@@ -79,9 +84,21 @@ export function Profile() {
       <PageHeader title="Profil" />
       <div className="profile-grid">
         <section className="panel profile-account">
-          <div className="avatar large">{app.profile?.name[0]}</div>
-          <h2>{app.profile?.name}</h2>
-          <p className="muted">{app.profile?.email}</p>
+          <div className="profile-identity">
+            <ProfileAvatar
+              name={app.profile?.name ?? ''}
+              photoId={app.profile?.preferences.avatarPhotoId}
+              large
+            />
+            <div>
+              <h2>{app.profile?.name}</h2>
+              <p className="muted">{app.profile?.email}</p>
+            </div>
+          </div>
+          <Button variant="secondary" onClick={() => setEditing(true)}>
+            <Pencil size={17} />
+            Modifier mon profil
+          </Button>
           <hr />
           <div className="setting">
             <CloudCheck />
@@ -110,6 +127,13 @@ export function Profile() {
           </Button>
         </section>
         <section className="panel">
+          <h2>Mes consignes</h2>
+          <Button variant="secondary" onClick={() => setBriefings(true)}>
+            <Pencil size={17} />
+            Modifier les consignes
+          </Button>
+        </section>
+        <section className="panel">
           <h2>Avant et pendant la rencontre</h2>
           <div className="setting">
             <Volume2 />
@@ -124,11 +148,15 @@ export function Profile() {
               onChange={async (e) => {
                 const enabled = e.target.checked;
                 setSound(enabled);
-                localStorage.setItem(`arbigo:mute:${app.profile?.id}`, String(!enabled));
-                if (!app.demo && app.profile)
-                  await api('me', 'PATCH', {
-                    preferences: { ...app.profile.preferences, soundEnabled: enabled },
-                  }).catch((e) => setMessage(e.message));
+                await app
+                  .updateProfile({ preferences: { soundEnabled: enabled } })
+                  .then(() => {
+                    localStorage.setItem(`arbigo:mute:${app.profile?.id}`, String(!enabled));
+                  })
+                  .catch((e) => {
+                    setSound(!enabled);
+                    setMessage(e.message);
+                  });
               }}
             />
           </div>
@@ -217,6 +245,16 @@ export function Profile() {
           )}
         </section>
       </div>
+      {editing && (
+        <Modal title="Modifier mon profil" onClose={() => setEditing(false)}>
+          <ProfileEditor onDone={() => setEditing(false)} />
+        </Modal>
+      )}
+      {briefings && (
+        <Modal title="Mes consignes" onClose={() => setBriefings(false)}>
+          <BriefingEditor onDone={() => setBriefings(false)} />
+        </Modal>
+      )}
       {deleting && (
         <Modal title="Supprimer mon compte" onClose={() => !deleteBusy && setDeleting(false)}>
           <form

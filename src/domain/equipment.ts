@@ -9,7 +9,7 @@ export function defaultEquipment(): Equipment[] {
     ['socks', 'Chaussettes noires', 'SOCKS', 'noir'],
     ['shoes', 'Chaussures de terrain', 'SHOES', 'noir'],
     ['match-sheet', 'Feuille de match papier (remplace la FMI)', 'TOOL', ''],
-    ['match-notes', 'Feuille de notes (cartons, buts, incidents)', 'TOOL', ''],
+    ['match-notes', 'Feuille de notes', 'TOOL', ''],
     ['badge', 'Écusson', 'TOOL', ''],
     ['watch', 'Montre / chronomètre', 'TOOL', ''],
     ['whistle', 'Sifflet et sifflet de secours', 'TOOL', ''],
@@ -28,10 +28,22 @@ export function defaultEquipment(): Equipment[] {
     active: true,
   }));
 }
-export const INVENTORY_CATALOG_VERSION = 2;
+export const INVENTORY_CATALOG_VERSION = 3;
+export function equipmentLabel(label: string) {
+  return label === 'Feuille de notes (cartons, buts, incidents)' ? 'Feuille de notes' : label;
+}
 /** One-time update of stock suggestions; personal articles and archived match bags stay independent. */
 export function upgradeInventory(inventory: Inventory): Inventory {
   if ((inventory.catalogVersion ?? 0) >= INVENTORY_CATALOG_VERSION) return inventory;
+  if ((inventory.catalogVersion ?? 0) >= 2)
+    return {
+      ...inventory,
+      catalogVersion: INVENTORY_CATALOG_VERSION,
+      equipment: inventory.equipment.map((item) => ({
+        ...item,
+        label: equipmentLabel(item.label),
+      })),
+    };
   const blue = inventory.equipment.find(
     (i) =>
       i.id === 'shirt-blue' &&
@@ -41,7 +53,9 @@ export function upgradeInventory(inventory: Inventory): Inventory {
       i.colors[0] === 'bleu' &&
       !i.photoId,
   );
-  const equipment = inventory.equipment.filter((i) => i !== blue).map((i) => structuredClone(i));
+  const equipment = inventory.equipment
+    .filter((i) => i !== blue)
+    .map((i) => ({ ...structuredClone(i), label: equipmentLabel(i.label) }));
   for (const item of defaultEquipment().filter((i) =>
     [
       'shirt-yellow',

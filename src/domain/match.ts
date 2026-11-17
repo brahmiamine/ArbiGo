@@ -89,6 +89,12 @@ export function applyOperation(match: Match, op: Operation): Match {
       item.packed = a.packed;
       break;
     }
+    case 'SELECT_SHIRT': {
+      if (!m.bag.some((item) => item.id === a.itemId && item.type === 'SHIRT'))
+        throw new Error('SHIRT_UNAVAILABLE');
+      m.selectedShirtId = a.itemId;
+      break;
+    }
     case 'ANSWER': {
       const step = m.template.steps.find((s) => s.code === a.stepCode);
       const control = step?.controls.find((c) => c.code === a.controlCode);

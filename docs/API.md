@@ -49,11 +49,15 @@ Erreur : `{ "error": { "code": "...", "message": "..." }, "serverTime": "ISO UTC
 }
 ```
 
-Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `NAVIGATE`, `BAG`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
+Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `NAVIGATE`, `BAG`, `SELECT_SHIRT`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
 
 `BRIEFING` prend `stepCode: "captains" | "assistants"`. Une confirmation marque atomiquement les consignes données : les réponses manquantes du snapshot sont renseignées et l’étape est terminée, sans navigation. Les anciennes réponses et anomalies restent conservées. L’action respecte les mêmes contrôles de propriété de l’appareil, version et idempotence que les autres commandes du tunnel.
 
 L’interface de tenues est retirée. Les anciens assemblages et sélections restent présents dans les données et exports ; une action `COLORS` sans `selectedOutfitId` conserve l’ancienne sélection. La suggestion actuelle du maillot utilise uniquement les articles du sac et les couleurs des équipes.
+
+`SELECT_SHIRT` prend `itemId` et enregistre `selectedShirtId` dans la rencontre active. L’article doit être un maillot du sac ; le choix ne coche pas le sac et ne valide pas une étape. Les contrôles d’appareil propriétaire, version et idempotence s’appliquent.
+
+`PATCH /api/me` accepte un nom et des préférences partielles. `avatarPhotoId` est un UUID de média appartenant au compte, ou `null` pour retirer la photo. `briefings` accepte séparément `captains`, `assistants` et `futsalOfficials`, chacun limité à 5 000 caractères non vides. Les champs omis restent conservés, y compris dans les préférences imbriquées. La réponse contient le profil actualisé. Ces données sont comprises dans l’export personnel et la suppression du compte ; aucune migration SQL n’est nécessaire.
 
 Des routes explicites partagent le même contrat `Operation` : `/bag`, `/tunnel/start`, `/steps/{code}/responses`, `/steps/{code}/complete`, `/kickoff`, `/close-without-kickoff`, `/notes` sous un match. L’interface utilise principalement le batch pour unifier parcours connecté et hors ligne. Les routes CRUD unitaires d’équipement proposées dans le cahier ne sont pas exposées : l’écriture d’inventaire est groupée et validée.
 

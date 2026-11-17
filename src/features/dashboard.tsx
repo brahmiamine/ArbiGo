@@ -17,6 +17,7 @@ import { Button, Badge, Modal, Progress, Empty, PageHeader } from '@/components/
 import { MatchForm } from './matches/match-form';
 import { EquipmentImage } from './media';
 import { MatchCountdown } from '@/components/match-countdown';
+import { equipmentLabel } from '@/domain/equipment';
 import { practiceLabels } from '@/domain/templates';
 import { formatTime } from '@/domain/time';
 import type { Match } from '@/domain/types';
@@ -387,7 +388,7 @@ export function MatchDetail({ match: m }: { match: Match }) {
                   <Check size={15} />
                 </span>
                 <EquipmentImage item={item} />
-                <span className="bag-item-label">{item.label}</span>
+                <span className="bag-item-label">{equipmentLabel(item.label)}</span>
               </label>
             ))}
           </div>

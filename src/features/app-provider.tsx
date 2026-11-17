@@ -24,13 +24,14 @@ import { api, ApiError } from '@/lib/api';
 import { createMatch } from '@/domain/match';
 import { templates } from '@/domain/templates';
 import { defaultEquipment, upgradeInventory, INVENTORY_CATALOG_VERSION } from '@/domain/equipment';
+import { mergePreferences, type ProfilePatch, type ProfilePreferences } from '@/domain/profile';
 import { signOut } from 'next-auth/react';
 import type { Match, MatchInput, Inventory, OperationInput } from '@/domain/types';
 interface Profile {
   id: string;
   name: string;
   email: string;
-  preferences: { soundEnabled: boolean; pushEnabled: boolean; timezone: string; locale: 'fr' };
+  preferences: ProfilePreferences;
   vapidPublicKey: string;
 }
 interface AppContextType {
@@ -56,6 +57,7 @@ interface AppContextType {
   dispatch: (id: string, a: OperationInput) => Promise<void>;
   create: (i: MatchInput) => Promise<Match>;
   saveInventory: (v: Inventory) => Promise<void>;
+  updateProfile: (patch: ProfilePatch) => Promise<void>;
   sync: () => Promise<void>;
   transfer: (m: Match) => Promise<void>;
   resolve: (id: string) => Promise<void>;
@@ -71,6 +73,10 @@ export function useApp() {
 }
 export function AppProvider({ children, demo = false }: { children: ReactNode; demo?: boolean }) {
   const router = useRouter();
+  const profileRef = useRef<Profile | null>(null);
+  const profileWrites = useRef<Promise<void>>(Promise.resolve());
+  const loggingOut = useRef(false);
+  const profileEpoch = useRef(0);
   const [localStore, setLocalStore] = useState<LocalStore | null>(null);
   const [matches, setMatches] = useState<Match[]>([]),
     [inventory, setInventory] = useState<Inventory>({ equipment: [], outfits: [] }),
@@ -213,6 +219,10 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
             },
             vapidPublicKey: '',
           };
+          try {
+            const saved = JSON.parse(localStorage.getItem('arbigo:demo-profile') ?? 'null');
+            if (saved?.id === 'demo') p = saved;
+          } catch {}
         } else if (navigator.onLine) {
           p = await api<Profile>('me');
           localStorage.setItem('arbigo:identity', JSON.stringify(p));
@@ -277,11 +287,14 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
           );
           for (const id of photos) void store.media(id).catch(() => {});
         }
+        if (p.preferences.avatarPhotoId)
+          void store.media(p.preferences.avatarPhotoId).catch(() => {});
         const storedInventory = await store.inventory();
         if (storedInventory) await store.putInventory(upgradeInventory(storedInventory));
         if (canceled) return;
         if (localStorage.getItem(`arbigo:mute:${p.id}`) === null)
           localStorage.setItem(`arbigo:mute:${p.id}`, String(!p.preferences.soundEnabled));
+        profileRef.current = p;
         setProfile(p);
         setOnline(navigator.onLine);
         await refresh();
@@ -313,6 +326,7 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     const interval = setInterval(() => void sync(), 15000);
     return () => {
       canceled = true;
+      profileEpoch.current += 1;
       clearInterval(interval);
       window.removeEventListener('online', onOnline);
       window.removeEventListener('offline', onOffline);
@@ -347,6 +361,30 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     await storeRef.current!.putInventory(saved);
     setInventory(saved);
   };
+  const updateProfile = (patch: ProfilePatch) => {
+    if (loggingOut.current) return Promise.reject(new Error('La déconnexion est en cours.'));
+    const epoch = profileEpoch.current;
+    const write = profileWrites.current.then(async () => {
+      const current = profileRef.current;
+      if (!current) throw new Error('NOT_READY');
+      if (!demo && !navigator.onLine) throw new Error('Connectez-vous pour modifier votre profil.');
+      const next: Profile = demo
+        ? {
+            ...current,
+            ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
+            preferences: mergePreferences(current.preferences, patch.preferences),
+          }
+        : await api<Profile>('me', 'PATCH', patch);
+      if (epoch !== profileEpoch.current) return;
+      localStorage.setItem(demo ? 'arbigo:demo-profile' : 'arbigo:identity', JSON.stringify(next));
+      profileRef.current = next;
+      setProfile(next);
+      if (next.preferences.avatarPhotoId)
+        void storeRef.current?.media(next.preferences.avatarPhotoId).catch(() => {});
+    });
+    profileWrites.current = write.catch(() => {});
+    return write;
+  };
   const transfer = async (m: Match) => {
     if ((await storeRef.current!.pending()).some((o) => o.matchId === m.id))
       throw new Error('Résolvez les actions locales avant de transférer.');
@@ -365,12 +403,21 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
   };
   const logout = async () => {
     if (pending) throw new Error('Synchronisez ou résolvez vos actions avant de vous déconnecter.');
-    await storeRef.current?.clear();
-    localStorage.removeItem('arbigo:identity');
-    if ('caches' in window)
-      for (const name of await caches.keys())
-        if (name.startsWith('arbigo')) await caches.delete(name);
-    await signOut({ callbackUrl: '/auth/login' });
+    loggingOut.current = true;
+    try {
+      await profileWrites.current;
+      await storeRef.current?.clear();
+      localStorage.removeItem('arbigo:identity');
+      if (demo) localStorage.removeItem('arbigo:demo-profile');
+      if ('caches' in window)
+        for (const name of await caches.keys())
+          if (name.startsWith('arbigo')) await caches.delete(name);
+      await signOut({ redirect: false });
+      router.replace('/auth/login');
+    } catch (error) {
+      loggingOut.current = false;
+      throw error;
+    }
   };
   return (
     <AppContext
@@ -397,6 +444,7 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
         dispatch,
         create,
         saveInventory,
+        updateProfile,
         sync,
         transfer,
         resolve,

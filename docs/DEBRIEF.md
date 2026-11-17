@@ -28,6 +28,6 @@ L’OCR s’exécute sur l’appareil avec Tesseract.js, en français et en angl
 
 Les images sont limitées à 10 Mo et la taille du canevas d’analyse est bornée. Une lecture dépassée par une autre sélection, un retrait ou une sortie du formulaire ne peut pas modifier le rapport.
 
-## Couleurs et tenue
+## Couleurs et maillot
 
-L’étape « Maillots et ballon » conserve le contrôle du ballon. Les couleurs et la tenue sont facultatives et enregistrées au clic, sans bouton de confirmation ni blocage de validation. Une tenue effectivement choisie doit toujours être présente dans le sac.
+L’étape « Maillots et ballon » conserve le contrôle du ballon. Les couleurs sont facultatives et enregistrées au clic. Avant la prise en charge de la feuille, le maillot conseillé s’affiche par défaut dans un carrousel permettant de choisir un autre maillot du sac. Le choix reste propre à la rencontre et indépendant des coches du sac.

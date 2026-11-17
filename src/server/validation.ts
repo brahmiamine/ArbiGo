@@ -10,6 +10,7 @@ export const actionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('DEBRIEF'), changes: debriefChangesSchema }),
   z.object({ type: z.literal('NAVIGATE'), index: z.number().int().min(0).max(30) }),
   z.object({ type: z.literal('BAG'), itemId: z.string().max(100), packed: z.boolean() }),
+  z.object({ type: z.literal('SELECT_SHIRT'), itemId: z.string().min(1).max(100) }),
   z.object({
     type: z.literal('ANSWER'),
     stepCode: z.string().max(40),
@@ -93,3 +94,23 @@ export const inventorySchema = z
         });
     }
   });
+
+export const profilePatchSchema = z.object({
+  name: z.string().trim().min(1).max(100).optional(),
+  preferences: z
+    .object({
+      soundEnabled: z.boolean().optional(),
+      pushEnabled: z.boolean().optional(),
+      timezone: z.string().max(100).optional(),
+      locale: z.literal('fr').optional(),
+      avatarPhotoId: z.uuid().nullable().optional(),
+      briefings: z
+        .object({
+          captains: z.string().trim().min(1).max(5000).optional(),
+          assistants: z.string().trim().min(1).max(5000).optional(),
+          futsalOfficials: z.string().trim().min(1).max(5000).optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+});

@@ -61,6 +61,69 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   await page.getByLabel('Mot de passe', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
   await expect(page).toHaveURL(/\/app$/);
+  await page.goto('/app?page=profile');
+  await page.getByRole('button', { name: 'Modifier mon profil', exact: true }).click();
+  await page.getByLabel('Nom', { exact: true }).fill('Arbitre personnalisé');
+  await page.getByLabel('Photo de profil', { exact: true }).setInputFiles({
+    name: 'portrait.png',
+    mimeType: 'image/png',
+    buffer: await sharp({ create: { width: 32, height: 32, channels: 3, background: '#003287' } })
+      .png()
+      .toBuffer(),
+  });
+  await expect(page.getByRole('button', { name: 'Retirer la photo', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Enregistrer mon profil', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.profile-account img')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Arbitre personnalisé', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Modifier les consignes', exact: true }).click();
+  await page
+    .getByLabel('Consignes aux capitaines', { exact: true })
+    .fill('Bonjour capitaines du compte réel.');
+  await page
+    .getByLabel('Consignes aux assistants', { exact: true })
+    .fill('Bonjour assistants du compte réel.');
+  await page.getByRole('button', { name: 'Enregistrer les consignes', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  const profileOrigin = new URL(page.url()).origin;
+  // Another client changes an untouched field while an editor is open.
+  await page.getByRole('button', { name: 'Modifier les consignes', exact: true }).click();
+  expect(
+    (
+      await page.request.patch('/api/me', {
+        headers: { Origin: profileOrigin },
+        data: { preferences: { briefings: { captains: 'Autre appareil : capitaines' } } },
+      })
+    ).ok(),
+  ).toBe(true);
+  await page
+    .getByLabel('Consignes aux assistants', { exact: true })
+    .fill('Mes assistants modifiés seuls');
+  await page.getByRole('button', { name: 'Enregistrer les consignes', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Modifier mon profil', exact: true }).click();
+  expect(
+    (
+      await page.request.patch('/api/me', {
+        headers: { Origin: profileOrigin },
+        data: { preferences: { avatarPhotoId: null } },
+      })
+    ).ok(),
+  ).toBe(true);
+  await page.getByLabel('Nom', { exact: true }).fill('Arbitre renommé');
+  await page.getByRole('button', { name: 'Enregistrer mon profil', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  const personal = (await (await page.request.get('/api/me')).json()).data;
+  expect(personal.name).toBe('Arbitre renommé');
+  expect(personal.preferences.avatarPhotoId).toBeNull();
+  expect(personal.preferences.briefings).toMatchObject({
+    captains: 'Autre appareil : capitaines',
+    assistants: 'Mes assistants modifiés seuls',
+  });
+  await page.goto('/app');
   await page.getByRole('button', { name: 'Nouveau match', exact: true }).click();
   await page.getByLabel('Équipe domicile').fill('Domicile SMTP');
   await page.getByLabel('Équipe visiteuse').fill('Visiteurs SMTP');
@@ -83,6 +146,7 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   const origin = new URL(page.url()).origin;
   for (const action of [
     { type: 'START' },
+    { type: 'SELECT_SHIRT', itemId: 'shirt-red' },
     { type: 'BRIEFING', stepCode: 'captains' },
     { type: 'BRIEFING', stepCode: 'assistants' },
     { type: 'KICKOFF', acknowledged: true },
@@ -119,6 +183,7 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   );
   expect(afterDebrief.matches[0].state.runs.captains.completedAt).toBeTruthy();
   expect(afterDebrief.matches[0].state.runs.assistants.completedAt).toBeTruthy();
+  expect(afterDebrief.matches[0].state.selectedShirtId).toBe('shirt-red');
   const photo = await page.request.post('/api/media', {
     headers: { Origin: origin },
     multipart: {
@@ -201,6 +266,38 @@ test('real account: SMTP verification, authentication, match, reset, export and 
     page.getByText('Mot de passe modifié. Reconnectez-vous.', { exact: true }),
   ).toBeVisible();
   await page.goto('/auth/login');
+  await page.getByLabel('Adresse e-mail').fill(email);
+  await page.getByLabel('Mot de passe', { exact: true }).fill(nextPassword);
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
+  await expect(page).toHaveURL(/\/app$/);
+  await expect(page.getByRole('heading', { name: 'Accueil', exact: true })).toBeVisible();
+  // A save finishing after the profile modal closes must not restore identity after logout.
+  await page.goto('/app?page=profile');
+  let releaseWrite!: () => void;
+  let enteredWrite!: () => void;
+  const heldWrite = new Promise<void>((resolve) => {
+    releaseWrite = resolve;
+  });
+  const entered = new Promise<void>((resolve) => {
+    enteredWrite = resolve;
+  });
+  await page.route('**/api/me', async (route) => {
+    if (route.request().method() === 'PATCH') {
+      enteredWrite();
+      await heldWrite;
+    }
+    await route.continue();
+  });
+  await page.getByRole('button', { name: 'Modifier mon profil', exact: true }).click();
+  await page.getByLabel('Nom', { exact: true }).fill('Nom sauvegardé avant déconnexion');
+  await page.getByRole('button', { name: 'Enregistrer mon profil', exact: true }).click();
+  await entered;
+  await page.getByRole('button', { name: 'Fermer', exact: true }).click();
+  await page.getByRole('button', { name: 'Se déconnecter', exact: true }).click();
+  releaseWrite();
+  await expect(page).toHaveURL(`${profileOrigin}/auth/login`);
+  expect(await page.evaluate(() => localStorage.getItem('arbigo:identity'))).toBeNull();
+  await page.unroute('**/api/me');
   await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe', { exact: true }).fill(nextPassword);
   await page.getByRole('button', { name: 'Se connecter', exact: true }).click();

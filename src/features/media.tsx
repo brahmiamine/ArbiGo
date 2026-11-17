@@ -5,6 +5,27 @@ import { useApp } from './app-provider';
 import { EquipmentArt } from '@/components/equipment-art';
 import type { Equipment } from '@/domain/types';
 
+export function ProfileAvatar({
+  name,
+  photoId,
+  large = false,
+}: {
+  name: string;
+  photoId?: string | null;
+  large?: boolean;
+}) {
+  const initial = name.trim().charAt(0).toLocaleUpperCase('fr') || '?';
+  return (
+    <span className={`avatar profile-avatar ${large ? 'large' : ''}`}>
+      {photoId ? (
+        <MediaPhoto key={photoId} id={photoId} alt={`Photo de ${name}`} fallback={initial} />
+      ) : (
+        initial
+      )}
+    </span>
+  );
+}
+
 export function EquipmentImage({ item }: { item: Equipment }) {
   const illustration = <EquipmentArt item={item} />;
   return (

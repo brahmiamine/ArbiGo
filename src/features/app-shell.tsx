@@ -17,6 +17,7 @@ import { AppProvider, useApp } from './app-provider';
 import { Dashboard, Matches, MatchDetail } from './dashboard';
 import { InventoryScreen } from './bag/inventory';
 import { Profile } from './profile';
+import { ProfileAvatar } from './media';
 import { Tunnel } from './tunnel/tunnel';
 import { History } from './history/history';
 const navigation = [
@@ -109,7 +110,10 @@ function Shell() {
             </span>
           </div>
           <div className="sidebar-user">
-            <div className="avatar">{app.profile.name[0]}</div>
+            <ProfileAvatar
+              name={app.profile.name}
+              photoId={app.profile.preferences.avatarPhotoId}
+            />
             <div>
               <strong>{app.profile.name}</strong>
               <span>Arbitre de football</span>

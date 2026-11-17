@@ -16,6 +16,7 @@ import { Prisma } from '@/generated/prisma/client';
 import { rateLimit } from '@/server/accounts';
 import { currentInventory } from '@/server/inventory';
 import { upgradeInventory } from '@/domain/equipment';
+import { updateUserProfile } from '@/server/profile';
 import { scheduleNotifications } from '@/server/notifications';
 type Context = { params: Promise<{ path: string[] }> };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -102,21 +103,8 @@ async function mutate(r: Request, c: Context, method: string) {
     const path = (await c.params).path;
     const b = method === 'DELETE' ? {} : await jsonBody(r);
     if (path[0] === 'me' && method === 'PATCH') {
-      const parsed = z
-        .object({
-          name: z.string().trim().min(1).max(100).optional(),
-          preferences: z
-            .object({
-              soundEnabled: z.boolean(),
-              pushEnabled: z.boolean(),
-              timezone: z.string().max(100),
-              locale: z.literal('fr'),
-            })
-            .optional(),
-        })
-        .parse(b);
-      await db.user.update({ where: { id: uid }, data: parsed });
-      return ok({ updated: true });
+      const profile = await updateUserProfile(uid, b);
+      return ok({ ...profile, vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? '' });
     }
     if (path[0] === 'devices') {
       if (method === 'POST') {

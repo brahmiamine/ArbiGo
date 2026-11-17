@@ -1,4 +1,5 @@
 export const errorMessages: Record<string, string> = {
+  SHIRT_UNAVAILABLE: 'Ce maillot n’est pas dans le sac de cette rencontre.',
   MATCH_MISMATCH: 'Cette action ne correspond pas à la rencontre.',
   VERSION_CONFLICT:
     'Une autre version existe. Vos actions locales sont conservées pour résolution.',

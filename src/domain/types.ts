@@ -95,6 +95,7 @@ export interface Match extends MatchInput {
   colors: KitColors;
   colorsConfirmedAt?: string;
   selectedOutfitId?: string;
+  selectedShirtId?: string;
   currentStep: number;
   runs: Record<string, StepRun>;
   issues: Issue[];
@@ -114,6 +115,7 @@ export type OperationInput =
   | { type: 'START' }
   | { type: 'NAVIGATE'; index: number }
   | { type: 'BAG'; itemId: string; packed: boolean }
+  | { type: 'SELECT_SHIRT'; itemId: string }
   | {
       type: 'ANSWER';
       stepCode: string;

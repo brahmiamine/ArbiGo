@@ -47,7 +47,7 @@ it('persists a concurrent catalog upgrade once, preserves personal items and arc
     });
     const [first, concurrent] = await Promise.all([currentInventory(id), currentInventory(id)]);
     expect(concurrent).toEqual(first);
-    expect(first.catalogVersion).toBe(2);
+    expect(first.catalogVersion).toBe(3);
     expect(first.equipment.map((i) => i.id)).toEqual([
       'personal',
       'shirt-yellow',

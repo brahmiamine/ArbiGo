@@ -3300,6 +3300,116 @@ select {
   gap: 12px;
 }
 
+.profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.profile-identity > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.profile-avatar {
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.profile-identity .profile-avatar {
+  margin: 0;
+}
+.profile-avatar .equipment-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.profile-avatar .photo-placeholder {
+  display: grid;
+  place-items: center;
+  font-size: inherit;
+}
+.settings-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.profile-photo-editor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.briefing-editor textarea {
+  min-height: 150px;
+}
+.briefing-editor summary {
+  cursor: pointer;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.jersey-slider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  touch-action: pan-y;
+}
+.jersey-slider:focus-visible {
+  outline: 3px solid #438fe0;
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+.jersey-slider > .icon-button {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border: 1px solid #cfdaed;
+  background: #fff;
+  border-radius: 50%;
+}
+.jersey-slider .jersey-choice-art {
+  margin: 0 0 10px;
+}
+.jersey-pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.jersey-pagination button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 50%;
+}
+.jersey-pagination button.selected {
+  border-color: var(--blue);
+}
+.jersey-pagination button span {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #aebbd0;
+  border-radius: 50%;
+}
+.jersey-choice .jersey-position {
+  margin: 2px auto 10px;
+}
+@media (max-width: 380px) {
+  .jersey-slider {
+    gap: 2px;
+  }
+  .jersey-slider .jersey-choice-art {
+    width: min(180px, 50vw);
+    height: min(180px, 50vw);
+  }
+}
+
 .match-countdown {
   display: flex;
   align-items: center;
@@ -3682,4 +3792,9 @@ select {
   .jersey-choice h1 {
     font-size: 36px;
   }
+}
+
+.briefing blockquote {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

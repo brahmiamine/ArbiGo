@@ -56,9 +56,7 @@ test('inventory spacing, revised equipment and every navigation view survive rel
   await expect(
     page.getByText('Feuille de match papier (remplace la FMI)', { exact: true }),
   ).toBeVisible();
-  await expect(
-    page.getByText('Feuille de notes (cartons, buts, incidents)', { exact: true }),
-  ).toBeVisible();
+  await expect(page.getByText('Feuille de notes', { exact: true })).toBeVisible();
   for (const width of [320, 390, 471]) {
     await page.setViewportSize({ width, height: 844 });
     const row = page.locator('.inventory-row').first();

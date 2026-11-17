@@ -32,7 +32,7 @@ import { countdown, formatTime, scheduledAt } from '@/domain/time';
 import { summarize, activeStage, stageStatus } from '@/domain/match';
 import { warmupPhases } from '@/domain/templates';
 import { elapsedWarmup } from '@/domain/warmup';
-import { previousTeamColors } from '@/domain/equipment';
+import { rankMatchShirts, previousTeamColors } from '@/domain/equipment';
 import { ColorPicker } from '../bag/inventory';
 function useNow() {
   const [now, setNow] = useState(Date.now);
@@ -136,6 +136,10 @@ export function Tunnel({ match: m }: { match: Match }) {
   async function go(index: number) {
     if (readonly || busy) return;
     if (step.kind === 'kit' && m.template.steps[index]?.code === 'sheet' && !showJersey) {
+      if (!m.selectedShirtId) {
+        const suggested = rankMatchShirts(m)[0];
+        if (suggested && !(await act({ type: 'SELECT_SHIRT', itemId: suggested.id }))) return;
+      }
       preview(true);
       return;
     }
@@ -199,7 +203,11 @@ export function Tunnel({ match: m }: { match: Match }) {
       </header>
       <main className="tunnel-body" ref={body}>
         {showJersey ? (
-          <JerseyPreview match={m} />
+          <JerseyPreview
+            match={m}
+            busy={busy}
+            onSelect={(itemId) => act({ type: 'SELECT_SHIRT', itemId })}
+          />
         ) : (
           <>
             <div className="tunnel-step-position">
@@ -238,7 +246,7 @@ export function Tunnel({ match: m }: { match: Match }) {
                 </div>
                 <StepStatusBadge match={m} step={step} />
               </div>
-              {!briefing && (
+              {!briefing && step.code !== 'pitch' && (
                 <p className="step-description">
                   {step.kind === 'kit'
                     ? 'Renseignez les couleurs, puis vérifiez le ballon.'

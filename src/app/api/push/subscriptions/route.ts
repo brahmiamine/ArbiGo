@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { ok, fail, userId, sameOrigin, jsonBody } from '@/server/http';
 import { z } from 'zod';
+import { updateUserProfile } from '@/server/profile';
 const schema = z.object({
   deviceId: z.uuid(),
   endpoint: z.url().max(512),
@@ -35,11 +36,7 @@ export async function POST(r: Request) {
       create: { ...data, active: true },
       update: { ...data, active: true },
     });
-    const user = await db.user.findUniqueOrThrow({ where: { id: uid } });
-    await db.user.update({
-      where: { id: uid },
-      data: { preferences: { ...(user.preferences as object), pushEnabled: true } },
-    });
+    await updateUserProfile(uid, { preferences: { pushEnabled: true } });
     return ok({ subscribed: true });
   } catch (e) {
     return fail(e);
@@ -53,11 +50,7 @@ export async function DELETE(r: Request) {
       where: { device: { userId: uid } },
       data: { active: false },
     });
-    const user = await db.user.findUniqueOrThrow({ where: { id: uid } });
-    await db.user.update({
-      where: { id: uid },
-      data: { preferences: { ...(user.preferences as object), pushEnabled: false } },
-    });
+    await updateUserProfile(uid, { preferences: { pushEnabled: false } });
     return ok({ subscribed: false });
   } catch (e) {
     return fail(e);

@@ -76,7 +76,7 @@ it('provides four shirt colors and two distinct match paperwork items without a 
     'noir',
   ]);
   expect(items.find((i) => i.id === 'match-sheet')?.label).toContain('FMI');
-  expect(items.find((i) => i.id === 'match-notes')?.label).toContain('cartons');
+  expect(items.find((i) => i.id === 'match-notes')?.label).toBe('Feuille de notes');
 });
 const legacy = (): Inventory => ({
   equipment: [
