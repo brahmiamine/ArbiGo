@@ -1,11 +1,11 @@
 import 'dotenv/config';
-import webpush from 'web-push';
+import { sendNotification, setVapidDetails } from 'web-push';
 import { db } from '../src/lib/db';
 import { shouldNotify } from '../src/server/notifications';
 import type { Match } from '../src/domain/types';
 import { writeFile } from 'node:fs/promises';
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY)
-  webpush.setVapidDetails(
+  setVapidDetails(
     process.env.VAPID_SUBJECT ?? 'mailto:admin@example.fr',
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY,
@@ -82,7 +82,7 @@ async function tick() {
         )
           continue;
         try {
-          await webpush.sendNotification(
+          await sendNotification(
             { endpoint: sub.endpoint, keys: sub.keys as { p256dh: string; auth: string } },
             payload,
             { TTL: 300, urgency: 'normal', timeout: 10000 },
