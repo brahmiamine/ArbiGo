@@ -854,20 +854,11 @@ hr {
   font-size: 12px;
   color: var(--muted);
 }
-.schedule {
-  margin: 22px 0;
+.match-start {
+  align-self: start;
 }
-.schedule > div {
-  display: flex;
-  gap: 20px;
-  padding: 11px 0;
-  border-bottom: 1px solid #f0f3f7;
-  font-size: 11px;
-}
-.schedule time {
-  font-weight: 800;
-  color: var(--blue);
-  font-variant-numeric: tabular-nums;
+.match-start > .button {
+  width: 100%;
 }
 .bag-checks {
   margin-top: 20px;
@@ -912,7 +903,7 @@ hr {
 .bag-checks .tiny {
   margin-left: auto;
 }
-.bag-checks .checked > span:nth-last-child(1) {
+.bag-checks .checked > .bag-item-label {
   color: #66778d;
 }
 .inventory-list {
@@ -1541,7 +1532,7 @@ select {
   justify-content: space-between;
   font-size: 11px;
   letter-spacing: 1px;
-  color: #7789a3;
+  color: var(--muted);
   margin-bottom: 14px;
   font-weight: 800;
 }
@@ -1557,7 +1548,7 @@ select {
   text-align: left;
   min-height: 54px;
   font-size: 11px;
-  color: #667c9d;
+  color: var(--muted);
 }
 .adjacent-step > span {
   flex: 1;
@@ -1606,7 +1597,7 @@ select {
   color: var(--blue);
 }
 .step-description {
-  color: #728197;
+  color: var(--muted);
   font-size: 11px;
   margin: 18px 0 24px;
   line-height: 1.9;
@@ -1752,29 +1743,76 @@ select {
   font-size: 11px;
   padding: 10px 12px;
 }
+.kit-teams {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kit-team {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.kit-team-heading {
+  padding: 14px;
+  background: #eef3fc;
+  border-bottom: 1px solid var(--line);
+}
+.kit-team:nth-child(2) .kit-team-heading {
+  background: #faf4e9;
+}
+.kit-team-heading .eyebrow {
+  color: var(--muted);
+}
+.kit-team-heading h2 {
+  font-size: 18px;
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
 .kit-colors {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px 20px;
-  margin-bottom: 25px;
+  gap: 18px;
+  padding: 14px;
+}
+.kit-role {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+.kit-role + .kit-role {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.kit-preview {
+  text-align: center;
+}
+.kit-preview .jersey-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.kit-preview > span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.kit-colors .color-picker {
+  min-width: 0;
 }
 .kit-colors .color-picker button {
-  width: 26px;
-  height: 26px;
-  min-width: 26px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
 }
 .kit-colors .color-picker > div {
-  gap: 7px;
+  gap: 10px;
 }
-.kit-colors .tiny {
-  display: block;
-  font-size: 11px;
-  margin-top: 12px;
-}
-.kit-colors select {
-  font-size: 11px;
-  min-height: 40px;
-  padding: 7px;
+.kit-colors .color-picker button::before {
+  inset: -4px;
 }
 .kit-control h3 {
   margin: 15px 0;
@@ -1813,7 +1851,7 @@ select {
 .kit-recommendations small {
   font-size: 11px;
   line-height: 1.7;
-  color: #677d99;
+  color: var(--muted);
 }
 .kit-control > .button {
   margin: 17px 0;
@@ -1876,7 +1914,7 @@ select {
   font-size: 29px;
   margin: 8px 0;
 }
-.warmup > p {
+.warmup-phase-copy p {
   font-size: 11px;
   color: var(--muted);
   margin: 0 auto 15px;
@@ -2499,8 +2537,13 @@ select {
     padding: 15px;
     gap: 25px;
   }
+  .countdown {
+    min-width: 0;
+    flex: 1;
+  }
   .countdown strong {
-    font-size: 38px;
+    min-width: 0;
+    font-size: clamp(26px, 8vw, 38px);
   }
   .countdown > span {
     font-size: 6px;
@@ -2599,14 +2642,8 @@ select {
   .tunnel-footer > span {
     font-size: 11px;
   }
-  .kit-colors {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  .kit-colors .color-picker button {
-    width: 29px;
-    height: 29px;
-    min-width: 29px;
+  .kit-teams {
+    grid-template-columns: minmax(0, 1fr);
   }
   .kit-recommendations {
     grid-template-columns: 1fr;
@@ -2619,10 +2656,6 @@ select {
   }
   .kit-recommendations small {
     font-size: 11px;
-  }
-  .kit-colors select {
-    font-size: 14px;
-    min-height: 44px;
   }
   .review-steps > button,
   .review-steps > div {
@@ -2749,10 +2782,106 @@ select {
   color: var(--gold);
 }
 
+.tunnel .badge.gray {
+  color: var(--muted);
+}
+
 .step-title > .badge,
 .adjacent-step .badge,
 .review-steps .badge {
   white-space: normal;
   max-width: 140px;
   text-align: center;
+}
+
+.equipment-image {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: #f1f4f8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.equipment-art,
+.equipment-image .jersey-art {
+  width: 100%;
+  height: 100%;
+}
+.bag-checks > label {
+  padding: 8px 0;
+}
+.bag-checks .equipment-image {
+  pointer-events: none;
+}
+.bag-item-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 680px) {
+  .step-warmup {
+    padding: 16px;
+  }
+  .step-warmup .step-title .eyebrow {
+    display: none;
+  }
+  .step-warmup .step-title h1 {
+    margin-top: 0;
+  }
+  .step-warmup .step-description {
+    margin: 10px 0 12px;
+    line-height: 1.6;
+  }
+  .step-warmup .validate-step {
+    margin-top: 8px;
+  }
+  .step-warmup .phase-tabs {
+    gap: 12px;
+    margin: 12px 0 16px;
+  }
+  .step-warmup .phase-tabs > button {
+    width: 36px;
+    height: 36px;
+  }
+  .warmup-phase {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+    margin: 6px 0 12px;
+    text-align: left;
+  }
+  .warmup-illustration {
+    width: 76px;
+    height: 76px;
+    margin: 0;
+  }
+  .warmup-illustration > svg {
+    width: 42px;
+    height: 42px;
+  }
+  .warmup-phase-copy .eyebrow {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .warmup-phase-copy h2 {
+    font-size: 25px;
+    margin: 4px 0;
+  }
+  .warmup-phase-copy p {
+    margin: 0;
+    line-height: 1.6;
+  }
+  .warmup-clock {
+    display: block;
+    font-size: 52px;
+    line-height: 1.1;
+  }
+  .warmup > .progress {
+    margin: 8px auto 12px;
+  }
+  .warmup-actions {
+    margin-bottom: 14px;
+  }
 }

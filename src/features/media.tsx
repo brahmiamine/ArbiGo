@@ -1,8 +1,32 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Shirt } from 'lucide-react';
 import { useApp } from './app-provider';
-export function MediaPhoto({ id, alt }: { id: string; alt: string }) {
+import { EquipmentArt } from '@/components/equipment-art';
+import type { Equipment } from '@/domain/types';
+
+export function EquipmentImage({ item }: { item: Equipment }) {
+  const illustration = <EquipmentArt item={item} />;
+  return (
+    <span className="equipment-image" aria-hidden="true">
+      {item.photoId ? (
+        <MediaPhoto id={item.photoId} alt={item.label} fallback={illustration} />
+      ) : (
+        illustration
+      )}
+    </span>
+  );
+}
+
+export function MediaPhoto({
+  id,
+  alt,
+  fallback,
+}: {
+  id: string;
+  alt: string;
+  fallback?: ReactNode;
+}) {
   const { store } = useApp();
   const [url, setUrl] = useState('');
   useEffect(() => {
@@ -31,7 +55,7 @@ export function MediaPhoto({ id, alt }: { id: string; alt: string }) {
       role="img"
       aria-label={`${alt} · photo indisponible`}
     >
-      <Shirt size={22} />
+      {fallback ?? <Shirt size={22} />}
     </span>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 import { StageAlerts } from './alerts';
+import { JerseyArt } from '@/components/equipment-art';
 import { MediaPhoto } from '../media';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import {
@@ -202,7 +203,7 @@ export function Tunnel({ match: m }: { match: Match }) {
           {previous && <StepStatusBadge match={m} step={previous} />}
         </button>
         <section
-          className="step-card"
+          className={`step-card step-${step.kind}`}
           key={step.code}
           onTouchStart={(e) => {
             if ((e.target as HTMLElement).closest('button,input,textarea,select,.control')) return;
@@ -581,7 +582,12 @@ function CheckControl({
 function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<boolean> }) {
   const { matches } = useApp();
   const suggestions = previousTeamColors(matches, m);
-  const [colors, setColors] = useState<KitColors>(m.colors),
+  const [colors, setColors] = useState<KitColors>(
+      () =>
+        Object.fromEntries(
+          Object.entries(m.colors).map(([key, values]) => [key, values.slice(0, 1)]),
+        ) as KitColors,
+    ),
     [selected, setSelected] = useState(m.selectedOutfitId ?? '');
   const ranked = rankOutfits(m.outfits, m.bag, colors);
   return (
@@ -590,44 +596,61 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
         <Notice>
           Des couleurs ont déjà été déclarées pour ces équipes. Elles doivent être reconfirmées pour
           cette rencontre.
-          <Button variant="secondary" onClick={() => setColors({ ...colors, ...suggestions })}>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              setColors({
+                ...colors,
+                ...Object.fromEntries(
+                  Object.entries(suggestions).map(([key, values]) => [key, values.slice(0, 1)]),
+                ),
+              })
+            }
+          >
             Reprendre ces pastilles pour vérification
           </Button>
         </Notice>
       )}
-      <div className="kit-colors">
+      <div className="kit-teams">
         {(
           [
-            ['home', 'Joueurs domicile'],
-            ['homeKeeper', 'Gardien domicile'],
-            ['away', 'Joueurs visiteurs'],
-            ['awayKeeper', 'Gardien visiteur'],
+            { side: 'Domicile', name: m.homeTeam, players: 'home', keeper: 'homeKeeper' },
+            { side: 'Extérieur', name: m.awayTeam, players: 'away', keeper: 'awayKeeper' },
           ] as const
-        ).map(([key, label]) => (
-          <div key={key}>
-            <ColorPicker
-              label={label}
-              value={colors[key][0] ?? ''}
-              onChange={(c) => setColors({ ...colors, [key]: [c, ...colors[key].slice(1)] })}
-            />
-            <label className="tiny">
-              Couleur secondaire
-              <select
-                value={colors[key][1] ?? ''}
-                onChange={(e) =>
-                  setColors({
-                    ...colors,
-                    [key]: [colors[key][0] ?? '', ...(e.target.value ? [e.target.value] : [])],
-                  })
-                }
-              >
-                <option value="">Aucune</option>
-                {Object.keys(palette).map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </label>
-          </div>
+        ).map((team) => (
+          <section
+            className="kit-team"
+            key={team.players}
+            aria-label={`${team.side} · ${team.name}`}
+          >
+            <header className="kit-team-heading">
+              <span className="eyebrow">{team.side}</span>
+              <h2>{team.name}</h2>
+            </header>
+            <div className="kit-colors">
+              {(
+                [
+                  [team.players, 'Joueurs'],
+                  [team.keeper, 'Gardien'],
+                ] as const
+              ).map(([key, role]) => (
+                <div className="kit-role" key={key}>
+                  <div className="kit-preview">
+                    <JerseyArt
+                      color={colors[key][0]}
+                      label={`${team.name} · ${role} · ${colors[key][0] || 'couleur à choisir'}`}
+                    />
+                    <span>{colors[key][0] || 'À choisir'}</span>
+                  </div>
+                  <ColorPicker
+                    label={role}
+                    value={colors[key][0] ?? ''}
+                    onChange={(color) => setColors({ ...colors, [key]: [color] })}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
       <h3>Les tenues emportées</h3>
@@ -721,16 +744,20 @@ function Warmup({ m, act }: { m: Match; act: (a: OperationInput) => Promise<bool
           </button>
         ))}
       </div>
-      <div className={`warmup-illustration ${phase.status === 'RUNNING' ? 'running' : ''}`}>
-        <Icon size={84} strokeWidth={1.2} />
-        <span />
-        <span />
+      <div className="warmup-phase">
+        <div className={`warmup-illustration ${phase.status === 'RUNNING' ? 'running' : ''}`}>
+          <Icon size={84} strokeWidth={1.2} />
+          <span />
+          <span />
+        </div>
+        <div className="warmup-phase-copy">
+          <span className="eyebrow">
+            PHASE {index + 1} · {config.duration / 60} MINUTES
+          </span>
+          <h2>{config.title}</h2>
+          <p>{config.description}</p>
+        </div>
       </div>
-      <span className="eyebrow">
-        PHASE {index + 1} · {config.duration / 60} MINUTES
-      </span>
-      <h2>{config.title}</h2>
-      <p>{config.description}</p>
       <strong className="warmup-clock">
         {String(Math.floor(remaining / 60000)).padStart(2, '0')}:
         {String(Math.floor(remaining / 1000) % 60).padStart(2, '0')}

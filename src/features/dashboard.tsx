@@ -17,8 +17,9 @@ import {
 import { useApp } from './app-provider';
 import { Button, Badge, Modal, Progress, Empty } from '@/components/ui';
 import { MatchForm } from './matches/match-form';
+import { EquipmentImage } from './media';
 import { practiceLabels } from '@/domain/templates';
-import { formatTime, scheduledAt } from '@/domain/time';
+import { formatTime } from '@/domain/time';
 import type { Match } from '@/domain/types';
 export function PitchArt() {
   return (
@@ -434,34 +435,17 @@ export function MatchDetail({ match: m }: { match: Match }) {
                 <span className="check-visual">
                   <Check size={15} />
                 </span>
-                <span>{item.label}</span>
-                {item.photoId && <span className="tiny muted">photo</span>}
+                <EquipmentImage item={item} />
+                <span className="bag-item-label">{item.label}</span>
               </label>
             ))}
           </div>
         </section>
-        <section>
-          <div className="panel">
-            <h2>Votre compte à rebours</h2>
-            <p className="muted">Planning fixe · {m.template.season}</p>
-            <div className="schedule">
-              {m.template.steps.map((step) => (
-                <div key={step.code}>
-                  <time>{formatTime(scheduledAt(m.kickoffAt, step.offset), m.timezone)}</time>
-                  <span>{step.title}</span>
-                </div>
-              ))}
-            </div>
-            <Button disabled={starting} onClick={() => void start()}>
-              <Flag size={18} />
-              {starting ? 'Démarrage…' : 'Je suis arrivé · démarrer le tunnel'}
-            </Button>
-            <p className="tiny muted">Vous resterez sur cette rencontre jusqu’à sa clôture.</p>
-          </div>
-          <div className="model-note">
-            Modèle de préparation à vérifier pour votre compétition. Les horaires intermédiaires
-            sont des repères pédagogiques.
-          </div>
+        <section className="match-start">
+          <Button disabled={starting} onClick={() => void start()}>
+            <Flag size={18} />
+            {starting ? 'Démarrage…' : 'Je suis arrivé · démarrer le tunnel'}
+          </Button>
         </section>
       </div>
     </div>

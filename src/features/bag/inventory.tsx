@@ -1,7 +1,7 @@
 'use client';
-import { MediaPhoto } from '../media';
+import { EquipmentImage } from '../media';
 import { useState, type FormEvent } from 'react';
-import { Plus, Shirt, Trash2, Pencil, ArrowUp, ArrowDown, Camera, Backpack } from 'lucide-react';
+import { Plus, Shirt, Trash2, Pencil, ArrowUp, ArrowDown, Camera } from 'lucide-react';
 import { useApp } from '../app-provider';
 import { Button, Modal, Empty, Badge, Notice } from '@/components/ui';
 import { palette } from '@/domain/equipment';
@@ -108,13 +108,7 @@ export function InventoryScreen() {
                   className="equipment-icon"
                   style={{ color: palette[item.colors[0]] ?? '#003287' }}
                 >
-                  {item.photoId ? (
-                    <MediaPhoto id={item.photoId} alt={item.label} />
-                  ) : item.type === 'SHIRT' ? (
-                    <Shirt />
-                  ) : (
-                    <Backpack size={21} />
-                  )}
+                  <EquipmentImage item={item} />
                 </div>
                 <div className="inventory-label">
                   <strong>{item.label}</strong>

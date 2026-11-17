@@ -1,17 +1,15 @@
 'use client';
 import { useState, type FormEvent } from 'react';
 import { useApp } from '../app-provider';
-import { Button, Notice } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { updateDraft } from './update-draft';
 import { parseLocalKickoff, localDateParts } from '@/domain/time';
-import { practiceLabels } from '@/domain/templates';
-import type { Practice, Match, MatchInput } from '@/domain/types';
+import type { Match, MatchInput } from '@/domain/types';
 export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: Match }) {
   const app = useApp();
   const { create, setError } = app;
   const local = initial ? localDateParts(initial.kickoffAt, initial.timezone) : undefined;
   const [busy, setBusy] = useState(false),
-    [practice, setPractice] = useState<Practice>(initial?.practice ?? 'FOOT_11'),
     [category, setCategory] = useState(initial?.category ?? ''),
     [failure, setFailure] = useState('');
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -25,7 +23,7 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
         awayTeam: String(d.get('awayTeam')),
         kickoffAt: parseLocalKickoff(String(d.get('date')), String(d.get('time')), 'Europe/Paris'),
         timezone: 'Europe/Paris',
-        practice,
+        practice: initial?.practice ?? 'FOOT_11',
         stadium: String(d.get('stadium') ?? ''),
         competition: String(d.get('competition') ?? ''),
         category: String(d.get('category') ?? ''),
@@ -51,22 +49,6 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
           <option key={team}>{team}</option>
         ))}
       </datalist>
-      <div className="field">
-        <span>Pratique</span>
-        <div className="segmented">
-          {Object.entries(practiceLabels).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={value === practice}
-              className={value === practice ? 'selected' : ''}
-              onClick={() => setPractice(value as Practice)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
       <div className="form-grid">
         <label>
           Équipe domicile
@@ -142,22 +124,6 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
           </datalist>
         </label>
       </div>
-      {practice === 'FOOT_8' && !category.trim() && (
-        <Notice>
-          Foot à 8 : précisez la catégorie pour identifier le cadre applicable. Ce profil reste un
-          brouillon générique tant que ses variantes ne sont pas vérifiées.
-        </Notice>
-      )}
-      {practice === 'FUTSAL' && !category.trim() && (
-        <Notice>
-          Futsal : la catégorie et les consignes de l’organisateur peuvent modifier le parcours. Ce
-          profil reste un brouillon tant que les textes applicables ne sont pas vérifiés.
-        </Notice>
-      )}
-      <Notice>
-        Ce parcours est un modèle de préparation en brouillon, pas une validation officielle. Sa
-        conformité à la saison, à la catégorie et à la compétition reste à vérifier.
-      </Notice>
       {failure && (
         <p className="form-error" role="alert">
           {failure}
