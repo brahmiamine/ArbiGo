@@ -1,3 +1,8 @@
+import {
+  normalizeStepPreferences,
+  personalizeTemplate,
+  type StepPreferences,
+} from './step-settings';
 import type { Match, MatchInput, Equipment, Template, Operation } from './types';
 import { z } from 'zod';
 import { withLockerSteps, withSportcashStep } from './templates';
@@ -28,6 +33,7 @@ export const lockerRoomsSchema = z.union([
 ]);
 export function needsLockerSteps(match: Match) {
   return (
+    !match.stepPreferences &&
     ['DRAFT', 'ACTIVE'].includes(match.status) &&
     match.template.steps.some((step) => step.kind === 'arrival') &&
     !['referee-locker', 'team-lockers'].every((code) =>
@@ -37,6 +43,7 @@ export function needsLockerSteps(match: Match) {
 }
 export function needsSportcashStep(match: Match) {
   return (
+    !match.stepPreferences &&
     ['DRAFT', 'ACTIVE'].includes(match.status) &&
     match.template.steps.some((step) => step.code === 'team-lockers') &&
     !match.template.steps.some((step) => step.code === 'sportcash')
@@ -56,22 +63,26 @@ export function createMatch(
   inventory: Equipment[],
   template: Template,
   id = crypto.randomUUID(),
+  stepPreferences?: StepPreferences,
 ): Match {
   const parsed = matchInputSchema.parse(input);
   if (template.practice !== parsed.practice) throw new Error('TEMPLATE_MISMATCH');
+  const settings = stepPreferences ? normalizeStepPreferences(stepPreferences) : undefined;
+  const plan = settings ? personalizeTemplate(template, settings) : structuredClone(template);
   return {
     ...parsed,
     id,
     version: 0,
     status: 'DRAFT',
-    template: structuredClone(template),
+    template: plan,
+    ...(settings ? { stepPreferences: settings } : {}),
     bag: inventory
       .filter((i) => i.active !== false)
       .map((i) => ({ ...structuredClone(i), packed: false })),
     outfits: [],
     colors: { home: [], homeKeeper: [], away: [], awayKeeper: [] },
     currentStep: 0,
-    runs: Object.fromEntries(template.steps.map((s) => [s.code, { answers: {} }])),
+    runs: Object.fromEntries(plan.steps.map((s) => [s.code, { answers: {} }])),
     issues: [],
     warmup: Array.from({ length: 4 }, () => ({ status: 'IDLE', pausedMs: 0 })),
     fencingVersion: 0,
@@ -87,7 +98,7 @@ export function applyOperation(match: Match, op: Operation): Match {
   if (
     match.status !== 'DRAFT' &&
     match.status !== 'ACTIVE' &&
-    !['NOTE', 'DEBRIEF', 'FINISH_MATCH'].includes(a.type)
+    !['NOTE', 'DEBRIEF', 'FINISH_MATCH', 'SPORTCASH_CHECKOUT'].includes(a.type)
   )
     throw new Error('CLOSED');
   if (
@@ -250,6 +261,11 @@ export function applyOperation(match: Match, op: Operation): Match {
       m.status = 'COMPLETED';
       m.closedAt = at;
       m.runs.final.completedAt = at;
+      m.checkout ??= { enabled: m.stepPreferences?.checkoutEnabled ?? true };
+      break;
+    case 'SPORTCASH_CHECKOUT':
+      if (m.status !== 'COMPLETED' || !m.checkout?.enabled) throw new Error('CHECKOUT_UNAVAILABLE');
+      m.checkout.completedAt ??= at;
       break;
     case 'CLOSE':
       if (!a.comment.trim()) throw new Error('COMMENT_REQUIRED');
@@ -279,6 +295,9 @@ export function applyOperation(match: Match, op: Operation): Match {
   m.version++;
   m.appliedOperations.push(op.id);
   return m;
+}
+export function requiresCheckout(match: Match) {
+  return match.status === 'COMPLETED' && !!match.checkout?.enabled && !match.checkout.completedAt;
 }
 export function summarize(match: Match) {
   const relevant = match.template.steps.filter((s) => s.kind !== 'final');
@@ -330,6 +349,7 @@ export function stageStatus(match: Match, step: Template['steps'][number], now =
 export function createRematch(match: Match, kickoffAt: string) {
   if (match.status !== 'POSTPONED') throw new Error('NOT_POSTPONED');
   const next = createMatch({ ...match, kickoffAt }, match.bag, match.template);
+  if (match.stepPreferences) next.stepPreferences = structuredClone(match.stepPreferences);
   next.outfits = structuredClone(match.outfits);
   next.originalMatchId = match.id;
   return next;

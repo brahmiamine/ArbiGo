@@ -21,7 +21,7 @@ import {
 import { operationBatch } from '@/lib/operation-batch';
 import { LocalStore } from '@/lib/local-store';
 import { api, ApiError } from '@/lib/api';
-import { createMatch } from '@/domain/match';
+import { createMatch, requiresCheckout } from '@/domain/match';
 import { templates } from '@/domain/templates';
 import { defaultEquipment, upgradeInventory, INVENTORY_CATALOG_VERSION } from '@/domain/equipment';
 import { mergePreferences, type ProfilePatch, type ProfilePreferences } from '@/domain/profile';
@@ -146,7 +146,7 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     setInventory((await store.inventory()) ?? { equipment: [], outfits: [] });
     setPending((await store.pending()).length);
     setConflicts(await store.conflicts());
-    const active = ms.find((m) => m.status === 'ACTIVE');
+    const active = ms.find((m) => m.status === 'ACTIVE' || requiresCheckout(m));
     if (active)
       setNavigation((n) =>
         n.activeId === active.id
@@ -272,6 +272,8 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
             },
             inv.equipment,
             templates.FOOT_11,
+            undefined,
+            p.preferences.steps,
           );
           m.outfits = inv.outfits;
           await store.putMatch(m);
@@ -348,7 +350,13 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     if (!navigator.onLine && !demo)
       throw new Error('La création d’un match nécessite une connexion.');
     const m = demo
-      ? createMatch(input, inventory.equipment, templates[input.practice])
+      ? createMatch(
+          input,
+          inventory.equipment,
+          templates[input.practice],
+          undefined,
+          profileRef.current?.preferences.steps,
+        )
       : await api<Match>('matches', 'POST', input);
     if (demo) m.outfits = structuredClone(inventory.outfits);
     await storeRef.current.putMatch(m);

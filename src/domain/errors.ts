@@ -1,4 +1,5 @@
 export const errorMessages: Record<string, string> = {
+  CHECKOUT_UNAVAILABLE: 'Le check-out est disponible après le coup d’envoi.',
   LOCKER_ROOMS_REQUIRED: 'Renseignez les numéros des vestiaires pour valider cette étape.',
   SHIRT_UNAVAILABLE: 'Ce maillot n’est pas dans le sac de cette rencontre.',
   MATCH_MISMATCH: 'Cette action ne correspond pas à la rencontre.',

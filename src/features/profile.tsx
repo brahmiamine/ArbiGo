@@ -14,6 +14,7 @@ import {
 import { useApp } from './app-provider';
 import { api } from '@/lib/api';
 import { ProfileAvatar } from './media';
+import { StepSettings } from './step-settings';
 import { ProfileEditor, BriefingEditor } from './profile-settings';
 import { Button, Badge, Notice, Modal, PageHeader } from '@/components/ui';
 export function Profile() {
@@ -27,7 +28,8 @@ export function Profile() {
     [deleting, setDeleting] = useState(false),
     [deleteBusy, setDeleteBusy] = useState(false),
     [editing, setEditing] = useState(false),
-    [briefings, setBriefings] = useState(false);
+    [briefings, setBriefings] = useState(false),
+    [steps, setSteps] = useState(false);
   useEffect(() => {
     if (!app.demo && app.online)
       void api<typeof devices>('devices')
@@ -124,6 +126,13 @@ export function Profile() {
           >
             <LogOut size={17} />
             Se déconnecter
+          </Button>
+        </section>
+        <section className="panel">
+          <h2>Mon parcours</h2>
+          <Button variant="secondary" onClick={() => setSteps(true)}>
+            <Pencil size={17} />
+            Personnaliser les étapes
           </Button>
         </section>
         <section className="panel">
@@ -293,6 +302,11 @@ export function Profile() {
               {deleteBusy ? 'Suppression…' : 'Supprimer définitivement'}
             </Button>
           </form>
+        </Modal>
+      )}
+      {steps && (
+        <Modal title="Mon parcours" onClose={() => setSteps(false)}>
+          <StepSettings onDone={() => setSteps(false)} />
         </Modal>
       )}
       {app.conflicts.length > 0 && (

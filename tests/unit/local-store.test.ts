@@ -68,6 +68,7 @@ it('retains debrief patches across reload, server acknowledgement and account bo
   await store.dispatch(match.id, 'a', { type: 'START' });
   for (const action of preparationActions(match)) await store.dispatch(match.id, 'a', action);
   await store.dispatch(match.id, 'a', { type: 'KICKOFF', acknowledged: true });
+  await store.dispatch(match.id, 'a', { type: 'SPORTCASH_CHECKOUT' });
   await store.dispatch(match.id, 'a', { type: 'FINISH_MATCH' });
   const first = await store.dispatch(match.id, 'b', {
     type: 'DEBRIEF',

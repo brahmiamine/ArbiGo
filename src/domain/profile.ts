@@ -1,3 +1,4 @@
+import type { StepPreferences } from './step-settings';
 export const defaultBriefings = {
   captains:
     'Bonjour à tous les deux. Je suis l’arbitre de la rencontre. Je compte sur vous pour relayer les consignes et encourager le respect entre joueurs et envers les officiels. Lors de l’appel, restez disponibles avec vos équipes et suivez mes indications. Si vous avez une question pendant le match, venez me parler calmement, à un moment approprié. Avez-vous des questions avant de commencer ? Bon match à tous.',
@@ -14,6 +15,7 @@ export interface ProfilePreferences {
   locale: 'fr';
   avatarPhotoId?: string | null;
   briefings?: Partial<BriefingTexts>;
+  steps?: StepPreferences;
 }
 export interface ProfilePatch {
   name?: string;

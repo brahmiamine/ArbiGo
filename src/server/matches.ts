@@ -1,8 +1,15 @@
 import { isDeepStrictEqual } from 'node:util';
 import { db } from '@/lib/db';
 import { Prisma } from '@/generated/prisma/client';
-import { createMatch, createRematch, applyOperation, matchInputSchema } from '@/domain/match';
+import {
+  createMatch,
+  createRematch,
+  applyOperation,
+  matchInputSchema,
+  requiresCheckout,
+} from '@/domain/match';
 import { templates } from '@/domain/templates';
+import type { ProfilePreferences } from '@/domain/profile';
 import type { Match, Operation, Practice } from '@/domain/types';
 import { currentInventory } from './inventory';
 import { operationSchema } from './validation';
@@ -17,7 +24,12 @@ export async function newMatch(userId: string, input: unknown) {
   const parsed = matchInputSchema.parse(input);
   const inventory = await currentInventory(userId);
   const template = await selectTemplate(parsed.practice);
-  const match = createMatch(parsed, inventory.equipment, template);
+  const user = await db.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { preferences: true },
+  });
+  const preferences = user.preferences as unknown as ProfilePreferences;
+  const match = createMatch(parsed, inventory.equipment, template, undefined, preferences.steps);
   match.outfits = structuredClone(inventory.outfits);
   await db.$transaction(async (tx) => {
     await tx.match.create({
@@ -84,11 +96,18 @@ export async function syncOne(userId: string, input: unknown) {
       });
       return { id: op.id, status: 'QUARANTINED', reason: 'DEVICE_REVOKED', match: state };
     }
-    if (
-      op.action.type === 'START' &&
-      (await tx.match.findFirst({ where: { userId, status: 'ACTIVE', id: { not: op.matchId } } }))
-    )
-      throw new Error('ACTIVE_TUNNEL');
+    if (op.action.type === 'START') {
+      const others = await tx.match.findMany({
+        where: { userId, id: { not: op.matchId }, status: { in: ['ACTIVE', 'COMPLETED'] } },
+        select: { status: true, state: true },
+      });
+      if (
+        others.some(
+          (other) => other.status === 'ACTIVE' || requiresCheckout(other.state as unknown as Match),
+        )
+      )
+        throw new Error('ACTIVE_TUNNEL');
+    }
     if (
       op.action.type === 'ANSWER' &&
       op.action.photoId &&
@@ -139,7 +158,7 @@ export async function transferTunnel(
     if (!(await tx.device.findFirst({ where: { id: deviceId, userId, revokedAt: null } })))
       throw new Error('FORBIDDEN');
     const m = row.state as unknown as Match;
-    if (m.status !== 'ACTIVE') throw new Error('CLOSED');
+    if (m.status !== 'ACTIVE' && !requiresCheckout(m)) throw new Error('CLOSED');
     if (m.version !== expectedVersion) throw new Error('VERSION_CONFLICT');
     const next = {
       ...m,

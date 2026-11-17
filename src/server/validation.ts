@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { stepPreferencesSchema } from '@/domain/step-settings';
 import { lockerRoomsSchema } from '@/domain/match';
 import { debriefChangesSchema } from '@/domain/debrief/schema';
 const colors = z.record(
@@ -7,6 +8,7 @@ const colors = z.record(
 );
 export const actionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('START') }),
+  z.object({ type: z.literal('SPORTCASH_CHECKOUT') }),
   z.object({ type: z.literal('ADD_LOCKER_STEPS') }),
   z.object({ type: z.literal('ADD_SPORTCASH_STEP') }),
   z.object({ type: z.literal('LOCKER_ROOMS'), rooms: lockerRoomsSchema }),
@@ -103,6 +105,7 @@ export const profilePatchSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   preferences: z
     .object({
+      steps: stepPreferencesSchema.optional(),
       soundEnabled: z.boolean().optional(),
       pushEnabled: z.boolean().optional(),
       timezone: z.string().max(100).optional(),

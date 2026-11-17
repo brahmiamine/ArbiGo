@@ -77,3 +77,7 @@ L’en-tête du tunnel rappelle les couleurs déclarées et le vestiaire de chaq
 Le bilan affiche pour chaque étape l’horaire prévu depuis le coup d’envoi, l’heure de validation enregistrée et l’écart arrondi à la minute (− en avance, + en retard, 0 à l’heure). Les étapes non validées n’ont pas de résultat d’écart. L’indicateur général ouvre directement le bilan, y compris depuis l’aperçu du maillot.
 
 Après les vestiaires des équipes, l’étape « Check-in SPORTCASH » ouvre https://app.sportcash.fr/ dans un nouvel onglet. La confirmation dans ArbiGo est manuelle et reste sauvegardée hors ligne.
+
+Dans « Profil → Mon parcours », chaque compte peut réordonner ou désactiver les étapes de préparation et activer le check-out SPORTCASH. Le parcours actuel reste la valeur par défaut ; les réglages concernent les nouvelles rencontres, avec un snapshot conservé lors de l’édition ou du report. Les créneaux du compte à rebours suivent les positions du parcours ; les étapes désactivées sont ignorées. Le bilan reste la dernière action avant le coup d’envoi.
+
+Après le coup d’envoi, le check-out SPORTCASH activé s’affiche en plein écran dans le tunnel et revient après rechargement, jusqu’à confirmation manuelle. Le lien ouvre https://app.sportcash.fr/ dans un autre onglet ; son ouverture ne valide rien.

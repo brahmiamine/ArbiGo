@@ -4039,3 +4039,49 @@ button.adjacent-step:disabled {
   font-size: 12px;
   line-height: 1.7;
 }
+
+.step-settings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.step-settings-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.step-settings-list li > label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+}
+.step-settings-list input,
+.checkout-setting input {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  accent-color: var(--blue);
+}
+.step-settings-list .step-disabled > label > span {
+  color: var(--muted);
+}
+.step-order-actions {
+  display: flex;
+  flex: 0 0 auto;
+}
+.form .checkout-setting {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.checkout-tunnel {
+  padding-bottom: 24px;
+}

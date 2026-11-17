@@ -163,6 +163,7 @@ it('saves owned finished-match debriefs across devices without rewriting prepara
   );
   for (const action of preparationActions(current)) await write(action);
   await write({ type: 'KICKOFF', acknowledged: true });
+  await write({ type: 'SPORTCASH_CHECKOUT' });
   await expect(
     write({ type: 'DEBRIEF', changes: { objective: 'Encore trop tôt' } }),
   ).rejects.toThrow('DEBRIEF_UNAVAILABLE');

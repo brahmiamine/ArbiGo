@@ -49,7 +49,7 @@ Erreur : `{ "error": { "code": "...", "message": "..." }, "serverTime": "ISO UTC
 }
 ```
 
-Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `ADD_LOCKER_STEPS`, `ADD_SPORTCASH_STEP`, `LOCKER_ROOMS`, `NAVIGATE`, `BAG`, `SELECT_SHIRT`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
+Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `ADD_LOCKER_STEPS`, `ADD_SPORTCASH_STEP`, `LOCKER_ROOMS`, `NAVIGATE`, `BAG`, `SELECT_SHIRT`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `SPORTCASH_CHECKOUT`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
 
 `BRIEFING` prend `stepCode: "captains" | "assistants"`. Une confirmation marque atomiquement les consignes données : les réponses manquantes du snapshot sont renseignées et l’étape est terminée, sans navigation. Les anciennes réponses et anomalies restent conservées. L’action respecte les mêmes contrôles de propriété de l’appareil, version et idempotence que les autres commandes du tunnel.
 
@@ -72,3 +72,11 @@ Les nouveaux modèles v2 comprennent les deux étapes après l’arrivée. Sur l
 Les modèles v3 ajoutent `sportcash` (kind `checkin`) juste après `team-lockers`, à l’horaire des vestiaires +1 minute. Le lien `https://app.sportcash.fr/` ouvre un nouvel onglet ; son ouverture ne valide rien. La confirmation manuelle utilise `COMPLETE` et reste nécessaire pour le bilan complet.
 
 `ADD_SPORTCASH_STEP` enrichit uniquement un tunnel actif détenu par l’appareil, après les anciennes commandes mises en file. L’ajout conserve le code courant, les contrôles existants, les réponses et la version du modèle source ; le journal de synchronisation enregistre la commande et seuls les rappels futurs manquants sont ajoutés. Les nouveaux matchs utilisent v3 ; les historiques clôturés sont conservés. Les anciens v1 reçoivent d’abord `ADD_LOCKER_STEPS`, puis `ADD_SPORTCASH_STEP`.
+
+`PATCH /api/me` accepte `preferences.steps: {order, disabled, checkoutEnabled}`. `order` et `disabled` contiennent des codes uniques parmi les 13 étapes de préparation ; les codes inconnus, doublons et le bilan final sont refusés. Les codes absents de l’ordre sont complétés par défaut. Le bloc de réglages est atomique, privé au compte et préservé par les autres modifications partielles du profil.
+
+Les nouvelles rencontres appliquent ces préférences dans leur snapshot `stepPreferences`. Les créneaux du modèle restent attribués aux positions ordonnées, puis les positions désactivées sont retirées. Le bilan final reste présent ; seules les étapes activées participent au calcul de préparation complète. Les migrations additives ne réintroduisent pas les étapes désactivées. L’édition du brouillon ou le report conserve ses préférences ; un changement de pratique utilise les créneaux du modèle cible. Les rencontres actives ou clôturées ne sont pas réécrites par une modification du profil.
+
+`KICKOFF` enregistre `checkout: {enabled}` selon le snapshot (activé par défaut, y compris les anciens tunnels encore actifs). `SPORTCASH_CHECKOUT` confirme uniquement un match `COMPLETED` dont le check-out est activé, sous contrôle du compte, de l’appareil propriétaire, du fencing, de la version et de l’idempotence. Il conserve `closedAt`, les contrôles et le premier `checkout.completedAt`. Les anciens journaux clôturés sans check-out restent inchangés. Les commandes de fin/débrief d’un ancien client restent compatibles.
+
+Un check-out en attente est restauré en plein écran, y compris hors ligne, et prend la priorité dans la navigation. Le transfert de tunnel fonctionne aussi pendant cette phase ; après confirmation, il redevient indisponible. Un autre `START` est refusé tant qu’un tunnel actif ou un check-out du compte reste en attente.

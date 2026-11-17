@@ -1,3 +1,4 @@
+import type { StepPreferences } from './step-settings';
 import type { DebriefForm, DebriefRecord } from './debrief/schema';
 export type Practice = 'FOOT_11' | 'FOOT_8' | 'FUTSAL';
 export type MatchStatus = 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELED' | 'POSTPONED' | 'OTHER';
@@ -96,6 +97,8 @@ export interface Match extends MatchInput {
   colorsConfirmedAt?: string;
   selectedOutfitId?: string;
   selectedShirtId?: string;
+  stepPreferences?: StepPreferences;
+  checkout?: { enabled: boolean; completedAt?: string };
   lockerRooms?: Partial<Record<'referee' | 'home' | 'away', string>>;
   currentStep: number;
   runs: Record<string, StepRun>;
@@ -135,6 +138,7 @@ export type OperationInput =
   | { type: 'COLORS'; colors: KitColors; selectedOutfitId?: string }
   | { type: 'WARMUP'; phase: number; command: 'START' | 'PAUSE' | 'RESUME' | 'FINISH' }
   | { type: 'KICKOFF'; acknowledged: boolean }
+  | { type: 'SPORTCASH_CHECKOUT' }
   | { type: 'CLOSE'; reason: 'CANCELED' | 'POSTPONED' | 'OTHER'; comment: string }
   | { type: 'NOTE'; content: string }
   | { type: 'FINISH_MATCH' }

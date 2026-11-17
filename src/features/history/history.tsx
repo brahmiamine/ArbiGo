@@ -32,6 +32,7 @@ const labels: Record<string, string> = {
   DEBRIEF: 'Débrief mis à jour',
   ISSUE_UPDATE: 'Suivi d’anomalie',
   WARMUP: 'Échauffement',
+  SPORTCASH_CHECKOUT: 'Check-out SPORTCASH confirmé',
   KICKOFF: 'Coup d’envoi confirmé',
   CLOSE: 'Rencontre non débutée',
   TRANSFER: 'Appareil propriétaire transféré',

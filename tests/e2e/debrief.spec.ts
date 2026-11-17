@@ -55,6 +55,10 @@ async function finishMatch(page: Page) {
   }
   await page.getByRole('checkbox', { name: /J’ai pris connaissance du bilan/ }).check();
   await page.getByRole('button', { name: 'Coup d’envoi effectué', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Check-out SPORTCASH', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Confirmer mon check-out', exact: true }).click();
   await history(page);
   await expect(page.getByRole('button', { name: 'Ouvrir le débrief', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Match terminé · faire le débrief', exact: true }).click();

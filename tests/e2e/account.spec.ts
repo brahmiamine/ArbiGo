@@ -128,6 +128,15 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   await page.getByRole('button', { name: 'Nouveau match', exact: true }).click();
   await page.getByLabel('Équipe domicile').fill('Domicile SMTP');
   await page.getByLabel('Équipe visiteuse').fill('Visiteurs SMTP');
+  const settingsResponse = await page.request.patch('/api/me', {
+    headers: { Origin: new URL(page.url()).origin },
+    data: {
+      preferences: {
+        steps: { order: ['pitch', 'arrival'], disabled: ['warmup'], checkoutEnabled: true },
+      },
+    },
+  });
+  expect(settingsResponse.ok()).toBe(true);
   await page.getByLabel('Date', { exact: true }).fill('2026-12-12');
   await page.getByRole('button', { name: 'Créer la rencontre' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -138,7 +147,17 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   expect(exported.account).not.toHaveProperty('passwordHash');
   expect(exported.matches).toHaveLength(1);
   // Exercise the same authenticated operation endpoint used by offline debrief synchronization.
-  const match = exported.matches[0].state;
+  let match = exported.matches[0].state;
+  expect(match.template.steps[0].code).toBe('pitch');
+  expect(match.template.steps.some((step: { code: string }) => step.code === 'warmup')).toBe(false);
+  const edited = await page.request.patch(`/api/matches/${match.id}`, {
+    headers: { Origin: new URL(page.url()).origin },
+    data: { input: { ...match, stadium: 'Stade personnalisé' }, expectedVersion: match.version },
+  });
+  expect(edited.ok()).toBe(true);
+  match = (await edited.json()).data;
+  expect(match.stepPreferences.disabled).toEqual(['warmup']);
+  expect(match.template.steps[0].code).toBe('pitch');
   let revision = match.version;
   const deviceId = await page.evaluate(
     (id) => localStorage.getItem(`arbigo:device:${id}`),
@@ -152,6 +171,7 @@ test('real account: SMTP verification, authentication, match, reset, export and 
     { type: 'BRIEFING', stepCode: 'assistants' },
     ...preparationActions(match),
     { type: 'KICKOFF', acknowledged: true },
+    { type: 'SPORTCASH_CHECKOUT' },
     { type: 'FINISH_MATCH' },
     {
       type: 'DEBRIEF',

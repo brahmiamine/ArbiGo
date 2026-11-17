@@ -33,7 +33,7 @@ function action(m: Match, action: OperationInput, deviceId = 'a') {
 const played = () => {
   let m = action(fresh(), { type: 'START' });
   for (const input of preparationActions(m)) m = action(m, input);
-  return action(m, { type: 'KICKOFF', acknowledged: true });
+  return action(action(m, { type: 'KICKOFF', acknowledged: true }), { type: 'SPORTCASH_CHECKOUT' });
 };
 
 describe('optional kit selections', () => {

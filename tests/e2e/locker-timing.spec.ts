@@ -88,6 +88,7 @@ test('legacy active snapshots gain locker steps without losing current card and 
   await page.goto('/demo');
   await page.locator('.match-card').click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
+  await expect(page.getByRole('heading', { name: 'Arrivée au stade', exact: true })).toBeVisible();
   await settled(page);
   await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve) => {

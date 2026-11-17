@@ -1,3 +1,4 @@
+import { requiresCheckout } from '@/domain/match';
 import type { Match } from '@/domain/types';
 export type Tab = 'home' | 'matches' | 'bag' | 'profile';
 export interface AppNavigation {
@@ -25,7 +26,7 @@ export function readNavigation(search: string): AppNavigation {
 }
 /** Resolve URLs only against the signed-in account's loaded matches. */
 export function resolveNavigation(navigation: AppNavigation, matches: Match[]): AppNavigation {
-  const active = matches.find((m) => m.status === 'ACTIVE');
+  const active = matches.find((m) => m.status === 'ACTIVE' || requiresCheckout(m));
   const match = active ?? matches.find((m) => m.id === navigation.activeId);
   if (!match) return { ...navigation, activeId: null, matchView: 'summary' };
   return {
@@ -34,7 +35,10 @@ export function resolveNavigation(navigation: AppNavigation, matches: Match[]): 
     activeId: match.id,
     matchFilter: ['DRAFT', 'ACTIVE'].includes(match.status) ? 'upcoming' : 'history',
     matchView:
-      navigation.matchView === 'debrief' && match.status === 'COMPLETED' && match.finishedAt
+      navigation.matchView === 'debrief' &&
+      match.status === 'COMPLETED' &&
+      match.finishedAt &&
+      !requiresCheckout(match)
         ? 'debrief'
         : 'summary',
   };

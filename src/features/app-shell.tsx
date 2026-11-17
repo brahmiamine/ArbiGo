@@ -9,6 +9,8 @@ import { InventoryScreen } from './bag/inventory';
 import { Profile } from './profile';
 import { ProfileAvatar } from './media';
 import { Tunnel } from './tunnel/tunnel';
+import { SportcashCheckout } from './tunnel/checkout';
+import { requiresCheckout } from '@/domain/match';
 import { History } from './history/history';
 const navigation = [
   { id: 'home', label: 'Accueil', icon: Home },
@@ -55,6 +57,13 @@ function Shell() {
       </button>
     </div>
   );
+  if (active && requiresCheckout(active))
+    return (
+      <>
+        {toast}
+        <SportcashCheckout match={active} />
+      </>
+    );
   if (active?.status === 'ACTIVE')
     return (
       <>

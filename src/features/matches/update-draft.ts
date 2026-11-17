@@ -16,7 +16,13 @@ export async function updateDraft(
     );
   let next: Match;
   if (demo) {
-    next = createMatch(input, inventory.equipment, templates[input.practice], m.id);
+    next = createMatch(
+      input,
+      inventory.equipment,
+      templates[input.practice],
+      m.id,
+      m.stepPreferences,
+    );
     next.version = m.version + 1;
     next.appliedOperations = m.appliedOperations;
     next.outfits = structuredClone(inventory.outfits);

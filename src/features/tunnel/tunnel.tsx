@@ -67,7 +67,7 @@ function StepStatusBadge({ match, step }: { match: Match; step: Step }) {
   const status = stageStatus(match, step, now);
   return <Badge tone={status.tone}>{status.label}</Badge>;
 }
-function TeamHeader({ match }: { match: Match }) {
+export function TeamHeader({ match }: { match: Match }) {
   return (
     <div className="tunnel-teams" aria-label="Équipes et vestiaires">
       {(['home', 'away'] as const).map((side) => {
@@ -270,12 +270,7 @@ function TunnelContent({ match: m }: { match: Match }) {
   }
   async function go(index: number, direct = false) {
     if (readonly || busy) return;
-    if (
-      !direct &&
-      step.kind === 'kit' &&
-      m.template.steps[index]?.code === 'sheet' &&
-      !showJersey
-    ) {
+    if (!direct && step.kind === 'kit' && index === m.currentStep + 1 && !showJersey) {
       if (!m.selectedShirtId) {
         const suggested = rankMatchShirts(m)[0];
         if (suggested && !(await act({ type: 'SELECT_SHIRT', itemId: suggested.id }))) return;
@@ -291,7 +286,7 @@ function TunnelContent({ match: m }: { match: Match }) {
     if (m.currentStep === reviewIndex && !showJersey) {
       window.scrollTo(0, 0);
       body.current?.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
-    } else void go(reviewIndex);
+    } else void go(reviewIndex, true);
   }
   return (
     <div className={`tunnel ${showJersey ? 'jersey-mode' : ''}`}>
@@ -341,7 +336,7 @@ function TunnelContent({ match: m }: { match: Match }) {
           </span>
         </div>
         <Progress
-          value={(summary.done / summary.total) * 100}
+          value={summary.total ? (summary.done / summary.total) * 100 : 100}
           label="Progression de la préparation"
         />
       </header>
@@ -1040,7 +1035,11 @@ function FinalReview({
       <Button
         disabled={!ack || !summary.complete}
         onClick={async () => {
-          if (await act({ type: 'KICKOFF', acknowledged: ack })) app.setActiveId(null);
+          if (
+            (await act({ type: 'KICKOFF', acknowledged: ack })) &&
+            m.stepPreferences?.checkoutEnabled === false
+          )
+            app.setActiveId(null);
         }}
       >
         <Flag size={18} />

@@ -185,6 +185,7 @@ async function mutate(r: Request, c: Context, method: string) {
           inventory.equipment,
           await selectTemplate(input.practice),
           old.id,
+          old.stepPreferences,
         );
         next.bag = next.bag.map((i) => ({
           ...i,
