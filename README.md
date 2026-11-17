@@ -2,7 +2,7 @@
 
 PWA mobile de préparation d’avant-match pour arbitres : matchs, inventaire et tenues, sac par rencontre, tunnel de contrôles, échauffement guidé et journal de préparation.
 
-**État : version de recette, pas une V1 certifiée terminée.** Les critères restant à valider sont consignés dans [la recette](docs/ACCEPTANCE.md). Le cahier des charges original est conservé dans [docs](docs/ArbiGo_Cahier_des_charges_V1.md).
+**Préversion : [arbigo.clubika.com](https://arbigo.clubika.com).** La V1 n’est pas déclarée terminée ; les critères et contrôles encore nécessaires sont consignés dans [la recette](docs/ACCEPTANCE.md). Le cahier des charges original est conservé dans [docs](docs/ArbiGo_Cahier_des_charges_V1.md).
 
 ## Fonctionnement
 
@@ -47,6 +47,7 @@ npm run format:check
 npm run lint
 npm run typecheck
 npm test
+npm run test:worker-smoke
 npm run test:integration  # base MariaDB isolée obligatoire
 npm run build
 npx playwright install chromium

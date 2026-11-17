@@ -46,7 +46,7 @@ RESTORE_AGE_IDENTITY=/chemin/cle.age RESTORE_CONFIRM=RESTORE-ARBIGO sh scripts/r
 
 La sauvegarde exporte MariaDB avec `--single-transaction` et les médias, puis chiffre l’archive. Pour une copie strictement cohérente entre base et photos, mettre les écritures applicatives en maintenance durant la capture. La restauration remplace les données et exige la variable de confirmation explicite. La tester d’abord sur une **instance isolée** ; ne pas lancer sur une base de production sans fenêtre de maintenance.
 
-Programmer une sauvegarde quotidienne, surveiller son résultat et tester la restauration avant lancement puis régulièrement. Les scripts sont fournis ; leur exécution sur le VPS n’a pas été validée dans cette session.
+Le VPS réutilise la sauvegarde chiffrée quotidienne existante à 03:17 UTC. Elle découvre les schémas MariaDB de production et les volumes Docker ; les fichiers `/home/debian/deploy/arbigo/.env` et `migration.env` sont ajoutés à l’archive de configuration. Exécution vérifiée le 17 novembre 2026 : le dump `arbigo`, le volume `arbigo_media` et les sommes SHA-256 figurent dans l’archive. La clé privée reste hors du VPS. La restauration sur une instance isolée n’a pas encore été vérifiée.
 
 ## Notifications et supervision
 
@@ -54,4 +54,6 @@ Le worker réclame les tâches atomiquement, cible le propriétaire actif et ign
 
 Sur iOS, les Push nécessitent une PWA installée et une version compatible. L’application fonctionne sans vibration et sans permission de notification. Tester les alertes sur les téléphones visés, application au premier plan et en arrière-plan.
 
-Surveiller `/api/health`, la volumétrie des médias, les tâches non envoyées, l’expiration des certificats et les sauvegardes. Éviter d’exposer les logs ou des secrets. Les journaux n’impriment ni mots de passe ni jetons.
+Le domaine `https://arbigo.clubika.com` utilise le Caddy partagé et le réseau Docker `clubika_internal`. Le déploiement automatique suit `main`, applique les migrations/seed et attend l’application ainsi que le worker sains. Le projet ArbiGo est enregistré dans le monitor existant avec un contrôle HTTPS et deux contrôles Docker. SMTP provient du fichier partagé, les clés VAPID restent propres à ArbiGo. Surveiller `/api/health`, les médias, les tâches, le certificat et les sauvegardes ; les journaux n’impriment ni mots de passe ni jetons.
+
+Cette instance est une préversion. `REQUIRE_APPROVED_TEMPLATES=false` y autorise l’essai des modèles DRAFT ; mettre cette valeur à `true` avant une ouverture publique. Le responsable de traitement et son contact ont été reportés par l’exploitant. Ne pas déclarer la V1 ouverte tant que ces informations, la revue réglementaire des modèles et les essais terrain ne sont pas terminés.
