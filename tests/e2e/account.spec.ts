@@ -73,7 +73,48 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   expect(exported.account.email).toBe(email);
   expect(exported.account).not.toHaveProperty('passwordHash');
   expect(exported.matches).toHaveLength(1);
+  // Exercise the same authenticated operation endpoint used by offline debrief synchronization.
+  const match = exported.matches[0].state;
+  let revision = match.version;
+  const deviceId = await page.evaluate(
+    (id) => localStorage.getItem(`arbigo:device:${id}`),
+    exported.account.id,
+  );
   const origin = new URL(page.url()).origin;
+  for (const action of [
+    { type: 'START' },
+    { type: 'KICKOFF', acknowledged: true },
+    { type: 'FINISH_MATCH' },
+    {
+      type: 'DEBRIEF',
+      changes: { objective: 'Débrief synchronisé du compte réel', rating: '7.5' },
+    },
+  ]) {
+    const response = await page.request.post('/api/sync/batch', {
+      headers: { Origin: origin },
+      data: {
+        operations: [
+          {
+            id: crypto.randomUUID(),
+            matchId: match.id,
+            deviceId,
+            expectedVersion: revision,
+            fencingVersion: revision ? 1 : 0,
+            occurredAt: new Date().toISOString(),
+            action,
+          },
+        ],
+      },
+    });
+    expect(response.ok()).toBe(true);
+    const result = (await response.json()).data.results[0];
+    expect(result.status).toBe('APPLIED');
+    revision = result.match.version;
+  }
+  const afterDebrief = await (await page.request.get('/api/me/data')).json();
+  expect(afterDebrief.matches[0].state.debrief.form.objective).toBe(
+    'Débrief synchronisé du compte réel',
+  );
   const photo = await page.request.post('/api/media', {
     headers: { Origin: origin },
     multipart: {
@@ -116,6 +157,7 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   await page.getByLabel('Mot de passe', { exact: true }).fill(nextPassword);
   await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
   await expect(page).toHaveURL(/\/app$/);
+  await expect(page.getByRole('heading', { name: /Prêt pour le prochain/ })).toBeVisible();
   const deleted = await page.request.delete('/api/me/data', {
     headers: { Origin: new URL(page.url()).origin },
     data: { password: nextPassword },

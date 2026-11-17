@@ -238,7 +238,11 @@ export function Tunnel({ match: m }: { match: Match }) {
             </div>
             <StepStatusBadge match={m} step={step} />
           </div>
-          <p className="step-description">{step.description}</p>
+          <p className="step-description">
+            {step.kind === 'kit'
+              ? 'Repérez les couleurs et votre tenue si besoin, puis vérifiez le ballon.'
+              : step.description}
+          </p>
           <fieldset className="step-fieldset" disabled={readonly || busy}>
             {step.kind === 'kit' && <KitControl m={m} act={act} />}
             {step.kind === 'warmup' && <Warmup m={m} act={act} />}
@@ -582,24 +586,23 @@ function CheckControl({
 function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<boolean> }) {
   const { matches } = useApp();
   const suggestions = previousTeamColors(matches, m);
-  const [colors, setColors] = useState<KitColors>(
-      () =>
-        Object.fromEntries(
-          Object.entries(m.colors).map(([key, values]) => [key, values.slice(0, 1)]),
-        ) as KitColors,
-    ),
-    [selected, setSelected] = useState(m.selectedOutfitId ?? '');
+  const colors = Object.fromEntries(
+    Object.entries(m.colors).map(([key, values]) => [key, values.slice(0, 1)]),
+  ) as KitColors;
+  const selected = m.selectedOutfitId ?? '';
+  const save = (next: KitColors, outfit = m.selectedOutfitId) =>
+    void act({ type: 'COLORS', colors: next, selectedOutfitId: outfit });
   const ranked = rankOutfits(m.outfits, m.bag, colors);
   return (
     <div className="kit-control">
       {!m.colorsConfirmedAt && Object.keys(suggestions).length > 0 && (
         <Notice>
-          Des couleurs ont déjà été déclarées pour ces équipes. Elles doivent être reconfirmées pour
-          cette rencontre.
+          Des couleurs ont déjà été enregistrées pour ces équipes. Vous pouvez les reprendre et les
+          ajuster.
           <Button
             variant="secondary"
             onClick={() =>
-              setColors({
+              save({
                 ...colors,
                 ...Object.fromEntries(
                   Object.entries(suggestions).map(([key, values]) => [key, values.slice(0, 1)]),
@@ -645,7 +648,7 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
                   <ColorPicker
                     label={role}
                     value={colors[key][0] ?? ''}
-                    onChange={(color) => setColors({ ...colors, [key]: [color] })}
+                    onChange={(color) => save({ ...colors, [key]: [color] })}
                   />
                 </div>
               ))}
@@ -667,7 +670,7 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
             key={o.id}
             aria-pressed={selected === o.id}
             className={selected === o.id ? 'selected' : ''}
-            onClick={() => setSelected(o.id)}
+            onClick={() => save(colors, o.id)}
           >
             <span className="outfit-montage">
               {o.itemIds.map((id) => {
@@ -705,13 +708,6 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
         prévue par la Loi 4 doit être appréciée par l’arbitre. Elle ne garantit pas l’absence
         d’autres conflits.
       </p>
-      <Button
-        variant="secondary"
-        disabled={!selected || Object.values(colors).some((v) => !v[0])}
-        onClick={() => void act({ type: 'COLORS', colors, selectedOutfitId: selected })}
-      >
-        {m.colorsConfirmedAt ? 'Reconfirmer couleurs et tenue' : 'Confirmer couleurs et tenue'}
-      </Button>
     </div>
   );
 }

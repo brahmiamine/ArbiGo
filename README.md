@@ -12,6 +12,7 @@ PWA mobile de préparation d’avant-match pour arbitres : matchs, inventaire et
 - Tunnel sans onglets, contrôles manuels, anomalies et revérification, deux compteurs et navigation sans validation implicite.
 - Quatre phases d’échauffement 3/4/3/3 minutes, démarrage/pause/reprise/fin manuels.
 - Bilan, coup d’envoi confirmé manuellement, annulation/report et nouveau brouillon lié, notes distinctes après clôture.
+- [Débrief d’après-match](docs/DEBRIEF.md) par rencontre jouée : huit sections, sauvegarde et synchronisation, PDF avec logos, copie du texte et OCR local des désignations.
 - IndexedDB par compte, file atomique durable, synchronisation idempotente et conflits conservés ; transfert de propriété et fencing côté serveur.
 - PWA installable, cache de l’interface, photos privées locales, Push VAPID avec worker MariaDB, sons et vibrations facultatifs.
 

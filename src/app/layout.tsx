@@ -7,10 +7,10 @@ import '@fontsource/manrope/800.css';
 import '@fontsource/barlow-condensed/600.css';
 import '@fontsource/barlow-condensed/700.css';
 import './globals.css';
+import '@/features/debrief/debrief.css';
 export const metadata: Metadata = {
   title: 'ArbiGo — Le terrain en tête',
-  description:
-    'Votre carnet de préparation d’avant-match. Sac, contrôles et repères, à portée de main.',
+  description: 'Votre carnet d’arbitre : préparation, sac, contrôles et débrief d’après-match.',
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'ArbiGo' },
   icons: { icon: '/icon.svg', apple: '/icons/apple-touch-icon.png' },

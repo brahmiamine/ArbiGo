@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { errorMessage } from '@/domain/errors';
+import { operationBatch } from '@/lib/operation-batch';
 import { LocalStore } from '@/lib/local-store';
 import { api, ApiError } from '@/lib/api';
 import { createMatch } from '@/domain/match';
@@ -90,10 +91,12 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     syncing.current = true;
     try {
       const store = storeRef.current;
-      const queue = await store.pending();
-      const blocked = new Set((await store.conflicts()).map((q) => q.operation.matchId));
-      const operations = queue.filter((op) => !blocked.has(op.matchId)).slice(0, 50);
-      if (operations.length) {
+      while (navigator.onLine) {
+        const queue = await store.pending();
+        const blocked = new Set((await store.conflicts()).map((q) => q.operation.matchId));
+        const operations = operationBatch(queue.filter((op) => !blocked.has(op.matchId)));
+        if (!operations.length) break;
+        let interrupted = false;
         if (demoRef.current) {
           for (const op of operations) {
             const m = (await store.matches()).find((m) => m.id === op.matchId)!;
@@ -103,10 +106,12 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
           const { results } = await api<{
             results: { id: string; status: string; reason?: string; match?: Match }[];
           }>('sync/batch', 'POST', { operations });
+          interrupted = results.length !== operations.length;
           for (const result of results) {
             if (result.status === 'APPLIED' && result.match)
               await store.acknowledge(result.id, result.match);
             else {
+              interrupted = true;
               await store.markConflict(
                 result.id,
                 result.reason ?? 'VERSION_CONFLICT',
@@ -118,6 +123,8 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
             }
           }
         }
+        await refresh();
+        if (interrupted) break;
       }
       await refresh();
     } catch (e) {

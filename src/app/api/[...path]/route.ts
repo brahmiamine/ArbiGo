@@ -229,6 +229,7 @@ async function mutate(r: Request, c: Context, method: string) {
         kickoff: ['KICKOFF'],
         'close-without-kickoff': ['CLOSE'],
         notes: ['NOTE'],
+        debrief: ['DEBRIEF', 'FINISH_MATCH'],
       };
       const route = path.slice(2).join('/');
       const expected =

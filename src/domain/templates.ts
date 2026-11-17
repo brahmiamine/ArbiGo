@@ -49,7 +49,7 @@ const common: Step[] = [
     'kit',
     'Maillots et ballon',
     -45,
-    'Confirmez les quatre couleurs. Choisissez une tenue emportée, puis vérifiez le ballon.',
+    'Repérez les couleurs et votre tenue si besoin, puis vérifiez le ballon.',
     [c('ball', 'Ballon en bon état et adapté à la rencontre')],
     'kit',
   ),

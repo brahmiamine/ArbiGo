@@ -133,10 +133,21 @@ for (const width of [320, 390, 471]) {
       ).toHaveAttribute('fill', kit.hex);
     }
     await page.getByRole('button', { name: /La bleue/ }).click();
-    await page.getByRole('button', { name: 'Confirmer couleurs et tenue', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Reconfirmer couleurs et tenue' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /Confirmer couleurs|Reconfirmer couleurs/ }),
+    ).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /La bleue/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await page.reload();
-    await expect(page.getByRole('button', { name: 'Reconfirmer couleurs et tenue' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Maillots et ballon', exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: /La bleue/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     for (const kit of kits) {
       await expect(
         kit.team

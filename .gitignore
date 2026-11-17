@@ -10,3 +10,5 @@ test-results/
 *.tsbuildinfo
 .superpowers/
 /data/
+
+/public/debrief/ocr/

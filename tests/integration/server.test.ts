@@ -137,3 +137,47 @@ it('exports only owned data and requires the current password before deletion', 
     await db.user.deleteMany({ where: { id } });
   }
 });
+it('saves owned finished-match debriefs across devices without rewriting preparation and rejects foreign or premature edits', async () => {
+  const row = await db.match.findUniqueOrThrow({ where: { id: mid } });
+  let current = row.state as unknown as Match;
+  const write = async (action: Operation['action'], deviceId = did2) => {
+    const op: Operation = {
+      id: crypto.randomUUID(),
+      matchId: mid,
+      deviceId,
+      expectedVersion: current.version,
+      fencingVersion: current.fencingVersion,
+      occurredAt: new Date().toISOString(),
+      action,
+    };
+    const result = await syncOne(uid, op);
+    if (result.match) current = result.match;
+    return { op, result };
+  };
+  await expect(write({ type: 'DEBRIEF', changes: { objective: 'Trop tôt' } })).rejects.toThrow(
+    'DEBRIEF_UNAVAILABLE',
+  );
+  await write({ type: 'KICKOFF', acknowledged: true });
+  await expect(
+    write({ type: 'DEBRIEF', changes: { objective: 'Encore trop tôt' } }),
+  ).rejects.toThrow('DEBRIEF_UNAVAILABLE');
+  const preparation = structuredClone(current.runs);
+  await write({ type: 'FINISH_MATCH' }, did);
+  const { op } = await write(
+    {
+      type: 'DEBRIEF',
+      changes: { words: ['Calme', 'Juste', 'Clair'], objective: 'Lecture du jeu', rating: '7.5' },
+    },
+    did,
+  );
+  expect((await syncOne(uid, op)).status).toBe('APPLIED');
+  await expect(syncOne('foreign-user', { ...op, id: crypto.randomUUID() })).rejects.toThrow(
+    'NOT_FOUND',
+  );
+  const persisted = (await db.match.findUniqueOrThrow({ where: { id: mid } }))
+    .state as unknown as Match;
+  expect(persisted.debrief?.form.objective).toBe('Lecture du jeu');
+  expect(persisted.runs).toEqual(preparation);
+  const exported = await exportPersonalData(uid);
+  expect(JSON.stringify(exported.matches)).toContain('Lecture du jeu');
+});

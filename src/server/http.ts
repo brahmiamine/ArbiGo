@@ -45,10 +45,8 @@ export function fail(error: unknown) {
     [
       'CLOSED',
       'REVIEW_REQUIRED',
-      'KIT_REQUIRED',
       'CHECKS_REQUIRED',
       'RECHECK_REQUIRED',
-      'COLORS_REQUIRED',
       'OUTFIT_NOT_PACKED',
       'TEMPLATE_UNAPPROVED',
     ].includes(code);

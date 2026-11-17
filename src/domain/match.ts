@@ -1,6 +1,7 @@
 import type { Match, MatchInput, Equipment, Template, Operation } from './types';
 import { z } from 'zod';
 import { rankOutfits } from './equipment';
+import { createMatchDebrief, debriefChangesSchema } from './debrief/schema';
 
 export const matchInputSchema = z.object({
   homeTeam: z.string().trim().min(1).max(100),
@@ -52,11 +53,15 @@ export function applyOperation(match: Match, op: Operation): Match {
   if (match.appliedOperations.includes(op.id)) return match;
   if (op.expectedVersion !== match.version) throw new Error('VERSION_CONFLICT');
   const a = op.action;
-  if (match.status !== 'DRAFT' && match.status !== 'ACTIVE' && a.type !== 'NOTE')
+  if (
+    match.status !== 'DRAFT' &&
+    match.status !== 'ACTIVE' &&
+    !['NOTE', 'DEBRIEF', 'FINISH_MATCH'].includes(a.type)
+  )
     throw new Error('CLOSED');
   if (
     match.ownerDeviceId &&
-    a.type !== 'NOTE' &&
+    !['NOTE', 'DEBRIEF', 'FINISH_MATCH'].includes(a.type) &&
     (op.deviceId !== match.ownerDeviceId || op.fencingVersion !== match.fencingVersion)
   )
     throw new Error('DEVICE_REVOKED');
@@ -124,8 +129,6 @@ export function applyOperation(match: Match, op: Operation): Match {
       if (!step || step.kind === 'final') throw new Error('STEP_UNKNOWN');
       if (step.controls.some((c) => !m.runs[step.code].answers[c.code]))
         throw new Error('CHECKS_REQUIRED');
-      if (step.kind === 'kit' && (!m.colorsConfirmedAt || !m.selectedOutfitId))
-        throw new Error('KIT_REQUIRED');
       if (step.kind === 'warmup' && m.warmup.some((p) => p.status !== 'FINISHED'))
         throw new Error('WARMUP_REQUIRED');
       m.runs[step.code].completedAt = at;
@@ -143,15 +146,13 @@ export function applyOperation(match: Match, op: Operation): Match {
       break;
     }
     case 'COLORS': {
-      if (Object.values(a.colors).some((c) => !c.length)) throw new Error('COLORS_REQUIRED');
       const outfit = rankOutfits(m.outfits, m.bag, a.colors).find(
         (o) => o.id === a.selectedOutfitId,
       );
-      if (!outfit) throw new Error('OUTFIT_NOT_PACKED');
+      if (a.selectedOutfitId && !outfit) throw new Error('OUTFIT_NOT_PACKED');
       m.colors = structuredClone(a.colors);
-      m.colorsConfirmedAt = at;
+      m.colorsConfirmedAt = Object.values(a.colors).every((c) => c.length) ? at : undefined;
       m.selectedOutfitId = a.selectedOutfitId;
-      delete m.runs.kit.completedAt;
       break;
     }
     case 'WARMUP': {
@@ -193,6 +194,19 @@ export function applyOperation(match: Match, op: Operation): Match {
       m.closedAt = at;
       m.closeComment = a.comment;
       break;
+    case 'FINISH_MATCH':
+      if (m.status !== 'COMPLETED') throw new Error('DEBRIEF_UNAVAILABLE');
+      m.finishedAt ??= at;
+      break;
+    case 'DEBRIEF': {
+      if (m.status !== 'COMPLETED' || !m.finishedAt) throw new Error('DEBRIEF_UNAVAILABLE');
+      const changes = debriefChangesSchema.parse(a.changes);
+      m.debrief = {
+        form: { ...(m.debrief?.form ?? createMatchDebrief(m)), ...changes },
+        updatedAt: at,
+      };
+      break;
+    }
     case 'NOTE':
       if (['ACTIVE', 'DRAFT'].includes(m.status) || !a.content.trim())
         throw new Error('NOTE_AFTER_CLOSURE');

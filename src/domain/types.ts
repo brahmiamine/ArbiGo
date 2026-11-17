@@ -1,3 +1,4 @@
+import type { DebriefForm, DebriefRecord } from './debrief/schema';
 export type Practice = 'FOOT_11' | 'FOOT_8' | 'FUTSAL';
 export type MatchStatus = 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELED' | 'POSTPONED' | 'OTHER';
 export type AnswerValue = 'OK' | 'PROBLEM' | 'NA';
@@ -102,6 +103,8 @@ export interface Match extends MatchInput {
   fencingVersion: number;
   startedAt?: string;
   closedAt?: string;
+  finishedAt?: string;
+  debrief?: DebriefRecord;
   closeComment?: string;
   originalMatchId?: string;
   notes: { id: string; content: string; at: string }[];
@@ -126,7 +129,9 @@ export type OperationInput =
   | { type: 'WARMUP'; phase: number; command: 'START' | 'PAUSE' | 'RESUME' | 'FINISH' }
   | { type: 'KICKOFF'; acknowledged: boolean }
   | { type: 'CLOSE'; reason: 'CANCELED' | 'POSTPONED' | 'OTHER'; comment: string }
-  | { type: 'NOTE'; content: string };
+  | { type: 'NOTE'; content: string }
+  | { type: 'FINISH_MATCH' }
+  | { type: 'DEBRIEF'; changes: Partial<DebriefForm> };
 export interface Operation {
   id: string;
   matchId: string;

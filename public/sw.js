@@ -22,6 +22,7 @@ self.addEventListener('fetch', (event) => {
   if (
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/icons/') ||
+    url.pathname.startsWith('/debrief/') ||
     url.pathname === '/icon.svg'
   ) {
     event.respondWith(

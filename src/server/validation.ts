@@ -1,10 +1,13 @@
 import { z } from 'zod';
+import { debriefChangesSchema } from '@/domain/debrief/schema';
 const colors = z.record(
   z.enum(['home', 'homeKeeper', 'away', 'awayKeeper']),
-  z.array(z.string().min(1).max(32)).min(1).max(2),
+  z.array(z.string().min(1).max(32)).max(2),
 );
 export const actionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('START') }),
+  z.object({ type: z.literal('FINISH_MATCH') }),
+  z.object({ type: z.literal('DEBRIEF'), changes: debriefChangesSchema }),
   z.object({ type: z.literal('NAVIGATE'), index: z.number().int().min(0).max(30) }),
   z.object({ type: z.literal('BAG'), itemId: z.string().max(100), packed: z.boolean() }),
   z.object({

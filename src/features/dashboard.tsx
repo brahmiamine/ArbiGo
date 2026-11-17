@@ -84,7 +84,9 @@ export function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void 
             : match.status === 'DRAFT'
               ? practiceLabels[match.practice]
               : match.status === 'COMPLETED'
-                ? 'Coup d’envoi effectué'
+                ? match.finishedAt
+                  ? 'Match terminé'
+                  : 'Coup d’envoi effectué'
                 : 'Rencontre non débutée'}
         </Badge>
       </div>

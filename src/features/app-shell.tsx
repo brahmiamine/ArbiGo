@@ -151,7 +151,7 @@ function Shell() {
             active.status === 'DRAFT' ? (
               <MatchDetail match={active} />
             ) : (
-              <History match={active} />
+              <History key={active.id} match={active} />
             )
           ) : app.tab === 'home' ? (
             <Dashboard />

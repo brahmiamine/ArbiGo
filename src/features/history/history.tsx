@@ -1,4 +1,5 @@
 'use client';
+import dynamic from 'next/dynamic';
 import { useState, useEffect, type FormEvent } from 'react';
 import { Flag, Clock3, Check, AlertTriangle } from 'lucide-react';
 import { useApp } from '../app-provider';
@@ -7,6 +8,9 @@ import { Button, Badge, Modal, Notice } from '@/components/ui';
 import type { Match, OperationInput } from '@/domain/types';
 import { formatTime, parseLocalKickoff } from '@/domain/time';
 import { summarize } from '@/domain/match';
+const Debrief = dynamic(() => import('../debrief/debrief'), {
+  loading: () => <p>Chargement du débrief…</p>,
+});
 interface Event {
   id: string;
   type: string;
@@ -18,7 +22,9 @@ const labels: Record<string, string> = {
   START: 'Préparation démarrée',
   ANSWER: 'Contrôle renseigné',
   COMPLETE: 'Étape validée',
-  COLORS: 'Couleurs et tenue confirmées',
+  COLORS: 'Couleurs et tenue enregistrées',
+  FINISH_MATCH: 'Match terminé',
+  DEBRIEF: 'Débrief mis à jour',
   ISSUE_UPDATE: 'Suivi d’anomalie',
   WARMUP: 'Échauffement',
   KICKOFF: 'Coup d’envoi confirmé',
@@ -32,10 +38,13 @@ export function History({ match: m }: { match: Match }) {
   const app = useApp();
   const [events, setEvents] = useState<Event[]>([]),
     [report, setReport] = useState(false),
+    [debriefOpen, setDebriefOpen] = useState(false),
+    [finishing, setFinishing] = useState(false),
     [error, setError] = useState(''),
     [loading, setLoading] = useState(true);
   const summary = summarize(m);
   useEffect(() => {
+    if (debriefOpen) return;
     let alive = true;
     async function load() {
       try {
@@ -59,7 +68,9 @@ export function History({ match: m }: { match: Match }) {
     return () => {
       alive = false;
     };
-  }, [m.id, app.demo, app.store]);
+  }, [m.id, app.demo, app.store, debriefOpen]);
+  if (debriefOpen && m.finishedAt)
+    return <Debrief key={m.id} match={m} onBack={() => setDebriefOpen(false)} />;
   return (
     <>
       <button className="text-button" onClick={() => app.setActiveId(null)}>
@@ -78,7 +89,9 @@ export function History({ match: m }: { match: Match }) {
         </div>
         <Badge tone={m.status === 'COMPLETED' ? 'green' : 'amber'}>
           {m.status === 'COMPLETED'
-            ? 'Coup d’envoi effectué'
+            ? m.finishedAt
+              ? 'Match terminé'
+              : 'Coup d’envoi effectué'
             : m.status === 'POSTPONED'
               ? 'Reportée'
               : m.status === 'CANCELED'
@@ -86,6 +99,37 @@ export function History({ match: m }: { match: Match }) {
                 : 'Non débutée'}
         </Badge>
       </div>
+      {m.status === 'COMPLETED' && (
+        <section className="panel debrief-entry">
+          <div>
+            <h2>Débrief d’après-match</h2>
+            <p>
+              {m.finishedAt
+                ? 'Votre auto-évaluation, vos points forts et votre objectif pour le prochain match.'
+                : 'Une fois la rencontre terminée, prenez le temps de faire votre bilan.'}
+            </p>
+          </div>
+          <Button
+            disabled={finishing}
+            onClick={async () => {
+              setFinishing(true);
+              try {
+                if (!m.finishedAt) await app.dispatch(m.id, { type: 'FINISH_MATCH' });
+                setDebriefOpen(true);
+              } catch {
+              } finally {
+                setFinishing(false);
+              }
+            }}
+          >
+            {finishing
+              ? 'Ouverture…'
+              : m.finishedAt
+                ? 'Ouvrir le débrief'
+                : 'Match terminé · faire le débrief'}
+          </Button>
+        </section>
+      )}
       <div className="dashboard-grid">
         <section className="panel">
           <h2>
