@@ -70,6 +70,17 @@ for app in $APPS; do
     log "$app: mise à jour impossible (modifications locales ou historique divergent), $latest ignoré"
     echo "$latest" > "$STATE/$app.bad"; continue
   fi
+  # Keep enough room for dependency installation and image layers before building.
+  available_kb=$(df -Pk "$ROOT/$app" | awk 'NR==2 {print $4}')
+  if [ "$available_kb" -lt 6291456 ]; then
+    log "$app: espace faible, nettoyage du cache de construction inutilisé"
+    docker builder prune -af >> "$LOG" 2>&1
+    available_kb=$(df -Pk "$ROOT/$app" | awk 'NR==2 {print $4}')
+    if [ "$available_kb" -lt 4194304 ]; then
+      log "$app: construction différée, moins de 4 Gio libres ; nouvel essai au prochain passage"
+      continue
+    fi
+  fi
   log "$app: ${deployed:-inconnu} -> $latest, construction"
   if deploy "$app"; then
     echo "$latest" > "$STATE/$app.deployed"; rm -f "$STATE/$app.bad"
