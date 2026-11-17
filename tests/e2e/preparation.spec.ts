@@ -38,6 +38,12 @@ test('offline tunnel survives reload with local queue', async ({ page, context }
   await expect(page.locator('.match-card')).toBeVisible();
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload();
+  await page.waitForFunction(async () => {
+    const controller = navigator.serviceWorker.controller;
+    if (!controller) return false;
+    const cache = await caches.open('arbigo-shell-v1');
+    return Boolean(await cache.match(new URL('/demo', location.origin).href));
+  });
   await page.locator('.match-card').first().click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
   await context.setOffline(true);
