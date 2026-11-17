@@ -11,7 +11,7 @@ async function swipe(page: Page) {
   });
 }
 
-test('only footer navigation changes steps; illustrated controls, full-screen shirt and single briefings persist', async ({
+test('scrolling never changes steps; illustrated controls, full-screen shirt and single briefings persist', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 471, height: 844 });
@@ -131,6 +131,8 @@ test('restored shirt preview on a transferred tunnel keeps transfer controls rea
   await page.reload();
   await expect(page.locator('.jersey-preview')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Transférer sur cet appareil' })).toBeVisible();
+  for (const button of await page.locator('button.adjacent-step').all())
+    await expect(button).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Options de la rencontre' })).toBeVisible();
 });
 

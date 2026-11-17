@@ -103,22 +103,28 @@ function AdjacentStep({
   match,
   step,
   direction,
+  disabled,
+  onClick,
 }: {
   match: Match;
   step: Step;
   direction: 'previous' | 'next';
+  disabled: boolean;
+  onClick: () => void;
 }) {
   const Icon = direction === 'previous' ? ArrowUp : ArrowDown;
   return (
-    <div
+    <button
+      type="button"
       className={`adjacent-step ${direction}`}
-      role="group"
-      aria-label={direction === 'previous' ? 'Étape précédente' : 'Étape suivante'}
+      disabled={disabled}
+      onClick={onClick}
+      aria-label={`${direction === 'previous' ? 'Étape précédente' : 'Étape suivante'} · ${step.title}`}
     >
       <Icon size={16} aria-hidden="true" />
       <span>{step.title}</span>
       <StepStatusBadge match={match} step={step} />
-    </div>
+    </button>
   );
 }
 function beep(muted: boolean) {
@@ -251,9 +257,14 @@ function TunnelContent({ match: m }: { match: Match }) {
       setBusy(false);
     }
   }
-  async function go(index: number) {
+  async function go(index: number, direct = false) {
     if (readonly || busy) return;
-    if (step.kind === 'kit' && m.template.steps[index]?.code === 'sheet' && !showJersey) {
+    if (
+      !direct &&
+      step.kind === 'kit' &&
+      m.template.steps[index]?.code === 'sheet' &&
+      !showJersey
+    ) {
       if (!m.selectedShirtId) {
         const suggested = rankMatchShirts(m)[0];
         if (suggested && !(await act({ type: 'SELECT_SHIRT', itemId: suggested.id }))) return;
@@ -337,7 +348,13 @@ function TunnelContent({ match: m }: { match: Match }) {
       )}
       <main className="tunnel-body" ref={body}>
         {(showJersey || previous) && (
-          <AdjacentStep match={m} step={showJersey ? step : previous} direction="previous" />
+          <AdjacentStep
+            match={m}
+            step={showJersey ? step : previous}
+            direction="previous"
+            disabled={readonly || busy}
+            onClick={() => (showJersey ? preview(false) : void go(m.currentStep - 1, true))}
+          />
         )}
         {showJersey ? (
           <JerseyPreview
@@ -479,7 +496,15 @@ function TunnelContent({ match: m }: { match: Match }) {
             </section>
           </>
         )}
-        {next && <AdjacentStep match={m} step={next} direction="next" />}
+        {next && (
+          <AdjacentStep
+            match={m}
+            step={next}
+            direction="next"
+            disabled={readonly || busy}
+            onClick={() => void go(m.currentStep + 1, true)}
+          />
+        )}
       </main>
       <footer className="tunnel-footer">
         <Button
@@ -948,11 +973,11 @@ function FinalReview({
   const app = useApp();
   return (
     <div className="final-review">
-      <Notice tone={summary.complete ? 'green' : 'amber'}>
-        {summary.complete
-          ? 'Préparation complète. Vous pouvez confirmer le coup d’envoi.'
-          : `${summary.missing.length} étape(s) non validée(s), ${summary.openIssues.length} anomalie(s) à suivre.${!summary.safe ? ' Un danger de sécurité reste ouvert.' : ''}`}
-      </Notice>
+      {!summary.complete && (
+        <Notice tone="amber">
+          {`${summary.missing.length} étape(s) non validée(s), ${summary.openIssues.length} anomalie(s) à suivre.${!summary.safe ? ' Un danger de sécurité reste ouvert.' : ''}`}
+        </Notice>
+      )}
       <p className="review-timing-legend">
         Écart à la validation, arrondi à la minute : − en avance, + en retard.
       </p>

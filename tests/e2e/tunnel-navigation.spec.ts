@@ -17,7 +17,7 @@ async function final(page: Page) {
   }
   throw new Error('Final stage not reached');
 }
-test('team context, static neighbors and final shortcuts stay usable offline and kickoff requires all stages', async ({
+test('team context, clickable neighbors and final shortcuts stay usable offline and kickoff requires all stages', async ({
   page,
   context,
 }) => {
@@ -33,7 +33,7 @@ test('team context, static neighbors and final shortcuts stay usable offline and
   await page.locator('.match-card').click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
   await page.getByRole('button', { name: 'Confirmer mon arrivée' }).click();
-  await expect(page.getByRole('group', { name: 'Étape suivante', exact: true })).toContainText(
+  await expect(page.getByRole('button', { name: /^Étape suivante ·/ })).toContainText(
     'Mon vestiaire',
   );
   await next(page);
@@ -44,16 +44,21 @@ test('team context, static neighbors and final shortcuts stay usable offline and
   await page.getByLabel('Vestiaire · FC Belleville').fill('3');
   await page.getByRole('button', { name: 'Valider cette étape', exact: true }).click();
   await next(page);
-  await expect(page.getByRole('group', { name: 'Étape précédente', exact: true })).toContainText(
+  await expect(page.getByRole('button', { name: /^Étape précédente ·/ })).toContainText(
     'Vestiaires des équipes',
   );
-  await expect(page.getByRole('group', { name: 'Étape précédente', exact: true })).toContainText(
-    'Validée',
-  );
-  await expect(page.getByRole('group', { name: 'Étape suivante', exact: true })).toContainText(
+  await expect(page.getByRole('button', { name: /^Étape précédente ·/ })).toContainText('Validée');
+  await expect(page.getByRole('button', { name: /^Étape suivante ·/ })).toContainText(
     'Avancée de la feuille',
   );
-  await expect(page.locator('.adjacent-step button')).toHaveCount(0);
+  await page.getByRole('button', { name: /^Étape précédente ·/ }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Vestiaires des équipes', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: /^Étape suivante ·/ }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Tour du terrain', exact: true })).toBeVisible();
+  await expect(page.locator('.tunnel-footer')).toContainText('3 / 12 validées');
   await page.mouse.wheel(0, 350);
   await expect(page.getByRole('heading', { name: 'Tour du terrain', exact: true })).toBeVisible();
   await next(page);
@@ -74,12 +79,35 @@ test('team context, static neighbors and final shortcuts stay usable offline and
   await expect(page.locator('.tunnel-team').nth(1)).toContainText('Vest. 3');
   await next(page);
   await expect(page.locator('.jersey-preview')).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Étape précédente', exact: true })).toContainText(
+  await expect(page.getByRole('button', { name: /^Étape précédente ·/ })).toContainText(
     'Maillots et ballon',
   );
-  await expect(page.getByRole('group', { name: 'Étape suivante', exact: true })).toContainText(
+  await expect(page.getByRole('button', { name: /^Étape suivante ·/ })).toContainText(
     'Prise en charge',
   );
+  await page.getByRole('button', { name: /^Étape précédente · Maillots et ballon/ }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Maillots et ballon', exact: true }),
+  ).toBeVisible();
+  await next(page);
+  await expect(page.locator('.jersey-preview')).toBeVisible();
+  await page
+    .getByRole('button', { name: /^Étape suivante · Prise en charge de la feuille/ })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Prise en charge de la feuille', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: /^Étape précédente · Maillots et ballon/ }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Maillots et ballon', exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: /^Étape suivante · Prise en charge de la feuille/ })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Prise en charge de la feuille', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.jersey-preview')).toHaveCount(0);
   await final(page);
   await page.getByRole('checkbox', { name: /J’ai pris connaissance/ }).check();
   await expect(
@@ -164,6 +192,9 @@ test('team context, static neighbors and final shortcuts stay usable offline and
   await expect(
     page.getByRole('button', { name: 'Coup d’envoi effectué', exact: true }),
   ).toBeEnabled();
+  await expect(
+    page.getByText('Préparation complète. Vous pouvez confirmer le coup d’envoi.', { exact: true }),
+  ).toHaveCount(0);
   await page.screenshot({ path: 'test-results/tunnel-final-471.png', fullPage: true });
   await context.setOffline(false);
 });

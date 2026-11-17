@@ -4015,3 +4015,16 @@ button.schedule-indicator:focus-visible {
   color: #912d19;
   background: #ffe7df;
 }
+
+button.adjacent-step {
+  font-family: inherit;
+  cursor: pointer;
+}
+button.adjacent-step:hover:not(:disabled),
+button.adjacent-step:focus-visible {
+  border-color: var(--blue);
+  background: #eaf0fc;
+}
+button.adjacent-step:disabled {
+  cursor: default;
+}
