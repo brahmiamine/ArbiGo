@@ -11,7 +11,11 @@ export function shouldNotify(match: Match, stepCode: string | null, kind: string
     !match.runs[stepCode]?.completedAt
   );
 }
-export async function scheduleNotifications(match: Match, client: Prisma.TransactionClient = db) {
+export async function scheduleNotifications(
+  match: Match,
+  client: Prisma.TransactionClient = db,
+  notBefore?: number,
+) {
   const jobs = [
     {
       stepCode: null,
@@ -29,7 +33,9 @@ export async function scheduleNotifications(match: Match, client: Prisma.Transac
     ),
   ];
   await client.notificationJob.createMany({
-    data: jobs.map((j) => ({ ...j, matchId: match.id })),
+    data: jobs
+      .filter((job) => notBefore === undefined || job.scheduledAt.getTime() >= notBefore)
+      .map((j) => ({ ...j, matchId: match.id })),
     skipDuplicates: true,
   });
 }

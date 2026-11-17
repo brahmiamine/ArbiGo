@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Button, Modal, Notice, Progress } from '@/components/ui';
-import { useApp } from '../app-provider';
 import type { Match } from '@/domain/types';
 import {
   computeProgress,
@@ -19,7 +18,6 @@ import { loadLogoDataUrls } from './assets/logos';
 import { copyToClipboard } from './services/clipboard';
 
 export default function Debrief({ match, onBack }: { match: Match; onBack: () => void }) {
-  const app = useApp();
   const editor = useMatchDebrief(match);
   const { form } = editor;
   const ocr = useDesignationOcr({ onApply: editor.updateMany });
@@ -71,16 +69,9 @@ export default function Debrief({ match, onBack }: { match: Match; onBack: () =>
           </p>
         </div>
       </header>
-      <div className="debrief-save" role="status">
-        <span>{editor.saveState}</span>
-        <span>
-          {app.pending
-            ? 'Synchronisation en attente'
-            : app.demo
-              ? 'Démonstration locale'
-              : 'Synchronisé avec votre compte'}
-        </span>
-      </div>
+      <span className="sr-only debrief-save" role="status">
+        {editor.saveState}
+      </span>
       {editor.saveState === 'Enregistrement impossible' && (
         <Button variant="secondary" onClick={editor.retry}>
           Réessayer l’enregistrement

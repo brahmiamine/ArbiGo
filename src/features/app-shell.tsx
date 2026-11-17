@@ -2,17 +2,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button, Notice } from '@/components/ui';
-import {
-  Home,
-  CalendarDays,
-  Backpack,
-  UserRound,
-  ArrowUpRight,
-  Wifi,
-  WifiOff,
-  X,
-  Flag,
-} from 'lucide-react';
+import { Home, CalendarDays, Backpack, UserRound, ArrowUpRight, X, Flag } from 'lucide-react';
 import { AppProvider, useApp } from './app-provider';
 import { Dashboard, Matches, MatchDetail } from './dashboard';
 import { InventoryScreen } from './bag/inventory';
@@ -123,22 +113,6 @@ function Shell() {
         </div>
       </aside>
       <div className="app-main">
-        <header className="topbar">
-          <div>
-            {app.demo && (
-              <Link href="/auth/register" className="demo-label">
-                Démo
-                <ArrowUpRight size={14} />
-              </Link>
-            )}
-            <span className="connectivity">
-              {app.online ? <Wifi size={15} /> : <WifiOff size={15} />}
-              <span>
-                {app.pending ? `${app.pending} en attente` : app.online ? 'Connecté' : 'Hors ligne'}
-              </span>
-            </span>
-          </div>
-        </header>
         <main className="page-content">
           {!app.demo && app.matches.length === 1 && !app.profile.preferences.pushEnabled && (
             <PushInvitation />
@@ -159,10 +133,6 @@ function Shell() {
             <Profile />
           )}
         </main>
-        <footer className="app-footer">
-          <span>ArbiGo · La préparation fait la différence.</span>
-          <Link href="/privacy">Confidentialité</Link>
-        </footer>
       </div>
       <nav className="bottom-nav" aria-label="Navigation mobile">
         {navigation.map((n) => (

@@ -23,6 +23,8 @@ const labels: Record<string, string> = {
   ANSWER: 'Contrôle renseigné',
   COMPLETE: 'Étape validée',
   COLORS: 'Couleurs enregistrées',
+  ADD_LOCKER_STEPS: 'Ajout des étapes de vestiaires',
+  LOCKER_ROOMS: 'Vestiaires renseignés',
   SELECT_SHIRT: 'Maillot choisi',
   BRIEFING: 'Consignes données',
   FINISH_MATCH: 'Match terminé',

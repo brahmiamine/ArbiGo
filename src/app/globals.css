@@ -3798,3 +3798,83 @@ select {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* Keep the start action after the bag on every screen size. */
+.detail > .dashboard-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.detail .match-bag {
+  grid-column: 1;
+  grid-row: 1;
+}
+.detail .match-start {
+  grid-column: 1;
+  grid-row: 2;
+}
+.tunnel-timers {
+  flex-wrap: wrap;
+  column-gap: 20px;
+  row-gap: 5px;
+}
+.schedule-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.schedule-indicator.ahead {
+  color: #075840;
+  background: #d9f5e8;
+}
+.schedule-indicator.on-time {
+  color: #003287;
+  background: #e5eeff;
+}
+.schedule-indicator.late {
+  color: #912d19;
+  background: #ffe7df;
+}
+.tunnel-timers > .schedule-indicator {
+  flex-basis: 100%;
+  margin: 0 auto;
+  max-width: max-content;
+}
+.jersey-timing {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid var(--line);
+}
+.jersey-timing > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+.jersey-timing .countdown strong {
+  font-family: inherit;
+  font-size: 13px;
+  min-width: 0;
+  color: var(--ink);
+}
+.jersey-timing .countdown > span {
+  display: none;
+}
+.locker-rooms {
+  padding-top: 20px;
+}
+.locker-rooms input {
+  font-size: 22px;
+  font-weight: 700;
+}

@@ -26,10 +26,12 @@ test('only footer navigation changes steps; illustrated controls, full-screen sh
   await page.getByRole('button', { name: 'Confirmer mon arrivée' }).click();
   await expect(page.locator('.tunnel-step-position')).toContainText('ÉTAPE 01');
   await next(page);
+  await next(page);
+  await next(page);
   await expect(page.locator('.control-illustration')).toHaveCount(5);
   await expect(page.getByRole('img', { name: /points de fixation au sol/ })).toBeVisible();
   await swipe(page);
-  await expect(page.locator('.tunnel-step-position')).toContainText('ÉTAPE 02');
+  await expect(page.locator('.tunnel-step-position')).toContainText('ÉTAPE 04');
   await page.screenshot({ path: 'test-results/controls-471.png', fullPage: true });
   await next(page);
   await next(page);
@@ -86,7 +88,7 @@ test('only footer navigation changes steps; illustrated controls, full-screen sh
   await expect(page.locator('.step-fieldset button')).toHaveCount(1);
   await page.getByRole('button', { name: 'Confirmer les consignes données' }).click();
   await expect(page.getByRole('button', { name: 'Étape validée' })).toBeVisible();
-  await expect(page.locator('.tunnel-step-position')).toContainText('ÉTAPE 06');
+  await expect(page.locator('.tunnel-step-position')).toContainText('ÉTAPE 08');
   await page.reload();
   await expect(page.getByRole('button', { name: 'Étape validée' })).toBeVisible();
   await next(page);
@@ -106,7 +108,7 @@ test('restored shirt preview on a transferred tunnel keeps transfer controls rea
   await page.goto('/demo');
   await page.locator('.match-card').first().click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
-  for (let i = 0; i < 4; i++) await next(page);
+  for (let i = 0; i < 6; i++) await next(page);
   await expect(page.locator('.jersey-preview')).toBeVisible();
   await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve) => {
@@ -166,13 +168,10 @@ test('without upcoming matches, home and match list show newest archived matches
     db.close();
   });
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Derniers matchs', exact: true })).toBeVisible();
-  await expect(page.locator('.recent-matches .match-card')).toHaveCount(3);
+  await expect(page.getByRole('heading', { name: 'Dernier match', exact: true })).toBeVisible();
+  await expect(page.locator('.recent-matches .match-card')).toHaveCount(1);
   await expect(page.locator('.recent-matches .match-card').first()).toContainText(
     'Archive 2026-11-01',
-  );
-  await expect(page.locator('.recent-matches .match-card').nth(1)).toContainText(
-    'Archive 2026-10-25',
   );
   await page
     .getByRole('navigation', { name: 'Navigation principale' })

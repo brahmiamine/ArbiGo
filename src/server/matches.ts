@@ -101,6 +101,8 @@ export async function syncOne(userId: string, input: unknown) {
       data: { state: json(next), status: next.status, version: next.version },
     });
     if (changed.count !== 1) throw new Error('VERSION_CONFLICT');
+    if (next.template.steps.length > state.template.steps.length)
+      await scheduleNotifications(next, tx, Date.now());
     await tx.matchEvent.create({
       data: {
         matchId: row.id,

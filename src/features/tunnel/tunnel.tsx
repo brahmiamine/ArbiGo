@@ -5,9 +5,13 @@ import { JerseyArt } from '@/components/equipment-art';
 import { ControlIllustration } from '@/components/control-illustration';
 import { JerseyPreview } from './jersey-preview';
 import { Briefing } from './briefing';
+import { LockerRooms } from './locker-rooms';
+import { preparationTiming } from '@/domain/preparation-timing';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import {
   ArrowDown,
+  CircleCheck,
+  TrendingUp,
   ArrowUp,
   Check,
   Flag,
@@ -29,7 +33,7 @@ import { useApp } from '../app-provider';
 import { Badge, Button, Modal, Notice, Progress } from '@/components/ui';
 import type { Match, Step, Control, OperationInput, KitColors } from '@/domain/types';
 import { countdown, formatTime, scheduledAt } from '@/domain/time';
-import { summarize, activeStage, stageStatus } from '@/domain/match';
+import { summarize, needsLockerSteps, stageStatus } from '@/domain/match';
 import { warmupPhases } from '@/domain/templates';
 import { elapsedWarmup } from '@/domain/warmup';
 import { rankMatchShirts, previousTeamColors } from '@/domain/equipment';
@@ -79,13 +83,58 @@ function beep(muted: boolean) {
     navigator.vibrate?.(30);
   } catch {}
 }
-export function Tunnel({ match: m }: { match: Match }) {
+export function Tunnel({ match }: { match: Match }) {
+  const app = useApp();
+  if (needsLockerSteps(match) && match.ownerDeviceId === app.deviceId)
+    return <LockerUpgrade match={match} />;
+  return <TunnelContent match={match} />;
+}
+function LockerUpgrade({ match }: { match: Match }) {
+  const app = useApp();
+  const started = useRef(false);
+  const [failed, setFailed] = useState(false);
+  const upgrade = async () => {
+    setFailed(false);
+    try {
+      await app.dispatch(match.id, { type: 'ADD_LOCKER_STEPS' });
+    } catch {
+      setFailed(true);
+    }
+  };
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    void upgrade();
+  });
+  return (
+    <main className="loading-screen">
+      <p>Préparation des étapes de vestiaires…</p>
+      {failed && <Button onClick={() => void upgrade()}>Réessayer</Button>}
+    </main>
+  );
+}
+function TimingIndicator({ match }: { match: Match }) {
+  const now = useNow();
+  const timing = preparationTiming(match, now);
+  const Icon =
+    timing.state === 'ahead' ? TrendingUp : timing.state === 'late' ? AlertTriangle : CircleCheck;
+  return (
+    <span className={`schedule-indicator ${timing.state}`} role="status">
+      <Icon size={15} />
+      <span>{timing.label}</span>
+    </span>
+  );
+}
+function NextCountdown({ match }: { match: Match }) {
+  const timing = preparationTiming(match, useNow());
+  return <Countdown target={timing.nextAt} label={timing.nextLabel} />;
+}
+function TunnelContent({ match: m }: { match: Match }) {
   const app = useApp();
   const step = m.template.steps[m.currentStep],
     previous = m.template.steps[m.currentStep - 1],
     next = m.template.steps[m.currentStep + 1],
     summary = summarize(m);
-  const scheduledNext = activeStage(m).next;
   const [muted, setMuted] = useState(() =>
       typeof window === 'undefined'
         ? false
@@ -181,10 +230,8 @@ export function Tunnel({ match: m }: { match: Match }) {
         <div className="tunnel-timers">
           <Countdown target={m.kickoffAt} label="COUP D’ENVOI DANS" />
           <div className="timer-divider" />
-          <Countdown
-            target={scheduledAt(m.kickoffAt, scheduledNext.offset)}
-            label="PROCHAINE ÉTAPE"
-          />
+          <NextCountdown match={m} />
+          <TimingIndicator match={m} />
           <span className="tunnel-sync">
             {app.online ? <CloudCheck size={16} /> : <WifiOff size={16} />}
             <span>
@@ -201,6 +248,14 @@ export function Tunnel({ match: m }: { match: Match }) {
           label="Progression de la préparation"
         />
       </header>
+      {showJersey && (
+        <div className="jersey-timing">
+          <TimingIndicator match={m} />
+          <span>
+            Coup d’envoi <Countdown target={m.kickoffAt} label="" />
+          </span>
+        </div>
+      )}
       <main className="tunnel-body" ref={body}>
         {showJersey ? (
           <JerseyPreview
@@ -246,14 +301,8 @@ export function Tunnel({ match: m }: { match: Match }) {
                 </div>
                 <StepStatusBadge match={m} step={step} />
               </div>
-              {!briefing && step.code !== 'pitch' && (
-                <p className="step-description">
-                  {step.kind === 'kit'
-                    ? 'Renseignez les couleurs, puis vérifiez le ballon.'
-                    : step.description}
-                </p>
-              )}
               <fieldset className="step-fieldset" disabled={readonly || busy}>
+                {step.kind === 'locker' && <LockerRooms match={m} code={step.code} act={act} />}
                 {step.kind === 'kit' && <KitControl m={m} act={act} />}
                 {step.kind === 'warmup' && <Warmup m={m} act={act} />}
                 {briefing && <Briefing match={m} step={step} />}
@@ -283,7 +332,7 @@ export function Tunnel({ match: m }: { match: Match }) {
                 )}
                 {step.kind === 'final' ? (
                   <FinalReview m={m} act={act} />
-                ) : (
+                ) : step.kind === 'locker' ? null : (
                   <Button
                     className="validate-step"
                     disabled={!!m.runs[step.code].completedAt || busy || readonly}

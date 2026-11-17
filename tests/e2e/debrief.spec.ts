@@ -19,9 +19,9 @@ async function finishMatch(page: Page) {
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   await page.locator('.match-card').first().click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 12; i++) {
     await page.getByRole('button', { name: 'Suivant', exact: true }).click();
-    if (i === 3) {
+    if (i === 5) {
       await expect(page.locator('.jersey-preview')).toBeVisible();
       await page.getByRole('button', { name: 'Suivant', exact: true }).click();
     }
@@ -153,11 +153,11 @@ test('complete debrief persists offline, exports PDF with logos, copies and rese
     .getByLabel('Objectif du prochain match', { exact: true })
     .pressSequentially('a'.repeat(120));
   await saved(page);
-  await expect(page.locator('.debrief-save')).toContainText('Synchronisation en attente');
   await context.setOffline(false);
-  await expect(page.locator('.debrief-save')).not.toContainText('Synchronisation en attente', {
-    timeout: 5000,
-  });
+  await page.reload();
+  await expect(page.getByLabel('Objectif du prochain match', { exact: true })).toHaveValue(
+    'a'.repeat(120),
+  );
 });
 
 test('self-hosted OCR fills detected identity and leaves analysis untouched, with usable error recovery', async ({
@@ -234,7 +234,7 @@ test('kit step no longer requires color or packed outfit confirmation', async ({
   await page.goto('/demo');
   await page.locator('.match-card').first().click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     await page.getByRole('button', { name: 'Suivant', exact: true }).click();
     await expect(page.locator('.tunnel-step-position')).toContainText(`0${i + 2}`);
   }

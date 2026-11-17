@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { lockerRoomsSchema } from '@/domain/match';
 import { debriefChangesSchema } from '@/domain/debrief/schema';
 const colors = z.record(
   z.enum(['home', 'homeKeeper', 'away', 'awayKeeper']),
@@ -6,6 +7,8 @@ const colors = z.record(
 );
 export const actionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('START') }),
+  z.object({ type: z.literal('ADD_LOCKER_STEPS') }),
+  z.object({ type: z.literal('LOCKER_ROOMS'), rooms: lockerRoomsSchema }),
   z.object({ type: z.literal('FINISH_MATCH') }),
   z.object({ type: z.literal('DEBRIEF'), changes: debriefChangesSchema }),
   z.object({ type: z.literal('NAVIGATE'), index: z.number().int().min(0).max(30) }),

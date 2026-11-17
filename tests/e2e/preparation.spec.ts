@@ -11,6 +11,8 @@ test('mobile preparation, issue and postponed match keep independent state', asy
   await page.getByRole('button', { name: 'Confirmer mon arrivée' }).click();
   await expect(page.getByRole('button', { name: 'Étape validée' })).toBeVisible();
   await page.getByRole('button', { name: 'Suivant', exact: true }).click();
+  await page.getByRole('button', { name: 'Suivant', exact: true }).click();
+  await page.getByRole('button', { name: 'Suivant', exact: true }).click();
   const goals = page.locator('.control').filter({ hasText: 'Buts fixés et sécurisés' });
   await goals.getByRole('button', { name: 'Problème', exact: true }).click();
   await page.getByLabel('Commentaire facultatif').fill('Ancrage à contrôler');
@@ -49,9 +51,9 @@ test('offline tunnel survives reload with local queue', async ({ page, context }
   await context.setOffline(true);
   await page.getByRole('button', { name: 'Confirmer mon arrivée' }).click();
   await page.getByRole('button', { name: 'Suivant', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Tour du terrain' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mon vestiaire' })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Tour du terrain' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mon vestiaire' })).toBeVisible();
   await expect(page.locator('.adjacent-step')).toHaveCount(0);
   await page.getByRole('button', { name: 'Précédent', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Étape validée' })).toBeVisible();
@@ -109,7 +111,7 @@ for (const width of [320, 390, 471]) {
       await page.getByRole('checkbox', { name, exact: true }).check();
     }
     await page.getByRole('button', { name: /Je suis arrivé/ }).click();
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       await page.getByRole('button', { name: 'Suivant', exact: true }).click();
       await expect(page.locator('.tunnel-step-position')).toContainText(`0${i + 2}`);
     }
@@ -166,7 +168,7 @@ for (const width of [320, 390, 471]) {
         await expect(page.locator('.jersey-preview')).toBeVisible();
         await page.getByRole('button', { name: 'Suivant', exact: true }).click();
       }
-      await expect(page.locator('.tunnel-step-position')).toContainText(`0${i + 5}`);
+      await expect(page.locator('.tunnel-step-position')).toContainText(`0${i + 7}`);
     }
     await expect(page.getByRole('heading', { name: 'Échauffement', exact: true })).toBeVisible();
     await expect(page.locator('.warmup-clock')).toHaveText('03:00');

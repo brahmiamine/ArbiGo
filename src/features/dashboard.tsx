@@ -18,7 +18,6 @@ import { MatchForm } from './matches/match-form';
 import { EquipmentImage } from './media';
 import { MatchCountdown } from '@/components/match-countdown';
 import { equipmentLabel } from '@/domain/equipment';
-import { practiceLabels } from '@/domain/templates';
 import { formatTime } from '@/domain/time';
 import type { Match } from '@/domain/types';
 export function PitchArt() {
@@ -74,19 +73,17 @@ export function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void 
     <button className="match-card" onClick={onOpen}>
       <div className="match-card-top">
         <span className="eyebrow">{dateLabel(match)}</span>
-        <Badge
-          tone={match.status === 'ACTIVE' ? 'green' : match.status === 'DRAFT' ? 'blue' : 'gray'}
-        >
-          {match.status === 'ACTIVE'
-            ? 'En préparation'
-            : match.status === 'DRAFT'
-              ? practiceLabels[match.practice]
+        {match.status !== 'DRAFT' && (
+          <Badge tone={match.status === 'ACTIVE' ? 'green' : 'gray'}>
+            {match.status === 'ACTIVE'
+              ? 'En préparation'
               : match.status === 'COMPLETED'
                 ? match.finishedAt
                   ? 'Match terminé'
                   : 'Coup d’envoi effectué'
                 : 'Rencontre non débutée'}
-        </Badge>
+          </Badge>
+        )}
       </div>
       <div className="match-teams">
         <strong>{match.homeTeam}</strong>
@@ -174,7 +171,7 @@ export function Dashboard() {
               {next
                 ? 'Prochaine rencontre'
                 : finished.length
-                  ? 'Derniers matchs'
+                  ? 'Dernier match'
                   : 'Prochaine rencontre'}
             </h2>
             <button className="text-button" onClick={() => app.setTab('matches')}>
@@ -186,7 +183,7 @@ export function Dashboard() {
             <MatchCard match={next} onOpen={() => app.setActiveId(next.id)} />
           ) : finished.length ? (
             <div className="recent-matches">
-              {finished.slice(0, 3).map((m) => (
+              {finished.slice(0, 1).map((m) => (
                 <MatchCard key={m.id} match={m} onOpen={() => app.setActiveId(m.id)} />
               ))}
             </div>
@@ -354,12 +351,6 @@ export function MatchDetail({ match: m }: { match: Match }) {
         }
       />
       <div className="dashboard-grid">
-        <section className="match-start">
-          <Button disabled={starting} onClick={() => void start()}>
-            <Flag size={18} />
-            {starting ? 'Démarrage…' : 'Je suis arrivé · démarrer le tunnel'}
-          </Button>
-        </section>
         <section className="panel match-bag">
           <div className="section-heading">
             <h2>Sac du match</h2>
@@ -392,6 +383,12 @@ export function MatchDetail({ match: m }: { match: Match }) {
               </label>
             ))}
           </div>
+        </section>
+        <section className="match-start">
+          <Button disabled={starting} onClick={() => void start()}>
+            <Flag size={18} />
+            {starting ? 'Démarrage…' : 'Je suis arrivé · démarrer le tunnel'}
+          </Button>
         </section>
       </div>
     </div>

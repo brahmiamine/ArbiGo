@@ -33,7 +33,7 @@ Après une vérification documentaire réelle, enregistrer une référence compl
 docker compose exec app ./node_modules/.bin/tsx scripts/approve-template.ts CODE_MODELE REFERENCE_VERIFIEE
 ```
 
-Cette commande n’effectue pas la vérification ; elle en enregistre l’approbation de l’exploitant. Pour modifier un modèle déjà utilisé, créer une nouvelle version/code et actualiser le sélecteur de modèles. Ne jamais réécrire les snapshots des anciennes rencontres.
+Cette commande n’effectue pas la vérification ; elle en enregistre l’approbation de l’exploitant. Pour modifier un modèle déjà utilisé, créer une nouvelle version/code et actualiser le sélecteur de modèles. Ne jamais réécrire les snapshots des anciennes rencontres. Exception additive de l’interface : `ADD_LOCKER_STEPS` ajoute les deux fiches de vestiaires aux seuls tunnels actifs, par une commande auditée du propriétaire ; les contrôles existants et les rencontres clôturées sont préservés. Les nouveaux matchs utilisent les modèles v2.
 
 ## Sauvegarde et restauration
 

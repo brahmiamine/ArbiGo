@@ -69,3 +69,5 @@ Next.js App Router + React + TypeScript strict. Logique métier pure dans `src/d
 MariaDB conserve l’agrégat de préparation dans `Match.state` (JSON, version optimiste), avec événements, opérations de synchronisation, appareils, jetons, médias et notifications en tables séparées. Les contrôles et anomalies sont des snapshots de l’agrégat, plutôt que 26 tables relationnelles. Ce choix conserve une frontière transactionnelle unique et facilite la réplication ; il diffère du modèle logique indicatif du cahier des charges. Les contrôles de propriété sont systématiques dans les services.
 
 Voir [l’exploitation](docs/DEPLOYMENT.md), [les contrats API](docs/API.md), [les références réglementaires](docs/REGULATORY.md) et [la recette](docs/ACCEPTANCE.md).
+
+Le tunnel inclut après l’arrivée le vestiaire de l’arbitre, puis ceux des deux équipes. Les numéros sont propres au match et sauvegardés hors ligne. L’indicateur de préparation compare la première étape non validée à son horaire : en avance à plus d’une minute, à l’heure dans une marge de ±1 minute, en retard au-delà. Le dernier jalon est le coup d’envoi.

@@ -33,7 +33,7 @@ export interface Step {
   title: string;
   offset: number;
   description: string;
-  kind: 'checks' | 'arrival' | 'kit' | 'warmup' | 'final';
+  kind: 'checks' | 'arrival' | 'kit' | 'warmup' | 'final' | 'locker';
   controls: Control[];
 }
 export interface Template {
@@ -96,6 +96,7 @@ export interface Match extends MatchInput {
   colorsConfirmedAt?: string;
   selectedOutfitId?: string;
   selectedShirtId?: string;
+  lockerRooms?: Partial<Record<'referee' | 'home' | 'away', string>>;
   currentStep: number;
   runs: Record<string, StepRun>;
   issues: Issue[];
@@ -113,6 +114,8 @@ export interface Match extends MatchInput {
 }
 export type OperationInput =
   | { type: 'START' }
+  | { type: 'ADD_LOCKER_STEPS' }
+  | { type: 'LOCKER_ROOMS'; rooms: { referee: string } | { home: string; away: string } }
   | { type: 'NAVIGATE'; index: number }
   | { type: 'BAG'; itemId: string; packed: boolean }
   | { type: 'SELECT_SHIRT'; itemId: string }

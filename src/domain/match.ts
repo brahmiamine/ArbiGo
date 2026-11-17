@@ -1,5 +1,6 @@
 import type { Match, MatchInput, Equipment, Template, Operation } from './types';
 import { z } from 'zod';
+import { withLockerSteps } from './templates';
 import { rankOutfits } from './equipment';
 import { createMatchDebrief, debriefChangesSchema } from './debrief/schema';
 
@@ -20,6 +21,30 @@ export const matchInputSchema = z.object({
   competition: z.string().trim().max(100).optional(),
   category: z.string().trim().max(100).optional(),
 });
+const roomNumber = z.string().trim().min(1).max(30);
+export const lockerRoomsSchema = z.union([
+  z.object({ referee: roomNumber }).strict(),
+  z.object({ home: roomNumber, away: roomNumber }).strict(),
+]);
+export function needsLockerSteps(match: Match) {
+  return (
+    ['DRAFT', 'ACTIVE'].includes(match.status) &&
+    match.template.steps.some((step) => step.kind === 'arrival') &&
+    !['referee-locker', 'team-lockers'].every((code) =>
+      match.template.steps.some((step) => step.code === code),
+    )
+  );
+}
+function addLockerSteps(match: Match) {
+  if (!needsLockerSteps(match)) return;
+  const currentCode = match.template.steps[match.currentStep]?.code;
+  match.template.steps = withLockerSteps(match.template.steps);
+  for (const step of match.template.steps) match.runs[step.code] ??= { answers: {} };
+  match.currentStep = Math.max(
+    0,
+    match.template.steps.findIndex((step) => step.code === currentCode),
+  );
+}
 export function createMatch(
   input: MatchInput,
   inventory: Equipment[],
@@ -71,6 +96,18 @@ export function applyOperation(match: Match, op: Operation): Match {
   const m = structuredClone(match);
   const at = op.occurredAt;
   switch (a.type) {
+    case 'ADD_LOCKER_STEPS':
+      addLockerSteps(m);
+      break;
+    case 'LOCKER_ROOMS': {
+      const rooms = lockerRoomsSchema.parse(a.rooms);
+      const code = 'referee' in rooms ? 'referee-locker' : 'team-lockers';
+      if (!m.template.steps.some((step) => step.code === code && step.kind === 'locker'))
+        throw new Error('STEP_UNKNOWN');
+      m.lockerRooms = { ...m.lockerRooms, ...rooms };
+      m.runs[code].completedAt = at;
+      break;
+    }
     case 'START':
       if (m.status !== 'DRAFT') throw new Error('ALREADY_STARTED');
       m.status = 'ACTIVE';
@@ -142,6 +179,7 @@ export function applyOperation(match: Match, op: Operation): Match {
     case 'COMPLETE': {
       const step = m.template.steps.find((s) => s.code === a.stepCode);
       if (!step || step.kind === 'final') throw new Error('STEP_UNKNOWN');
+      if (step.kind === 'locker') throw new Error('LOCKER_ROOMS_REQUIRED');
       if (step.controls.some((c) => !m.runs[step.code].answers[c.code]))
         throw new Error('CHECKS_REQUIRED');
       if (step.kind === 'warmup' && m.warmup.some((p) => p.status !== 'FINISHED'))

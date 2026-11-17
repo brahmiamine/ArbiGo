@@ -70,7 +70,7 @@ describe('match preparation', () => {
     m = act(m, { type: 'NAVIGATE', index: 8 });
     expect(activeStage(m).next).toEqual(deadline);
     m = act(m, { type: 'COMPLETE', stepCode: 'arrival' });
-    expect(activeStage(m).active.code).toBe('pitch');
+    expect(activeStage(m).active.code).toBe('referee-locker');
     const following = activeStage(m).next;
     m = act(m, { type: 'NAVIGATE', index: 0 });
     expect(activeStage(m).next).toEqual(following);

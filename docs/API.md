@@ -49,7 +49,7 @@ Erreur : `{ "error": { "code": "...", "message": "..." }, "serverTime": "ISO UTC
 }
 ```
 
-Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `NAVIGATE`, `BAG`, `SELECT_SHIRT`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
+Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `ADD_LOCKER_STEPS`, `LOCKER_ROOMS`, `NAVIGATE`, `BAG`, `SELECT_SHIRT`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
 
 `BRIEFING` prend `stepCode: "captains" | "assistants"`. Une confirmation marque atomiquement les consignes données : les réponses manquantes du snapshot sont renseignées et l’étape est terminée, sans navigation. Les anciennes réponses et anomalies restent conservées. L’action respecte les mêmes contrôles de propriété de l’appareil, version et idempotence que les autres commandes du tunnel.
 
@@ -62,3 +62,7 @@ L’interface de tenues est retirée. Les anciens assemblages et sélections res
 Des routes explicites partagent le même contrat `Operation` : `/bag`, `/tunnel/start`, `/steps/{code}/responses`, `/steps/{code}/complete`, `/kickoff`, `/close-without-kickoff`, `/notes` sous un match. L’interface utilise principalement le batch pour unifier parcours connecté et hors ligne. Les routes CRUD unitaires d’équipement proposées dans le cahier ne sont pas exposées : l’écriture d’inventaire est groupée et validée.
 
 Le batch renvoie un résultat par opération traitée (`APPLIED`, `CONFLICT`, `QUARANTINED`). Un HTTP 200 n’implique pas l’application de toutes les opérations. Le client doit examiner chaque résultat et conserver celles non accusées. La réutilisation d’un `id` avec un contenu différent est refusée. Les événements acceptés sont insérés dans la même transaction que l’agrégat et l’accusé d’idempotence.
+
+`LOCKER_ROOMS` prend `rooms: {referee: "A2"}` ou `rooms: {home: "3", away: "4"}`. Les valeurs sont obligatoires, nettoyées et limitées à 30 caractères ; la saisie valide uniquement l’étape correspondante, sans navigation. `COMPLETE` ne peut pas contourner la saisie. Les numéros sont conservés dans `Match.lockerRooms`, avec journalisation, contrôle du propriétaire, fencing, version et idempotence.
+
+Les nouveaux modèles v2 comprennent les deux étapes après l’arrivée. Sur les anciens tunnels actifs, le client propriétaire émet `ADD_LOCKER_STEPS` après les opérations déjà mises en file : ajout uniquement des deux étapes et runs manquants, conservation des anciens contrôles, réponses, anomalies et du code de la fiche affichée. L’opération est auditée ; les nouveaux rappels futurs sont ajoutés sans doublon (aucun rappel périmé n’est recréé). `START` ne modifie pas la structure des anciens modèles, afin de conserver le sens des index de navigation dans les files hors ligne. Les rencontres clôturées ne sont pas modifiées.

@@ -41,6 +41,8 @@ test('profile name and custom briefings persist and appear in the tunnel; shirt 
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   const next = () => page.getByRole('button', { name: 'Suivant', exact: true }).click();
   await next();
+  await next();
+  await next();
   await expect(page.locator('.step-description')).toHaveCount(0);
   await expect(page.locator('.control-illustration')).toHaveCount(5);
   await next();
