@@ -61,6 +61,11 @@ it('keeps unrelated URL parameters while changing the app page', () => {
     ),
   ).toBe('?tracking=yes&page=bag');
 });
+it('opens the inventory from retired outfit links and removes the retired view parameter', () => {
+  const nav = readNavigation('?page=bag&view=outfits');
+  expect(nav.tab).toBe('bag');
+  expect(navigationSearch(nav)).toBe('?page=bag');
+});
 it('provides four shirt colors and two distinct match paperwork items without a blue stock shirt', () => {
   const items = defaultEquipment();
   expect(items).toHaveLength(19);

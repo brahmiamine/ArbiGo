@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 test('mobile preparation, issue and postponed match keep independent state', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/demo');
-  await expect(page.getByRole('heading', { name: /Prêt pour le prochain/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Accueil', exact: true })).toBeVisible();
   await page.locator('.match-card').first().click();
   await page.getByRole('checkbox', { name: 'Montre / chronomètre' }).check();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
@@ -135,22 +135,16 @@ for (const width of [320, 390, 471]) {
           .locator('.jersey-fabric'),
       ).toHaveAttribute('fill', kit.hex);
     }
-    await page.getByRole('button', { name: /La noire/ }).click();
+    await expect(page.getByRole('button', { name: /La noire|La jaune/ })).toHaveCount(0);
     await expect(
       page.getByRole('button', { name: /Confirmer couleurs|Reconfirmer couleurs/ }),
     ).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /La noire/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+
     await page.reload();
     await expect(
       page.getByRole('heading', { name: 'Maillots et ballon', exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: /La noire/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+
     for (const kit of kits) {
       await expect(
         kit.team

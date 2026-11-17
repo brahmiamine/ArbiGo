@@ -8,7 +8,6 @@ function IdentitySection({ form, onChange }) {
         <span className="section-number">00</span>
         <div>
           <h2>La rencontre</h2>
-          <p>Informations générales du match</p>
         </div>
       </div>
       <div className="form-grid form-grid--2">

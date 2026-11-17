@@ -5,14 +5,12 @@ export interface AppNavigation {
   activeId: string | null;
   matchView: 'summary' | 'debrief';
   matchFilter: 'upcoming' | 'history';
-  inventoryView: 'items' | 'outfits';
 }
 export const initialNavigation: AppNavigation = {
   tab: 'home',
   activeId: null,
   matchView: 'summary',
   matchFilter: 'upcoming',
-  inventoryView: 'items',
 };
 export function readNavigation(search: string): AppNavigation {
   const params = new URLSearchParams(search);
@@ -23,7 +21,6 @@ export function readNavigation(search: string): AppNavigation {
     activeId: params.get('match'),
     matchView: params.get('view') === 'debrief' ? 'debrief' : 'summary',
     matchFilter: params.get('filter') === 'history' ? 'history' : 'upcoming',
-    inventoryView: params.get('view') === 'outfits' ? 'outfits' : 'items',
   };
 }
 /** Resolve URLs only against the signed-in account's loaded matches. */
@@ -51,7 +48,5 @@ export function navigationSearch(navigation: AppNavigation, currentSearch = ''):
     if (navigation.matchView === 'debrief') params.set('view', 'debrief');
   } else if (navigation.tab === 'matches' && navigation.matchFilter === 'history')
     params.set('filter', 'history');
-  if (navigation.tab === 'bag' && navigation.inventoryView === 'outfits')
-    params.set('view', 'outfits');
   return params.size ? `?${params.toString()}` : '';
 }

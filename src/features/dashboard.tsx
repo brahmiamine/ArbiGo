@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import {
-  ArrowUpRight,
   Plus,
   MapPin,
   CalendarDays,
@@ -14,7 +13,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useApp } from './app-provider';
-import { Button, Badge, Modal, Progress, Empty } from '@/components/ui';
+import { Button, Badge, Modal, Progress, Empty, PageHeader } from '@/components/ui';
 import { MatchForm } from './matches/match-form';
 import { EquipmentImage } from './media';
 import { practiceLabels } from '@/domain/templates';
@@ -125,45 +124,12 @@ export function Dashboard() {
     .sort((a, b) => Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt));
   return (
     <div className="dashboard-home">
-      <div className="page-heading">
-        <div>
-          <div className="eyebrow">VOTRE RENDEZ-VOUS AVEC LE TERRAIN</div>
-          <h1>
-            Prêt pour le prochain coup de sifflet<span className="gold">.</span>
-          </h1>
-          <p>Bonjour {app.profile?.name?.split(' ')[0] ?? ''}, prêt pour le terrain ?</p>
-        </div>
+      <PageHeader title="Accueil">
         <Button onClick={() => setCreating(true)}>
           <Plus size={18} />
           Nouveau match
         </Button>
-      </div>
-      <section className="hero">
-        <div className="hero-copy">
-          <span className="hero-tag">
-            <span /> LA PRÉPARATION FAIT LA DIFFÉRENCE
-          </span>
-          <h2>
-            Le match commence
-            <br />
-            bien avant le terrain.
-          </h2>
-          <p>Votre sac, vos contrôles et votre avant-match.</p>
-          <button
-            className="hero-link"
-            onClick={() => (next ? app.setActiveId(next.id) : setCreating(true))}
-          >
-            {next
-              ? 'Préparer ma prochaine rencontre'
-              : finished.length
-                ? 'Créer une nouvelle rencontre'
-                : 'Créer ma première rencontre'}
-            <ArrowUpRight size={21} />
-          </button>
-        </div>
-        <PitchArt />
-        <span className="hero-corner">AVANT-MATCH / ARBIGO</span>
-      </section>
+      </PageHeader>
       <div className="stats">
         <div>
           <span className="stat-icon">
@@ -302,19 +268,12 @@ export function Matches() {
       : undefined;
   return (
     <>
-      <div className="page-heading">
-        <div>
-          <div className="eyebrow">CHAQUE RENCONTRE A SON PARCOURS</div>
-          <h1>
-            Mes matchs<span className="gold">.</span>
-          </h1>
-          <p>Préparez les prochains. Retrouvez la trace des précédents.</p>
-        </div>
+      <PageHeader title="Mes matchs">
         <Button onClick={() => setCreating(true)}>
           <Plus size={18} />
           Nouveau match
         </Button>
-      </div>
+      </PageHeader>
       <div className="tabs">
         <button
           aria-pressed={!history}
@@ -378,22 +337,19 @@ export function MatchDetail({ match: m }: { match: Match }) {
       <button className="text-button" onClick={() => app.setActiveId(null)}>
         ← Mes rencontres
       </button>
-      <div className="detail-banner">
-        <h1>
-          {m.homeTeam}
-          <span>vs</span>
-          {m.awayTeam}
-        </h1>
-        <p>
-          {dateLabel(m)} · {formatTime(m.kickoffAt, m.timezone)} ·{' '}
-          {m.stadium || 'Stade non précisé'}
-        </p>
-        {m.template.status === 'DRAFT' && (
-          <p>
-            Ce parcours est un repère de préparation à vérifier pour la catégorie et la compétition.
-          </p>
-        )}
-      </div>
+      <PageHeader
+        title={
+          <>
+            {m.homeTeam} <span className="muted">/</span> {m.awayTeam}
+          </>
+        }
+        meta={
+          <>
+            {dateLabel(m)} · {formatTime(m.kickoffAt, m.timezone)}
+            {m.stadium ? ` · ${m.stadium}` : ''}
+          </>
+        }
+      />
       <div className="dashboard-grid">
         <section className="match-start">
           <Button disabled={starting} onClick={() => void start()}>

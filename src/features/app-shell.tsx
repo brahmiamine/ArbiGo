@@ -120,11 +120,10 @@ function Shell() {
       </aside>
       <div className="app-main">
         <header className="topbar">
-          <span>{navigation.find((n) => n.id === app.tab)?.label}</span>
           <div>
             {app.demo && (
               <Link href="/auth/register" className="demo-label">
-                Démonstration · Créer mon compte
+                Démo
                 <ArrowUpRight size={14} />
               </Link>
             )}
@@ -133,13 +132,6 @@ function Shell() {
               <span>
                 {app.pending ? `${app.pending} en attente` : app.online ? 'Connecté' : 'Hors ligne'}
               </span>
-            </span>
-            <span className="topbar-date">
-              {new Intl.DateTimeFormat('fr-FR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              }).format(new Date())}
             </span>
           </div>
         </header>

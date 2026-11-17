@@ -45,8 +45,6 @@ interface AppContextType {
   setError: (s: string) => void;
   tab: Tab;
   setTab: (t: Tab) => void;
-  inventoryView: AppNavigation['inventoryView'];
-  setInventoryView: (v: AppNavigation['inventoryView']) => void;
   matchFilter: AppNavigation['matchFilter'];
   setMatchFilter: (v: AppNavigation['matchFilter']) => void;
   matchView: AppNavigation['matchView'];
@@ -84,7 +82,7 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     [deviceId, setDeviceId] = useState(''),
     [conflicts, setConflicts] = useState<AppContextType['conflicts']>([]);
   const [navigation, setNavigation] = useState<AppNavigation>(initialNavigation);
-  const { tab, activeId, matchView, matchFilter, inventoryView } = navigation;
+  const { tab, activeId, matchView, matchFilter } = navigation;
   const matchesRef = useRef<Match[]>([]);
   const replaceNavigation = useRef(false);
   const setTab = (tab: Tab) =>
@@ -107,8 +105,6 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
           : {}),
       };
     });
-  const setInventoryView = (inventoryView: AppNavigation['inventoryView']) =>
-    setNavigation((n) => ({ ...n, inventoryView }));
   const setMatchFilter = (matchFilter: AppNavigation['matchFilter']) =>
     setNavigation((n) => ({ ...n, matchFilter }));
   const setMatchView = (matchView: AppNavigation['matchView']) =>
@@ -247,22 +243,7 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
           const inv = {
             equipment: defaultEquipment(),
             catalogVersion: INVENTORY_CATALOG_VERSION,
-            outfits: [
-              {
-                id: 'kit-black',
-                name: 'La noire',
-                itemIds: ['shirt-black', 'shorts', 'socks', 'shoes'],
-                primaryColor: 'noir',
-                secondaryColor: 'noir',
-              },
-              {
-                id: 'kit-yellow',
-                name: 'La jaune',
-                itemIds: ['shirt-yellow', 'shorts', 'socks', 'shoes'],
-                primaryColor: 'jaune',
-                secondaryColor: 'noir',
-              },
-            ],
+            outfits: [],
           };
           await store.putInventory(inv);
           const date = new Date();
@@ -405,8 +386,6 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
         setError,
         tab,
         setTab,
-        inventoryView,
-        setInventoryView,
         matchFilter,
         setMatchFilter,
         matchView,

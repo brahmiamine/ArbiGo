@@ -178,9 +178,8 @@ export function previousTeamColors(matches: Match[], current: Match): Partial<Ki
 }
 
 /** Compare real shirts in this match bag, including keeper and secondary colors. */
-export function rankMatchShirts(m: Pick<Match, 'bag' | 'colors' | 'outfits' | 'selectedOutfitId'>) {
+export function rankMatchShirts(m: Pick<Match, 'bag' | 'colors'>) {
   const shirts = m.bag.filter((i) => i.type === 'SHIRT');
-  const selected = m.outfits.find((o) => o.id === m.selectedOutfitId);
   const ranked = rankOutfits(
     shirts.map((i) => ({
       id: i.id,
@@ -196,9 +195,6 @@ export function rankMatchShirts(m: Pick<Match, 'bag' | 'colors' | 'outfits' | 's
   return ranked
     .map((o) => ({ ...o, item: shirts.find((i) => i.id === o.id)! }))
     .sort(
-      (a, b) =>
-        order[a.rating] - order[b.rating] ||
-        Number(b.item.packed) - Number(a.item.packed) ||
-        Number(!!selected?.itemIds.includes(b.id)) - Number(!!selected?.itemIds.includes(a.id)),
+      (a, b) => order[a.rating] - order[b.rating] || Number(b.item.packed) - Number(a.item.packed),
     );
 }

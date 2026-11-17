@@ -6,6 +6,40 @@ async function reloadOn(page: Page, pattern: RegExp) {
   await page.reload();
   await expect(page).toHaveURL(pattern);
 }
+test('all app pages use compact headers with reachable actions across mobile and desktop', async ({
+  page,
+}) => {
+  for (const width of [320, 390, 471, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const [query, title] of [
+      ['', 'Accueil'],
+      ['?page=matches', 'Mes matchs'],
+      ['?page=bag&view=outfits', 'Mon sac'],
+      ['?page=profile', 'Profil'],
+    ]) {
+      await page.goto(`/demo${query}`);
+      const header = page.locator('.compact-heading');
+      await expect(header.getByRole('heading', { name: title, exact: true })).toBeVisible();
+      expect((await header.boundingBox())!.height).toBeLessThanOrEqual(48);
+      await expect(header.locator('.eyebrow, p')).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+        width,
+      );
+      if (title === 'Mon sac') {
+        await expect(page.locator('.inventory-row').first()).toBeVisible();
+        expect((await page.locator('.inventory-row').first().boundingBox())!.y).toBeLessThan(130);
+        await expect(
+          page.getByRole('button', { name: /Mes tenues|Assembler une tenue|Créer une tenue/ }),
+        ).toHaveCount(0);
+      }
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/auth/login');
+  await expect(page.getByRole('heading', { level: 1, name: 'Connexion' })).toBeVisible();
+  await expect(page.locator('h1')).toHaveCount(1);
+  await page.screenshot({ path: 'test-results/login-390.png' });
+});
 test('inventory spacing, revised equipment and every navigation view survive reload and back', async ({
   page,
 }) => {
@@ -13,7 +47,7 @@ test('inventory spacing, revised equipment and every navigation view survive rel
   await page.goto('/demo');
   await mobileNav(page).getByRole('button', { name: 'Mon sac', exact: true }).click();
   await reloadOn(page, /page=bag/);
-  await expect(page.getByRole('heading', { name: 'Mon sac.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mon sac' })).toBeVisible();
   for (const color of ['jaune', 'rouge', 'violet', 'noir'])
     await expect(
       page.locator('.inventory-label strong').filter({ hasText: `Maillot ${color}` }),
@@ -38,12 +72,12 @@ test('inventory spacing, revised equipment and every navigation view survive rel
   }
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: 'test-results/inventory-471.png' });
-  await page.getByRole('button', { name: /Mes tenues/ }).click();
-  await reloadOn(page, /page=bag&view=outfits/);
-  await expect(page.getByRole('button', { name: /Mes tenues/ })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await page.goto('/demo?page=bag&view=outfits');
+  await expect(page).toHaveURL(/page=bag$/);
+  await expect(page.getByRole('heading', { name: 'Mon sac', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /Mes tenues|Assembler une tenue|Créer une tenue/ }),
+  ).toHaveCount(0);
   await mobileNav(page).getByRole('button', { name: 'Profil', exact: true }).click();
   await reloadOn(page, /page=profile/);
   await expect(
@@ -61,7 +95,7 @@ test('inventory spacing, revised equipment and every navigation view survive rel
   await reloadOn(page, /page=matches&match=/);
   await expect(page.getByRole('heading', { name: 'Sac du match', exact: true })).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole('heading', { name: 'Mes matchs.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mes matchs' })).toBeVisible();
 });
 
 test('modern file zones explain unavailable demo uploads and expose the same accessible picker', async ({

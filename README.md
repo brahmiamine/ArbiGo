@@ -1,6 +1,6 @@
 # ArbiGo — Le terrain en tête
 
-PWA mobile de préparation d’avant-match pour arbitres : matchs, inventaire et tenues, sac par rencontre, tunnel de contrôles, échauffement guidé et journal de préparation.
+PWA mobile de préparation d’avant-match pour arbitres : matchs, inventaire, sac par rencontre, tunnel de contrôles, échauffement guidé et journal de préparation.
 
 **Préversion : [arbigo.clubika.com](https://arbigo.clubika.com).** La V1 n’est pas déclarée terminée ; les critères et contrôles encore nécessaires sont consignés dans [la recette](docs/ACCEPTANCE.md). Le cahier des charges original est conservé dans [docs](docs/ArbiGo_Cahier_des_charges_V1.md).
 
@@ -8,7 +8,7 @@ PWA mobile de préparation d’avant-match pour arbitres : matchs, inventaire et
 
 - Inscription, vérification de l’e-mail et réinitialisation par jetons à usage unique ; Credentials Auth.js avec sessions JWT et Argon2id.
 - Football à 11, football à 8 et futsal : snapshots de modèles distincts, versionnés et identifiés comme brouillons tant que la revue applicable n’est pas achevée.
-- Inventaire personnalisable, photos réencodées, tenues complètes et sac indépendant pour chaque match.
+- Inventaire personnalisable, photos réencodées et sac indépendant pour chaque match. Les anciens assemblages restent conservés dans les données, sans onglet ni formulaire de tenues.
 - Tunnel sans onglets, contrôles manuels, anomalies et revérification, deux compteurs et navigation sans validation implicite.
 - Navigation du tunnel uniquement avec Précédent/Suivant en bas ; contrôles illustrés hors ligne, exemples de consignes avec confirmation unique et aperçu plein écran du maillot avant la prise en charge de la feuille. La suggestion compare les maillots du sac aux couleurs des joueurs et gardiens ; les couleurs manquantes restent à vérifier.
 - Sans rencontre à venir, l’accueil affiche les trois derniers matchs et la liste présente le plus récent.

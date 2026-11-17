@@ -127,3 +127,20 @@ it('marks incomplete colors and similar shades for checking, and never invents a
   m.bag = m.bag.filter((i) => i.type !== 'SHIRT');
   expect(rankMatchShirts(m)).toEqual([]);
 });
+it('preserves legacy outfit metadata when updating colors without the retired outfit UI', () => {
+  let m = act(fresh(), { type: 'START' });
+  m.outfits = [
+    {
+      id: 'legacy',
+      name: 'Ma tenue',
+      itemIds: ['shirt-black', 'shorts', 'socks', 'shoes'],
+      primaryColor: 'noir',
+    },
+  ];
+  m.selectedOutfitId = 'legacy';
+  const previous = structuredClone(m.outfits);
+  m = act(m, { type: 'COLORS', colors: { ...m.colors, home: ['rouge'] } });
+  expect(m.selectedOutfitId).toBe('legacy');
+  expect(m.outfits).toEqual(previous);
+  expect(m.colors.home).toEqual(['rouge']);
+});

@@ -1,6 +1,25 @@
 'use client';
 import { useEffect, useId, useRef, type ReactNode, type ButtonHTMLAttributes } from 'react';
 import { X, ArrowUpRight, Check, AlertTriangle } from 'lucide-react';
+export function PageHeader({
+  title,
+  meta,
+  children,
+}: {
+  title: ReactNode;
+  meta?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <header className="page-heading compact-heading">
+      <div>
+        <h1>{title}</h1>
+        {meta && <p>{meta}</p>}
+      </div>
+      {children}
+    </header>
+  );
+}
 export function Button({
   children,
   variant = 'primary',

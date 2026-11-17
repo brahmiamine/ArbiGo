@@ -8,7 +8,7 @@ Dans **Mes matchs → Historique**, ouvrir une rencontre dont le coup d’envoi 
 
 L’identité est préremplie depuis le match et le profil, avec la date et l’heure dans le fuseau du match. La modifier dans le rapport, y compris par OCR, ne modifie pas la désignation ni le journal de préparation. **Vider les champs** ne vide que ce rapport, après confirmation.
 
-L’URL conserve l’écran ouvert (onglet, rencontre, historique, tenues ou débrief) après rechargement et permet le retour navigateur. Seules les rencontres du compte sont résolues ; un tunnel actif garde la priorité. L’en-tête compact du formulaire n’affiche plus de logos ; ceux-ci restent présents dans le PDF. Les deux points forts se saisissent sur plusieurs lignes.
+L’URL conserve l’écran ouvert (onglet, rencontre, historique ou débrief) après rechargement et permet le retour navigateur. Seules les rencontres du compte sont résolues ; un tunnel actif garde la priorité. L’en-tête compact du formulaire n’affiche plus de logos ; ceux-ci restent présents dans le PDF. Les deux points forts se saisissent sur plusieurs lignes.
 
 ## Sauvegarde et synchronisation
 

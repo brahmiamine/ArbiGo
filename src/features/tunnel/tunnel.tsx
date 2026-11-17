@@ -5,7 +5,6 @@ import { JerseyArt } from '@/components/equipment-art';
 import { ControlIllustration } from '@/components/control-illustration';
 import { JerseyPreview } from './jersey-preview';
 import { Briefing } from './briefing';
-import { MediaPhoto } from '../media';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import {
   ArrowDown,
@@ -33,7 +32,7 @@ import { countdown, formatTime, scheduledAt } from '@/domain/time';
 import { summarize, activeStage, stageStatus } from '@/domain/match';
 import { warmupPhases } from '@/domain/templates';
 import { elapsedWarmup } from '@/domain/warmup';
-import { rankOutfits, palette, previousTeamColors } from '@/domain/equipment';
+import { previousTeamColors } from '@/domain/equipment';
 import { ColorPicker } from '../bag/inventory';
 function useNow() {
   const [now, setNow] = useState(Date.now);
@@ -147,13 +146,7 @@ export function Tunnel({ match: m }: { match: Match }) {
       <StageAlerts match={m} muted={muted} />
       <header className="tunnel-header">
         <div className="tunnel-match">
-          <div className="brand compact">
-            <span>
-              A<span className="brand-dot">.</span>
-            </span>
-          </div>
           <div>
-            <span className="eyebrow">PRÉPARATION EN COURS</span>
             <strong>
               {m.homeTeam}
               <span> / </span>
@@ -241,7 +234,6 @@ export function Tunnel({ match: m }: { match: Match }) {
                   )}
                 </span>
                 <div>
-                  <div className="eyebrow">VOTRE AVANT-MATCH, PAS À PAS</div>
                   <h1 tabIndex={-1}>{step.title}</h1>
                 </div>
                 <StepStatusBadge match={m} step={step} />
@@ -249,7 +241,7 @@ export function Tunnel({ match: m }: { match: Match }) {
               {!briefing && (
                 <p className="step-description">
                   {step.kind === 'kit'
-                    ? 'Repérez les couleurs et votre tenue si besoin, puis vérifiez le ballon.'
+                    ? 'Renseignez les couleurs, puis vérifiez le ballon.'
                     : step.description}
                 </p>
               )}
@@ -614,10 +606,7 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
   const colors = Object.fromEntries(
     Object.entries(m.colors).map(([key, values]) => [key, values.slice(0, 1)]),
   ) as KitColors;
-  const selected = m.selectedOutfitId ?? '';
-  const save = (next: KitColors, outfit = m.selectedOutfitId) =>
-    void act({ type: 'COLORS', colors: next, selectedOutfitId: outfit });
-  const ranked = rankOutfits(m.outfits, m.bag, colors);
+  const save = (next: KitColors) => void act({ type: 'COLORS', colors: next });
   return (
     <div className="kit-control">
       {!m.colorsConfirmedAt && Object.keys(suggestions).length > 0 && (
@@ -679,47 +668,6 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
               ))}
             </div>
           </section>
-        ))}
-      </div>
-      {ranked.length > 0 && <h3>Les tenues emportées</h3>}
-      <div className="kit-recommendations">
-        {ranked.map((o) => (
-          <button
-            type="button"
-            key={o.id}
-            aria-pressed={selected === o.id}
-            className={selected === o.id ? 'selected' : ''}
-            onClick={() => save(colors, o.id)}
-          >
-            <span className="outfit-montage">
-              {o.itemIds.map((id) => {
-                const item = m.bag.find((i) => i.id === id);
-                return item?.photoId ? (
-                  <MediaPhoto key={id} id={item.photoId} alt={item.label} />
-                ) : (
-                  <Shirt
-                    key={id}
-                    size={26}
-                    fill={palette[item?.colors[0] ?? o.primaryColor]}
-                    color={palette[item?.colors[0] ?? o.primaryColor]}
-                  />
-                );
-              })}
-            </span>
-            <span>
-              <strong>{o.name}</strong>
-              <Badge
-                tone={o.rating === 'RECOMMENDED' ? 'green' : o.rating === 'AVOID' ? 'red' : 'amber'}
-              >
-                {o.rating === 'RECOMMENDED'
-                  ? 'Recommandée'
-                  : o.rating === 'AVOID'
-                    ? 'À éviter'
-                    : 'À vérifier'}
-              </Badge>
-              <small>{o.reason}</small>
-            </span>
-          </button>
         ))}
       </div>
     </div>

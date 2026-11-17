@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useApp } from './app-provider';
 import { api } from '@/lib/api';
-import { Button, Badge, Notice, Modal } from '@/components/ui';
+import { Button, Badge, Notice, Modal, PageHeader } from '@/components/ui';
 export function Profile() {
   const app = useApp();
   const [devices, setDevices] = useState<
@@ -76,18 +76,7 @@ export function Profile() {
   }
   return (
     <>
-      <div className="page-heading">
-        <div>
-          <div className="eyebrow">VOS PRÉFÉRENCES, VOS DONNÉES</div>
-          <h1>
-            Mon profil<span className="gold">.</span>
-          </h1>
-          <p>Un compte. Plusieurs appareils. Un seul propriétaire du tunnel.</p>
-        </div>
-        <Badge tone={app.demo ? 'amber' : 'green'}>
-          {app.demo ? 'Compte de démonstration' : 'Arbitre · e-mail confirmé'}
-        </Badge>
-      </div>
+      <PageHeader title="Profil" />
       <div className="profile-grid">
         <section className="panel profile-account">
           <div className="avatar large">{app.profile?.name[0]}</div>

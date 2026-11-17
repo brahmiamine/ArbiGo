@@ -1444,7 +1444,7 @@ select {
   gap: 17px;
   padding: 13px 25px;
 }
-.tunnel-match > div:nth-child(2) {
+.tunnel-match > div:first-child {
   flex: 1;
   min-width: 0;
 }
@@ -3298,6 +3298,198 @@ select {
 .file-import .file-zone {
   flex-direction: row;
   gap: 12px;
+}
+
+/* Application headers share a title and the action needed on that screen. */
+.topbar {
+  height: 44px;
+  padding: 0 24px;
+  justify-content: flex-end;
+}
+.topbar > div {
+  gap: 12px;
+}
+.page-content {
+  padding-top: 18px;
+}
+.page-content:has(> .dashboard-home),
+.page-content:has(> .detail) {
+  padding-top: 18px;
+}
+.page-content .page-heading.compact-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.page-content .compact-heading > div {
+  display: block;
+  min-width: 0;
+  flex: 1;
+}
+.page-content .compact-heading h1 {
+  font-size: 28px;
+  margin: 0;
+  line-height: 1.15;
+  max-width: none;
+  overflow-wrap: anywhere;
+}
+.page-content .compact-heading p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  max-width: none;
+}
+.page-content .compact-heading > .button {
+  min-height: 44px;
+  padding: 9px 12px;
+  gap: 6px;
+  font-size: 11px;
+  align-self: center;
+}
+.page-content .section-heading {
+  margin-bottom: 10px;
+  gap: 10px;
+}
+.page-content .section-heading h2 {
+  font-size: 17px;
+}
+.modal-head {
+  margin-bottom: 16px;
+  gap: 12px;
+}
+.modal-head h2 {
+  font-size: 22px;
+  line-height: 1.2;
+}
+.auth-layout {
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+}
+.auth-panel {
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
+.auth-panel > .brand {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+.auth-form-wrap {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+.auth-form-wrap > h1 {
+  font-size: 28px;
+  margin: 0;
+}
+.auth-form-wrap .form {
+  margin-top: 20px;
+}
+.legal {
+  padding-top: 24px;
+}
+.legal h1 {
+  font-size: 28px;
+  margin: 16px 0;
+}
+.tunnel-match {
+  min-height: 44px;
+  padding: 4px 20px;
+  gap: 10px;
+}
+.tunnel-match > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.tunnel-match > .tunnel-tools {
+  flex: 0 0 auto;
+}
+.tunnel-match strong {
+  font-size: 12px;
+}
+.tunnel-timers {
+  padding: 7px 18px;
+  gap: 24px;
+}
+.tunnel-timers .countdown {
+  gap: 1px;
+}
+.tunnel-timers .countdown strong {
+  font-size: 32px;
+  min-width: 76px;
+}
+.tunnel-timers .countdown > span {
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.tunnel-timers .timer-divider {
+  height: 28px;
+}
+.tunnel-body .step-title {
+  gap: 10px;
+}
+.tunnel-body .step-title h1 {
+  font-size: 26px;
+  margin: 0;
+}
+.tunnel-body .step-title .step-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+}
+.tunnel-body .step-title .step-icon > svg {
+  width: 18px;
+}
+.tunnel-step-position {
+  margin-bottom: 10px;
+}
+@media (max-width: 600px) {
+  .topbar {
+    padding: 0 14px;
+  }
+  .page-content {
+    padding: 14px 14px 30px;
+  }
+  .page-content:has(> .dashboard-home),
+  .page-content:has(> .detail) {
+    padding-top: 14px;
+  }
+  .page-content .compact-heading h1 {
+    font-size: 24px;
+  }
+  .page-content .compact-heading > .badge {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+  .modal-head h2 {
+    font-size: 20px;
+  }
+  .auth-panel {
+    padding: 20px;
+  }
+  .auth-form-wrap > h1 {
+    font-size: 24px;
+  }
+  .tunnel-match {
+    padding: 3px 14px;
+  }
+  .tunnel-match strong {
+    font-size: 11px;
+  }
+  .tunnel-body .step-title h1 {
+    font-size: 24px;
+  }
+  .tunnel-body .step-title > .badge {
+    font-size: 10px;
+  }
 }
 
 .recent-matches {

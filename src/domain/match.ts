@@ -161,7 +161,7 @@ export function applyOperation(match: Match, op: Operation): Match {
       if (a.selectedOutfitId && !outfit) throw new Error('OUTFIT_NOT_PACKED');
       m.colors = structuredClone(a.colors);
       m.colorsConfirmedAt = Object.values(a.colors).every((c) => c.length) ? at : undefined;
-      m.selectedOutfitId = a.selectedOutfitId;
+      if (a.selectedOutfitId !== undefined) m.selectedOutfitId = a.selectedOutfitId;
       break;
     }
     case 'WARMUP': {

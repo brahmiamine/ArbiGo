@@ -7,12 +7,7 @@ import TextArea from './TextArea';
 function DebriefSections({ form, onChange }) {
   return (
     <>
-      <Section
-        number="01"
-        icon="🟢"
-        title="Mon match en 3 mots"
-        subtitle="Trois mots pour résumer la rencontre"
-      >
+      <Section number="01" title="Mon match en 3 mots">
         <div className="word-row">
           {form.words.map((word, index) => (
             <input
@@ -28,12 +23,7 @@ function DebriefSections({ form, onChange }) {
         </div>
       </Section>
 
-      <Section
-        number="02"
-        icon="✅"
-        title="Mes 2 points forts"
-        subtitle="Ce qui a particulièrement bien fonctionné"
-      >
+      <Section number="02" title="Mes 2 points forts">
         <div className="stack">
           <TextArea
             rows={5}
@@ -56,12 +46,7 @@ function DebriefSections({ form, onChange }) {
         </div>
       </Section>
 
-      <Section
-        number="03"
-        icon="⚠️"
-        title="Mon principal point d’amélioration"
-        subtitle="Un axe concret et utile pour progresser"
-      >
+      <Section number="03" title="Mon principal point d’amélioration">
         <TextArea
           ariaLabel="Point d’amélioration"
           name="improvement"
@@ -71,12 +56,7 @@ function DebriefSections({ form, onChange }) {
         />
       </Section>
 
-      <Section
-        number="04"
-        icon="🎯"
-        title="Les 2 faits marquants"
-        subtitle="Deux décisions ou situations importantes du match"
-      >
+      <Section number="04" title="Les 2 faits marquants">
         <div className="stack stack--large">
           <TextArea
             label="Décision / situation n°1"
@@ -99,12 +79,7 @@ function DebriefSections({ form, onChange }) {
         </div>
       </Section>
 
-      <Section
-        number="05"
-        icon="🤝"
-        title="Relationnel / gestion du match"
-        subtitle="Évalue la qualité de ta gestion humaine"
-      >
+      <Section number="05" title="Relationnel / gestion du match">
         <div className="choice-grid">
           {RELATION_OPTIONS.map((option) => (
             <label
@@ -132,12 +107,7 @@ function DebriefSections({ form, onChange }) {
         />
       </Section>
 
-      <Section
-        number="06"
-        icon="🧠"
-        title="Auto-évaluation"
-        subtitle="Une note honnête et un recul sur ta prestation"
-      >
+      <Section number="06" title="Auto-évaluation">
         <RatingField value={form.rating} onChange={onChange} />
         <TextArea
           label="Si je devais refaire le match, je changerais :"
@@ -148,12 +118,7 @@ function DebriefSections({ form, onChange }) {
         />
       </Section>
 
-      <Section
-        number="07"
-        icon="🚀"
-        title="Mon objectif pour le prochain match"
-        subtitle="Un objectif simple, observable et directement lié à ton axe de progression"
-      >
+      <Section number="07" title="Mon objectif pour le prochain match">
         <TextArea
           ariaLabel="Objectif du prochain match"
           name="objective"

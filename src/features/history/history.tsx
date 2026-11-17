@@ -4,7 +4,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { Flag, Clock3, Check, AlertTriangle } from 'lucide-react';
 import { useApp } from '../app-provider';
 import { api } from '@/lib/api';
-import { Button, Badge, Modal, Notice } from '@/components/ui';
+import { Button, Badge, Modal, Notice, PageHeader } from '@/components/ui';
 import type { Match, OperationInput } from '@/domain/types';
 import { formatTime, parseLocalKickoff } from '@/domain/time';
 import { summarize } from '@/domain/match';
@@ -77,17 +77,19 @@ export function History({ match: m }: { match: Match }) {
       <button className="text-button" onClick={() => app.setActiveId(null)}>
         ← Mes rencontres
       </button>
-      <div className="page-heading">
-        <div>
-          <div className="eyebrow">JOURNAL DE PRÉPARATION</div>
-          <h1>
+      <PageHeader
+        title={
+          <>
             {m.homeTeam} <span className="muted">/</span> {m.awayTeam}
-          </h1>
-          <p>
+          </>
+        }
+        meta={
+          <>
             {new Date(m.kickoffAt).toLocaleDateString('fr-FR')} ·{' '}
             {formatTime(m.kickoffAt, m.timezone)}
-          </p>
-        </div>
+          </>
+        }
+      >
         <Badge tone={m.status === 'COMPLETED' ? 'green' : 'amber'}>
           {m.status === 'COMPLETED'
             ? m.finishedAt
@@ -99,7 +101,7 @@ export function History({ match: m }: { match: Match }) {
                 ? 'Annulée'
                 : 'Non débutée'}
         </Badge>
-      </div>
+      </PageHeader>
       {m.status === 'COMPLETED' && (
         <section className="panel debrief-entry">
           <div>

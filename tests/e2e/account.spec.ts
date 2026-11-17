@@ -205,7 +205,7 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   await page.getByLabel('Mot de passe', { exact: true }).fill(nextPassword);
   await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
   await expect(page).toHaveURL(/\/app$/);
-  await expect(page.getByRole('heading', { name: /Prêt pour le prochain/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Accueil', exact: true })).toBeVisible();
   const deleted = await page.request.delete('/api/me/data', {
     headers: { Origin: new URL(page.url()).origin },
     data: { password: nextPassword },

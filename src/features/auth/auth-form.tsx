@@ -7,7 +7,6 @@ import { useSearchParams } from 'next/navigation';
 import { Button, Notice } from '@/components/ui';
 import { api } from '@/lib/api';
 import { ArrowRight, ArrowUpRight, ShieldCheck } from 'lucide-react';
-import { PitchArt } from '../dashboard';
 export function AuthForm({ mode }: { mode: 'login' | 'register' | 'forgot' | 'reset' | 'verify' }) {
   const params = useSearchParams();
   const router = useRouter();
@@ -15,11 +14,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' | 'forgot' | 're
     [error, setError] = useState(''),
     [message, setMessage] = useState('');
   const titles = {
-    login: 'Le terrain vous attend.',
-    register: 'Votre prochain match commence ici.',
-    forgot: 'Retrouvez votre accès.',
-    reset: 'Un nouveau départ.',
-    verify: 'Confirmez votre adresse.',
+    login: 'Connexion',
+    register: 'Créer un compte',
+    forgot: 'Mot de passe oublié',
+    reset: 'Nouveau mot de passe',
+    verify: 'Vérifier mon adresse',
   };
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -59,42 +58,12 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' | 'forgot' | 're
   }
   return (
     <main className="auth-layout">
-      <section className="auth-story">
-        <Link className="brand" href="/">
-          ArbiGo<span>.</span>
-        </Link>
-        <div>
-          <span className="eyebrow">LE CARNET D’AVANT-MATCH DES ARBITRES</span>
-          <h1>
-            Arrivez prêt.
-            <br />
-            Arbitrez l’esprit
-            <br />
-            libre<span>.</span>
-          </h1>
-          <p>
-            Du sac au premier coup de sifflet,
-            <br />
-            votre préparation tient dans la poche.
-          </p>
-          <PitchArt />
-        </div>
-        <span className="tiny">UN OUTIL POUR VOUS. LES DÉCISIONS RESTENT LES VÔTRES.</span>
-      </section>
       <section className="auth-panel">
-        <Link href="/" className="brand mobile-brand">
+        <Link href="/" className="brand">
           ArbiGo<span>.</span>
         </Link>
         <div className="auth-form-wrap">
-          <span className="eyebrow">
-            {mode === 'login' ? 'CONTENT DE VOUS REVOIR' : 'BIENVENUE CHEZ ARBIGO'}
-          </span>
-          <h2>{titles[mode]}</h2>
-          <p className="muted">
-            {mode === 'login'
-              ? 'Retrouvez vos matchs, votre matériel et vos repères.'
-              : 'Votre compte personnel de préparation d’avant-match.'}
-          </p>
+          <h1>{titles[mode]}</h1>
           {message ? (
             <div className="form">
               <Notice tone="green">{message}</Notice>

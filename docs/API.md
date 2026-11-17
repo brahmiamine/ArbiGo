@@ -53,6 +53,8 @@ Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. 
 
 `BRIEFING` prend `stepCode: "captains" | "assistants"`. Une confirmation marque atomiquement les consignes données : les réponses manquantes du snapshot sont renseignées et l’étape est terminée, sans navigation. Les anciennes réponses et anomalies restent conservées. L’action respecte les mêmes contrôles de propriété de l’appareil, version et idempotence que les autres commandes du tunnel.
 
+L’interface de tenues est retirée. Les anciens assemblages et sélections restent présents dans les données et exports ; une action `COLORS` sans `selectedOutfitId` conserve l’ancienne sélection. La suggestion actuelle du maillot utilise uniquement les articles du sac et les couleurs des équipes.
+
 Des routes explicites partagent le même contrat `Operation` : `/bag`, `/tunnel/start`, `/steps/{code}/responses`, `/steps/{code}/complete`, `/kickoff`, `/close-without-kickoff`, `/notes` sous un match. L’interface utilise principalement le batch pour unifier parcours connecté et hors ligne. Les routes CRUD unitaires d’équipement proposées dans le cahier ne sont pas exposées : l’écriture d’inventaire est groupée et validée.
 
 Le batch renvoie un résultat par opération traitée (`APPLIED`, `CONFLICT`, `QUARANTINED`). Un HTTP 200 n’implique pas l’application de toutes les opérations. Le client doit examiner chaque résultat et conserver celles non accusées. La réutilisation d’un `id` avec un contenu différent est refusée. Les événements acceptés sont insérés dans la même transaction que l’agrégat et l’accusé d’idempotence.
