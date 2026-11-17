@@ -75,3 +75,5 @@ Le tunnel inclut après l’arrivée le vestiaire de l’arbitre, puis ceux des 
 L’en-tête du tunnel rappelle les couleurs déclarées et le vestiaire de chaque équipe. Les étapes voisines affichent leur statut et ouvrent la fiche indiquée au clic, sans navigation au défilement ; les lignes du bilan ouvrent directement la fiche correspondante. Le coup d’envoi nécessite désormais toutes les étapes validées, les anomalies résolues et une confirmation explicite.
 
 Le bilan affiche pour chaque étape l’horaire prévu depuis le coup d’envoi, l’heure de validation enregistrée et l’écart arrondi à la minute (− en avance, + en retard, 0 à l’heure). Les étapes non validées n’ont pas de résultat d’écart. L’indicateur général ouvre directement le bilan, y compris depuis l’aperçu du maillot.
+
+Après les vestiaires des équipes, l’étape « Check-in SPORTCASH » ouvre https://app.sportcash.fr/ dans un nouvel onglet. La confirmation dans ArbiGo est manuelle et reste sauvegardée hors ligne.

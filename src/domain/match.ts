@@ -1,6 +1,6 @@
 import type { Match, MatchInput, Equipment, Template, Operation } from './types';
 import { z } from 'zod';
-import { withLockerSteps } from './templates';
+import { withLockerSteps, withSportcashStep } from './templates';
 import { rankOutfits } from './equipment';
 import { createMatchDebrief, debriefChangesSchema } from './debrief/schema';
 
@@ -35,10 +35,16 @@ export function needsLockerSteps(match: Match) {
     )
   );
 }
-function addLockerSteps(match: Match) {
-  if (!needsLockerSteps(match)) return;
+export function needsSportcashStep(match: Match) {
+  return (
+    ['DRAFT', 'ACTIVE'].includes(match.status) &&
+    match.template.steps.some((step) => step.code === 'team-lockers') &&
+    !match.template.steps.some((step) => step.code === 'sportcash')
+  );
+}
+function addPreparationSteps(match: Match, steps: Template['steps']) {
   const currentCode = match.template.steps[match.currentStep]?.code;
-  match.template.steps = withLockerSteps(match.template.steps);
+  match.template.steps = steps;
   for (const step of match.template.steps) match.runs[step.code] ??= { answers: {} };
   match.currentStep = Math.max(
     0,
@@ -97,7 +103,10 @@ export function applyOperation(match: Match, op: Operation): Match {
   const at = op.occurredAt;
   switch (a.type) {
     case 'ADD_LOCKER_STEPS':
-      addLockerSteps(m);
+      if (needsLockerSteps(m)) addPreparationSteps(m, withLockerSteps(m.template.steps));
+      break;
+    case 'ADD_SPORTCASH_STEP':
+      if (needsSportcashStep(m)) addPreparationSteps(m, withSportcashStep(m.template.steps));
       break;
     case 'LOCKER_ROOMS': {
       const rooms = lockerRoomsSchema.parse(a.rooms);

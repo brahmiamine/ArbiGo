@@ -23,6 +23,7 @@ const labels: Record<string, string> = {
   ANSWER: 'Contrôle renseigné',
   COMPLETE: 'Étape validée',
   COLORS: 'Couleurs enregistrées',
+  ADD_SPORTCASH_STEP: 'Ajout du check-in SPORTCASH',
   ADD_LOCKER_STEPS: 'Ajout des étapes de vestiaires',
   LOCKER_ROOMS: 'Vestiaires renseignés',
   SELECT_SHIRT: 'Maillot choisi',

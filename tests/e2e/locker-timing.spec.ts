@@ -100,7 +100,9 @@ test('legacy active snapshots gain locker steps without losing current card and 
     rows.onsuccess = () => {
       for (const m of rows.result)
         if (m.status === 'ACTIVE') {
-          m.template.steps = m.template.steps.filter((s: { kind: string }) => s.kind !== 'locker');
+          m.template.steps = m.template.steps.filter(
+            (s: { kind: string; code: string }) => s.kind !== 'locker' && s.code !== 'sportcash',
+          );
           delete m.runs['referee-locker'];
           delete m.runs['team-lockers'];
           m.runs.arrival.completedAt = new Date().toISOString();
@@ -116,7 +118,11 @@ test('legacy active snapshots gain locker steps without losing current card and 
   });
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Tour du terrain', exact: true })).toBeVisible();
-  await expect(page.locator('.tunnel-step-position')).toContainText('ÉTAPE 04 / 13');
+  await expect(page.locator('.tunnel-step-position')).toContainText('ÉTAPE 05 / 14');
+  await page.getByRole('button', { name: 'Précédent', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Check-in SPORTCASH', exact: true }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Précédent', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Vestiaires des équipes', exact: true }),

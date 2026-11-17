@@ -33,7 +33,7 @@ export interface Step {
   title: string;
   offset: number;
   description: string;
-  kind: 'checks' | 'arrival' | 'kit' | 'warmup' | 'final' | 'locker';
+  kind: 'checks' | 'arrival' | 'kit' | 'warmup' | 'final' | 'locker' | 'checkin';
   controls: Control[];
 }
 export interface Template {
@@ -115,6 +115,7 @@ export interface Match extends MatchInput {
 export type OperationInput =
   | { type: 'START' }
   | { type: 'ADD_LOCKER_STEPS' }
+  | { type: 'ADD_SPORTCASH_STEP' }
   | { type: 'LOCKER_ROOMS'; rooms: { referee: string } | { home: string; away: string } }
   | { type: 'NAVIGATE'; index: number }
   | { type: 'BAG'; itemId: string; packed: boolean }

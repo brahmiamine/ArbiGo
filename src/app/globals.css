@@ -4029,3 +4029,13 @@ button.adjacent-step:focus-visible {
 button.adjacent-step:disabled {
   cursor: default;
 }
+
+.sportcash-checkin {
+  margin-top: 16px;
+}
+.sportcash-checkin p {
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}

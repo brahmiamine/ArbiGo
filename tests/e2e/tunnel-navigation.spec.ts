@@ -49,7 +49,7 @@ test('team context, clickable neighbors and final shortcuts stay usable offline 
   );
   await expect(page.getByRole('button', { name: /^Étape précédente ·/ })).toContainText('Validée');
   await expect(page.getByRole('button', { name: /^Étape suivante ·/ })).toContainText(
-    'Avancée de la feuille',
+    'Tour du terrain',
   );
   await page.getByRole('button', { name: /^Étape précédente ·/ }).click();
   await expect(
@@ -57,8 +57,11 @@ test('team context, clickable neighbors and final shortcuts stay usable offline 
   ).toBeVisible();
   await page.getByRole('button', { name: /^Étape suivante ·/ }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { name: 'Tour du terrain', exact: true })).toBeVisible();
-  await expect(page.locator('.tunnel-footer')).toContainText('3 / 12 validées');
+  await expect(
+    page.getByRole('heading', { name: 'Check-in SPORTCASH', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.tunnel-footer')).toContainText('3 / 13 validées');
+  await page.getByRole('button', { name: /^Étape suivante · Tour du terrain/ }).click();
   await page.mouse.wheel(0, 350);
   await expect(page.getByRole('heading', { name: 'Tour du terrain', exact: true })).toBeVisible();
   await next(page);

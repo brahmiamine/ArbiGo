@@ -13,6 +13,7 @@ test('mobile preparation, issue and postponed match keep independent state', asy
   await page.getByRole('button', { name: 'Suivant', exact: true }).click();
   await page.getByRole('button', { name: 'Suivant', exact: true }).click();
   await page.getByRole('button', { name: 'Suivant', exact: true }).click();
+  await page.getByRole('button', { name: 'Suivant', exact: true }).click();
   const goals = page.locator('.control').filter({ hasText: 'Buts fixés et sécurisés' });
   await goals.getByRole('button', { name: 'Problème', exact: true }).click();
   await page.getByLabel('Commentaire facultatif').fill('Ancrage à contrôler');
@@ -112,7 +113,7 @@ for (const width of [320, 390, 471]) {
       await page.getByRole('checkbox', { name, exact: true }).check();
     }
     await page.getByRole('button', { name: /Je suis arrivé/ }).click();
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       await page.getByRole('button', { name: 'Suivant', exact: true }).click();
       await expect(page.locator('.tunnel-step-position')).toContainText(`0${i + 2}`);
     }
@@ -169,7 +170,9 @@ for (const width of [320, 390, 471]) {
         await expect(page.locator('.jersey-preview')).toBeVisible();
         await page.getByRole('button', { name: 'Suivant', exact: true }).click();
       }
-      await expect(page.locator('.tunnel-step-position')).toContainText(`0${i + 7}`);
+      await expect(page.locator('.tunnel-step-position')).toContainText(
+        String(i + 8).padStart(2, '0'),
+      );
     }
     await expect(page.getByRole('heading', { name: 'Échauffement', exact: true })).toBeVisible();
     await expect(page.locator('.warmup-clock')).toHaveText('03:00');

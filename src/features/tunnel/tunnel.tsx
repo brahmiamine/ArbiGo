@@ -10,6 +10,7 @@ import { preparationTiming, stageTiming } from '@/domain/preparation-timing';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import {
   ArrowDown,
+  ExternalLink,
   CircleCheck,
   TrendingUp,
   ArrowUp,
@@ -33,7 +34,7 @@ import { useApp } from '../app-provider';
 import { Badge, Button, Modal, Notice, Progress } from '@/components/ui';
 import type { Match, Step, Control, OperationInput, KitColors } from '@/domain/types';
 import { countdown, formatTime, scheduledAt } from '@/domain/time';
-import { summarize, needsLockerSteps, stageStatus } from '@/domain/match';
+import { summarize, needsLockerSteps, needsSportcashStep, stageStatus } from '@/domain/match';
 import { warmupPhases } from '@/domain/templates';
 import { elapsedWarmup } from '@/domain/warmup';
 import { palette, rankMatchShirts, previousTeamColors } from '@/domain/equipment';
@@ -146,18 +147,28 @@ function beep(muted: boolean) {
 }
 export function Tunnel({ match }: { match: Match }) {
   const app = useApp();
-  if (needsLockerSteps(match) && match.ownerDeviceId === app.deviceId)
-    return <LockerUpgrade match={match} />;
+  if (match.ownerDeviceId === app.deviceId) {
+    if (needsLockerSteps(match))
+      return <PreparationUpgrade key="lockers" match={match} type="ADD_LOCKER_STEPS" />;
+    if (needsSportcashStep(match))
+      return <PreparationUpgrade key="sportcash" match={match} type="ADD_SPORTCASH_STEP" />;
+  }
   return <TunnelContent match={match} />;
 }
-function LockerUpgrade({ match }: { match: Match }) {
+function PreparationUpgrade({
+  match,
+  type,
+}: {
+  match: Match;
+  type: 'ADD_LOCKER_STEPS' | 'ADD_SPORTCASH_STEP';
+}) {
   const app = useApp();
   const started = useRef(false);
   const [failed, setFailed] = useState(false);
   const upgrade = async () => {
     setFailed(false);
     try {
-      await app.dispatch(match.id, { type: 'ADD_LOCKER_STEPS' });
+      await app.dispatch(match.id, { type });
     } catch {
       setFailed(true);
     }
@@ -169,7 +180,7 @@ function LockerUpgrade({ match }: { match: Match }) {
   });
   return (
     <main className="loading-screen">
-      <p>Préparation des étapes de vestiaires…</p>
+      <p>Préparation des étapes…</p>
       {failed && <Button onClick={() => void upgrade()}>Réessayer</Button>}
     </main>
   );
@@ -402,6 +413,19 @@ function TunnelContent({ match: m }: { match: Match }) {
               </div>
               <fieldset className="step-fieldset" disabled={readonly || busy}>
                 {step.kind === 'locker' && <LockerRooms match={m} code={step.code} act={act} />}
+                {step.kind === 'checkin' && (
+                  <div className="sportcash-checkin">
+                    <p>Effectuez votre check-in dans SPORTCASH, puis confirmez ici.</p>
+                    <a
+                      className="button secondary"
+                      href="https://app.sportcash.fr/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Ouvrir SPORTCASH <ExternalLink size={18} aria-hidden="true" />
+                    </a>
+                  </div>
+                )}
                 {step.kind === 'kit' && <KitControl m={m} act={act} />}
                 {step.kind === 'warmup' && <Warmup m={m} act={act} />}
                 {briefing && <Briefing match={m} step={step} />}
@@ -448,9 +472,11 @@ function TunnelContent({ match: m }: { match: Match }) {
                       ? 'Étape validée'
                       : step.kind === 'arrival'
                         ? 'Confirmer mon arrivée'
-                        : briefing
-                          ? 'Confirmer les consignes données'
-                          : 'Valider cette étape'}
+                        : step.kind === 'checkin'
+                          ? 'Confirmer mon check-in'
+                          : briefing
+                            ? 'Confirmer les consignes données'
+                            : 'Valider cette étape'}
                   </Button>
                 )}
               </fieldset>

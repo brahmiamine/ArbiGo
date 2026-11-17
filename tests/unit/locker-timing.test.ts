@@ -30,10 +30,11 @@ const act = (match: Match, action: OperationInput) =>
 it('adds two ordered locker stages for every practice with kickoff-relative times', () => {
   for (const practice of ['FOOT_11', 'FOOT_8', 'FUTSAL'] as const) {
     const m = fresh(practice);
-    expect(m.template.steps.slice(0, 4).map((s) => s.code)).toEqual([
+    expect(m.template.steps.slice(0, 5).map((s) => s.code)).toEqual([
       'arrival',
       'referee-locker',
       'team-lockers',
+      'sportcash',
       'pitch',
     ]);
     expect(
@@ -43,7 +44,7 @@ it('adds two ordered locker stages for every practice with kickoff-relative time
 });
 it('audits an additive legacy upgrade without losing the displayed stage, completed runs, issues or template metadata', () => {
   let m = fresh();
-  m.template.steps = m.template.steps.filter((s) => s.kind !== 'locker');
+  m.template.steps = m.template.steps.filter((s) => s.kind !== 'locker' && s.code !== 'sportcash');
   m.template.version = 1;
   m.template.code = 'legacy-v1';
   delete m.runs['referee-locker'];
@@ -53,7 +54,7 @@ it('audits an additive legacy upgrade without losing the displayed stage, comple
   m = act(m, { type: 'NAVIGATE', index: 3 });
   expect(m.template.steps[m.currentStep].code).toBe('kit');
   // Simulate an already active v1 snapshot with completed work.
-  m.template.steps = m.template.steps.filter((s) => s.kind !== 'locker');
+  m.template.steps = m.template.steps.filter((s) => s.kind !== 'locker' && s.code !== 'sportcash');
   delete m.runs['referee-locker'];
   delete m.runs['team-lockers'];
   m.currentStep = m.template.steps.findIndex((s) => s.code === 'kit');

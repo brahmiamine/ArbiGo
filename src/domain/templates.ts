@@ -142,11 +142,19 @@ export function withLockerSteps(steps: Step[]): Step[] {
       : [step],
   );
 }
+export function withSportcashStep(steps: Step[]): Step[] {
+  if (steps.some((step) => step.code === 'sportcash')) return steps;
+  return steps.flatMap((step) =>
+    step.code === 'team-lockers'
+      ? [step, s('sportcash', 'Check-in SPORTCASH', step.offset + 1, '', [], 'checkin')]
+      : [step],
+  );
+}
 const make = (practice: Practice, steps: Step[], status: Template['status']): Template => ({
-  code: `D75-${practice}-2026-v2`,
+  code: `D75-${practice}-2026-v3`,
   practice,
   season: '2026/27',
-  version: 2,
+  version: 3,
   organizer: 'Profil de préparation — organisateur à confirmer',
   status,
   sources: [
@@ -155,7 +163,7 @@ const make = (practice: Practice, steps: Step[], status: Template['status']): Te
     'FFF/CFA — Échauffement',
     'CDA Paris 2026/27, p.12 (H−75, football à 11)',
   ],
-  steps: withLockerSteps(steps),
+  steps: withSportcashStep(withLockerSteps(steps)),
 });
 export const templates: Record<Practice, Template> = {
   FOOT_11: make('FOOT_11', common, 'DRAFT'),

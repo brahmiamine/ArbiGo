@@ -49,7 +49,7 @@ Erreur : `{ "error": { "code": "...", "message": "..." }, "serverTime": "ISO UTC
 }
 ```
 
-Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `ADD_LOCKER_STEPS`, `LOCKER_ROOMS`, `NAVIGATE`, `BAG`, `SELECT_SHIRT`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
+Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `ADD_LOCKER_STEPS`, `ADD_SPORTCASH_STEP`, `LOCKER_ROOMS`, `NAVIGATE`, `BAG`, `SELECT_SHIRT`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
 
 `BRIEFING` prend `stepCode: "captains" | "assistants"`. Une confirmation marque atomiquement les consignes données : les réponses manquantes du snapshot sont renseignées et l’étape est terminée, sans navigation. Les anciennes réponses et anomalies restent conservées. L’action respecte les mêmes contrôles de propriété de l’appareil, version et idempotence que les autres commandes du tunnel.
 
@@ -68,3 +68,7 @@ Le batch renvoie un résultat par opération traitée (`APPLIED`, `CONFLICT`, `Q
 Les nouveaux modèles v2 comprennent les deux étapes après l’arrivée. Sur les anciens tunnels actifs, le client propriétaire émet `ADD_LOCKER_STEPS` après les opérations déjà mises en file : ajout uniquement des deux étapes et runs manquants, conservation des anciens contrôles, réponses, anomalies et du code de la fiche affichée. L’opération est auditée ; les nouveaux rappels futurs sont ajoutés sans doublon (aucun rappel périmé n’est recréé). `START` ne modifie pas la structure des anciens modèles, afin de conserver le sens des index de navigation dans les files hors ligne. Les rencontres clôturées ne sont pas modifiées.
 
 `KICKOFF` exige la confirmation du bilan et toutes les étapes de préparation terminées, sans anomalie ouverte (`PREPARATION_REQUIRED` sinon). Cette règle s’applique côté serveur et dans la file locale, quelle que soit la fiche affichée. Les rencontres déjà clôturées et le rejeu idempotent d’un ancien coup d’envoi appliqué restent inchangés. Une ancienne commande encore en attente avec préparation incomplète est conservée en conflit pour résolution, ainsi que les actions suivantes.
+
+Les modèles v3 ajoutent `sportcash` (kind `checkin`) juste après `team-lockers`, à l’horaire des vestiaires +1 minute. Le lien `https://app.sportcash.fr/` ouvre un nouvel onglet ; son ouverture ne valide rien. La confirmation manuelle utilise `COMPLETE` et reste nécessaire pour le bilan complet.
+
+`ADD_SPORTCASH_STEP` enrichit uniquement un tunnel actif détenu par l’appareil, après les anciennes commandes mises en file. L’ajout conserve le code courant, les contrôles existants, les réponses et la version du modèle source ; le journal de synchronisation enregistre la commande et seuls les rappels futurs manquants sont ajoutés. Les nouveaux matchs utilisent v3 ; les historiques clôturés sont conservés. Les anciens v1 reçoivent d’abord `ADD_LOCKER_STEPS`, puis `ADD_SPORTCASH_STEP`.

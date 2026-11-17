@@ -27,7 +27,9 @@ it('persists audited legacy locker upgrade, private room numbers, replay and new
       timezone: 'Europe/Paris',
     });
     // A pre-release active snapshot still at its original pitch card.
-    m.template.steps = m.template.steps.filter((s) => s.kind !== 'locker');
+    m.template.steps = m.template.steps.filter(
+      (s) => s.kind !== 'locker' && s.code !== 'sportcash',
+    );
     delete m.runs['referee-locker'];
     delete m.runs['team-lockers'];
     m.status = 'ACTIVE';
@@ -40,7 +42,7 @@ it('persists audited legacy locker upgrade, private room numbers, replay and new
       data: { status: m.status, state: JSON.parse(JSON.stringify(m)) },
     });
     await db.notificationJob.deleteMany({
-      where: { matchId: m.id, stepCode: { in: ['referee-locker', 'team-lockers'] } },
+      where: { matchId: m.id, stepCode: { in: ['referee-locker', 'team-lockers', 'sportcash'] } },
     });
     const operation = (action: OperationInput): Operation => ({
       id: crypto.randomUUID(),
@@ -78,10 +80,25 @@ it('persists audited legacy locker upgrade, private room numbers, replay and new
     m = (
       await syncOne(userId, operation({ type: 'LOCKER_ROOMS', rooms: { home: '3', away: '4' } }))
     ).match;
+    const checkinUpgrade = operation({ type: 'ADD_SPORTCASH_STEP' });
+    m = (await syncOne(userId, checkinUpgrade)).match;
+    expect((await syncOne(userId, checkinUpgrade)).match).toEqual(m);
+    expect(m.template.steps[m.currentStep].code).toBe('pitch');
+    expect(m.runs.sportcash).toEqual({ answers: {} });
+    expect(
+      await db.notificationJob.count({ where: { matchId: m.id, stepCode: 'sportcash' } }),
+    ).toBe(1);
+    expect(
+      await db.notificationJob.count({
+        where: { matchId: m.id, stepCode: 'sportcash', kind: 'PREVIEW' },
+      }),
+    ).toBe(0);
+    m = (await syncOne(userId, operation({ type: 'COMPLETE', stepCode: 'sportcash' }))).match;
     const stored = (await db.match.findUniqueOrThrow({ where: { id: m.id } }))
       .state as unknown as Match;
     expect(stored.lockerRooms).toEqual({ referee: 'A2', home: '3', away: '4' });
-    expect(stored.currentStep).toBe(3);
+    expect(stored.currentStep).toBe(4);
+    expect(stored.runs.sportcash.completedAt).toBeTruthy();
     expect(stored.runs.arrival.completedAt).toBe('2026-12-01T12:40:00Z');
     expect(await db.matchEvent.count({ where: { matchId: m.id, type: 'ADD_LOCKER_STEPS' } })).toBe(
       1,

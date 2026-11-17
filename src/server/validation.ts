@@ -8,6 +8,7 @@ const colors = z.record(
 export const actionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('START') }),
   z.object({ type: z.literal('ADD_LOCKER_STEPS') }),
+  z.object({ type: z.literal('ADD_SPORTCASH_STEP') }),
   z.object({ type: z.literal('LOCKER_ROOMS'), rooms: lockerRoomsSchema }),
   z.object({ type: z.literal('FINISH_MATCH') }),
   z.object({ type: z.literal('DEBRIEF'), changes: debriefChangesSchema }),

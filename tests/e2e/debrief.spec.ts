@@ -19,7 +19,7 @@ async function finishMatch(page: Page) {
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   await page.locator('.match-card').first().click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 13; i++) {
     if (i === 0) await page.getByRole('button', { name: 'Confirmer mon arrivée' }).click();
     else if (i === 1) {
       await page.getByLabel('Numéro de mon vestiaire').fill('A1');
@@ -28,10 +28,11 @@ async function finishMatch(page: Page) {
       await page.getByLabel('Vestiaire · Paris 13 Atletico').fill('2');
       await page.getByLabel('Vestiaire · FC Belleville').fill('3');
       await page.getByRole('button', { name: 'Valider cette étape', exact: true }).click();
-    } else if (i === 7 || i === 9)
+    } else if (i === 3) await page.getByRole('button', { name: 'Confirmer mon check-in' }).click();
+    else if (i === 8 || i === 10)
       await page.getByRole('button', { name: 'Confirmer les consignes données' }).click();
     else {
-      if (i === 8) {
+      if (i === 9) {
         for (let phase = 0; phase < 4; phase++) {
           if (phase)
             await page.getByRole('button', { name: `Phase ${phase + 1} :`, exact: false }).click();
@@ -44,7 +45,7 @@ async function finishMatch(page: Page) {
       await page.getByRole('button', { name: 'Valider cette étape', exact: true }).click();
     }
     await page.getByRole('button', { name: 'Suivant', exact: true }).click();
-    if (i === 5) {
+    if (i === 6) {
       await expect(page.locator('.jersey-preview')).toBeVisible();
       await page.getByRole('button', { name: 'Suivant', exact: true }).click();
     }
@@ -257,7 +258,7 @@ test('kit step no longer requires color or packed outfit confirmation', async ({
   await page.goto('/demo');
   await page.locator('.match-card').first().click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 6; i++) {
     await page.getByRole('button', { name: 'Suivant', exact: true }).click();
     await expect(page.locator('.tunnel-step-position')).toContainText(`0${i + 2}`);
   }
