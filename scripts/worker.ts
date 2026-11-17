@@ -107,7 +107,10 @@ async function tick() {
 while (!stopped) {
   try {
     await tick();
-    await writeFile('/tmp/arbigo-worker-heartbeat', String(Date.now()));
+    await writeFile(
+      process.env.ARBIGO_WORKER_HEARTBEAT ?? '/tmp/arbigo-worker-heartbeat',
+      String(Date.now()),
+    );
   } catch (error) {
     console.error('[worker]', error instanceof Error ? error.name : 'UnknownError');
   }

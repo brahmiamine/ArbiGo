@@ -19,7 +19,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
-    "worker": "tsx scripts/worker.ts"
+    "worker": "tsx scripts/worker.ts",
+    "test:worker-smoke": "tsx scripts/worker-smoke.ts"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "5.3.0",
