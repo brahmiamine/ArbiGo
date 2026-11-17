@@ -120,17 +120,14 @@ export function Dashboard() {
   const next = app.matches.find((m) => m.status === 'DRAFT' || m.status === 'ACTIVE');
   const finished = app.matches.filter((m) => !['DRAFT', 'ACTIVE'].includes(m.status));
   return (
-    <>
+    <div className="dashboard-home">
       <div className="page-heading">
         <div>
           <div className="eyebrow">VOTRE RENDEZ-VOUS AVEC LE TERRAIN</div>
           <h1>
             Prêt pour le prochain coup de sifflet<span className="gold">.</span>
           </h1>
-          <p>
-            Bonjour {app.profile?.name?.split(' ')[0] ?? ''}, chaque détail compte. Préparez-vous
-            sereinement.
-          </p>
+          <p>Bonjour {app.profile?.name?.split(' ')[0] ?? ''}, prêt pour le terrain ?</p>
         </div>
         <Button onClick={() => setCreating(true)}>
           <Plus size={18} />
@@ -147,11 +144,7 @@ export function Dashboard() {
             <br />
             bien avant le terrain.
           </h2>
-          <p>
-            Votre sac, vos contrôles, vos repères.
-            <br />
-            Tout est là pour arriver l’esprit libre.
-          </p>
+          <p>Votre sac, vos contrôles et votre avant-match.</p>
           <button
             className="hero-link"
             onClick={() => (next ? app.setActiveId(next.id) : setCreating(true))}
@@ -175,7 +168,7 @@ export function Dashboard() {
                 .length.toString()
                 .padStart(2, '0')}
             </strong>
-            <span>Rencontres à venir</span>
+            <span>Matchs à venir</span>
           </div>
         </div>
         <div>
@@ -184,7 +177,7 @@ export function Dashboard() {
           </span>
           <div>
             <strong>{app.inventory.equipment.length.toString().padStart(2, '0')}</strong>
-            <span>Articles dans l’inventaire</span>
+            <span>Articles du sac</span>
           </div>
         </div>
         <div>
@@ -193,7 +186,7 @@ export function Dashboard() {
           </span>
           <div>
             <strong>{finished.length.toString().padStart(2, '0')}</strong>
-            <span>Préparations archivées</span>
+            <span>Archivées</span>
           </div>
         </div>
       </div>
@@ -270,7 +263,7 @@ export function Dashboard() {
           <MatchForm onDone={() => setCreating(false)} />
         </Modal>
       )}
-    </>
+    </div>
   );
 }
 export function Matches() {
