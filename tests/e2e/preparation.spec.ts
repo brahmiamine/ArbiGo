@@ -49,6 +49,7 @@ test('offline tunnel survives reload with local queue', async ({ page, context }
   await context.setOffline(true);
   await page.getByRole('button', { name: 'Confirmer mon arrivée' }).click();
   await page.getByRole('button', { name: 'Suivant', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Tour du terrain' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Tour du terrain' })).toBeVisible();
   await expect(page.locator('.adjacent-step.previous')).toContainText('Validée');
