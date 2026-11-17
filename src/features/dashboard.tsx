@@ -13,6 +13,8 @@ import {
   Backpack,
   Flag,
   ChevronRight,
+  Pencil,
+  RefreshCw,
 } from 'lucide-react';
 import { useApp } from './app-provider';
 import { Button, Badge, Modal, Progress, Empty } from '@/components/ui';
@@ -347,20 +349,28 @@ export function MatchDetail({ match: m }: { match: Match }) {
         ← Mes rencontres
       </button>
       <div className="detail-actions">
-        <Button variant="secondary" onClick={() => setEditing(true)}>
-          Modifier la rencontre
+        <Button
+          variant="secondary"
+          aria-label="Modifier la rencontre"
+          onClick={() => setEditing(true)}
+        >
+          <Pencil size={14} />
+          Modifier
         </Button>
         <Button
           variant="ghost"
+          aria-label="Mon inventaire"
           onClick={() => {
             app.setActiveId(null);
             app.setTab('bag');
           }}
         >
-          Mon inventaire
+          <Backpack size={14} />
+          Inventaire
         </Button>
         <Button
           variant="ghost"
+          aria-label="Actualiser le sac depuis l’inventaire"
           onClick={async () => {
             try {
               await updateDraft(m, m, app.inventory, app.store!, app.demo);
@@ -370,7 +380,8 @@ export function MatchDetail({ match: m }: { match: Match }) {
             }
           }}
         >
-          Actualiser le sac depuis l’inventaire
+          <RefreshCw size={14} />
+          Actualiser le sac
         </Button>
       </div>
       {editing && (
@@ -379,10 +390,12 @@ export function MatchDetail({ match: m }: { match: Match }) {
         </Modal>
       )}
       <div className="detail-banner">
-        <Badge>{practiceLabels[m.practice]}</Badge>
-        <Badge tone={m.template.status === 'VERIFIED' ? 'green' : 'amber'}>
-          {m.template.status === 'VERIFIED' ? 'Modèle vérifié' : 'Modèle en brouillon'}
-        </Badge>
+        <div className="detail-badges">
+          <Badge>{practiceLabels[m.practice]}</Badge>
+          <Badge tone={m.template.status === 'VERIFIED' ? 'green' : 'amber'}>
+            {m.template.status === 'VERIFIED' ? 'Modèle vérifié' : 'Modèle en brouillon'}
+          </Badge>
+        </div>
         <h1>
           {m.homeTeam}
           <span>vs</span>
@@ -399,16 +412,20 @@ export function MatchDetail({ match: m }: { match: Match }) {
         )}
       </div>
       <div className="dashboard-grid">
-        <section className="panel">
+        <section className="match-start">
+          <Button disabled={starting} onClick={() => void start()}>
+            <Flag size={18} />
+            {starting ? 'Démarrage…' : 'Je suis arrivé · démarrer le tunnel'}
+          </Button>
+        </section>
+        <section className="panel match-bag">
           <div className="section-heading">
-            <h2>Le sac de cette rencontre</h2>
+            <h2>Sac du match</h2>
             <Badge tone={packed === m.bag.length ? 'green' : 'amber'}>
               {packed}/{m.bag.length}
             </Badge>
           </div>
-          <p className="muted">
-            Les coches sont propres à ce match. Le sac incomplet n’empêche pas de démarrer.
-          </p>
+          <p className="muted">Un sac par match. Vous pouvez démarrer sans tout cocher.</p>
           <Progress value={(packed / m.bag.length) * 100} label="Sac préparé" />
           <div className="bag-checks">
             {m.bag.map((item) => (
@@ -433,12 +450,6 @@ export function MatchDetail({ match: m }: { match: Match }) {
               </label>
             ))}
           </div>
-        </section>
-        <section className="match-start">
-          <Button disabled={starting} onClick={() => void start()}>
-            <Flag size={18} />
-            {starting ? 'Démarrage…' : 'Je suis arrivé · démarrer le tunnel'}
-          </Button>
         </section>
       </div>
     </div>

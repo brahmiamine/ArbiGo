@@ -848,7 +848,7 @@ hr {
 .detail-banner h1 > span {
   font-family: 'Manrope';
   font-size: 13px;
-  color: #8b96a7;
+  color: var(--muted);
 }
 .detail-banner p {
   font-size: 12px;
@@ -3042,5 +3042,102 @@ select {
   }
   .dashboard-home .hero h2 {
     font-size: 26px;
+  }
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+.detail-actions > .button {
+  min-height: 44px;
+  padding: 8px 12px;
+  gap: 6px;
+  font-size: 11px;
+}
+.detail-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.detail > .detail-banner {
+  padding: 0 0 18px;
+}
+.detail .detail-banner h1 {
+  font-size: 32px;
+  gap: 10px;
+  margin: 10px 0 8px;
+  overflow-wrap: anywhere;
+}
+.detail .detail-banner p {
+  font-size: 11px;
+  line-height: 1.6;
+}
+.detail .match-start {
+  grid-column: 2;
+  grid-row: 1;
+}
+.detail .match-bag {
+  grid-column: 1;
+  grid-row: 1;
+}
+.detail .match-bag > .section-heading {
+  margin-bottom: 6px;
+}
+.detail .match-bag > p {
+  font-size: 11px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.detail .bag-checks {
+  margin-top: 10px;
+}
+.detail .bag-checks > label {
+  min-height: 46px;
+  padding: 5px 0;
+  gap: 10px;
+}
+.detail .bag-checks .equipment-image {
+  width: 36px;
+  height: 36px;
+}
+@media (max-width: 600px) {
+  .page-content:has(> .detail) {
+    padding-top: 14px;
+  }
+  .detail-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 8px 0 12px;
+  }
+  .detail-actions > .button {
+    min-width: 0;
+    padding: 7px 5px;
+    line-height: 1.3;
+  }
+  .detail > .detail-banner {
+    padding-bottom: 14px;
+  }
+  .detail .detail-banner h1 {
+    font-size: 28px;
+  }
+  .detail > .dashboard-grid {
+    gap: 12px;
+  }
+  .detail .match-start {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .detail .match-bag {
+    grid-column: 1;
+    grid-row: 2;
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .detail .match-bag .section-heading h2 {
+    font-size: 17px;
   }
 }
