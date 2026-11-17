@@ -4,7 +4,7 @@ export function scheduledAt(kickoff: string, offset: number) {
 export function countdown(target: string, now = Date.now()) {
   const seconds = Math.floor(Math.abs(Date.parse(target) - now) / 1000);
   const hours = Math.floor(seconds / 3600);
-  return `${Date.parse(target) < now ? '-' : ''}${hours ? `${String(hours).padStart(2, '0')}:` : ''}${String(Math.floor(seconds / 60) % 60).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+  return `${Date.parse(target) < now ? '+' : ''}${hours ? `${String(hours).padStart(2, '0')}:` : ''}${String(Math.floor(seconds / 60) % 60).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 }
 export function localDateParts(iso: string, timezone = 'Europe/Paris') {
   const parts = new Intl.DateTimeFormat('fr-CA', {

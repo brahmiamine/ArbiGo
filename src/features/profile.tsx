@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useApp } from './app-provider';
 import { api } from '@/lib/api';
-import { Button, Badge, Notice } from '@/components/ui';
+import { Button, Badge, Notice, Modal } from '@/components/ui';
 export function Profile() {
   const app = useApp();
   const [devices, setDevices] = useState<
@@ -20,7 +20,9 @@ export function Profile() {
     >([]),
     [message, setMessage] = useState(''),
     [sound, setSound] = useState(app.profile?.preferences.soundEnabled ?? true),
-    [push, setPush] = useState(false);
+    [push, setPush] = useState(false),
+    [deleting, setDeleting] = useState(false),
+    [deleteBusy, setDeleteBusy] = useState(false);
   useEffect(() => {
     if (!app.demo && app.online)
       void api<typeof devices>('devices')
@@ -210,8 +212,62 @@ export function Profile() {
           <a className="text-button" href="/privacy">
             Confidentialité et conservation →
           </a>
+          {!app.demo && (
+            <div className="form">
+              <a className="button secondary" href="/api/me/data" download>
+                Télécharger mes données personnelles (JSON)
+              </a>
+              <Button
+                variant="danger"
+                disabled={!app.online || app.pending > 0}
+                onClick={() => setDeleting(true)}
+              >
+                Supprimer mon compte et mes données
+              </Button>
+            </div>
+          )}
         </section>
       </div>
+      {deleting && (
+        <Modal title="Supprimer mon compte" onClose={() => !deleteBusy && setDeleting(false)}>
+          <form
+            className="form"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              const data = new FormData(event.currentTarget);
+              setDeleteBusy(true);
+              try {
+                await api('me/data', 'DELETE', { password: String(data.get('password')) });
+                await app.logout();
+              } catch (error) {
+                setMessage(error instanceof Error ? error.message : 'Suppression impossible.');
+              } finally {
+                setDeleteBusy(false);
+              }
+            }}
+          >
+            <Notice>
+              La suppression retire vos rencontres, journaux, photos et appareils du service. Elle
+              est définitive. Les sauvegardes chiffrées expirent selon leur rétention de 14 jours.
+              Téléchargez vos données avant de continuer si vous souhaitez les conserver.
+            </Notice>
+            <label>
+              Mot de passe actuel
+              <input
+                type="password"
+                name="password"
+                autoComplete="current-password"
+                required
+                maxLength={128}
+              />
+            </label>
+            {message && <p role="alert">{message}</p>}
+            <Button type="submit" variant="danger" disabled={deleteBusy}>
+              {deleteBusy ? 'Suppression…' : 'Supprimer définitivement'}
+            </Button>
+          </form>
+        </Modal>
+      )}
       {app.conflicts.length > 0 && (
         <section className="panel conflicts">
           <h2>

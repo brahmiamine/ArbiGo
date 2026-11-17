@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { Prisma } from '@/generated/prisma/client';
 import { createMatch, createRematch, applyOperation, matchInputSchema } from '@/domain/match';
 import { templates } from '@/domain/templates';
-import type { Inventory, Match, Operation } from '@/domain/types';
+import type { Inventory, Match, Operation, Practice } from '@/domain/types';
 import { operationSchema } from './validation';
 import { scheduleNotifications } from './notifications';
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -16,27 +16,33 @@ export async function newMatch(userId: string, input: unknown) {
   const parsed = matchInputSchema.parse(input);
   const user = await db.user.findUniqueOrThrow({ where: { id: userId } });
   const inventory = user.inventory as unknown as Inventory;
+  const template = await selectTemplate(parsed.practice);
+  const match = createMatch(parsed, inventory.equipment, template);
+  match.outfits = structuredClone(inventory.outfits);
+  await db.$transaction(async (tx) => {
+    await tx.match.create({
+      data: {
+        id: match.id,
+        userId,
+        kickoffAt: new Date(match.kickoffAt),
+        status: match.status,
+        state: json(match),
+      },
+    });
+    await scheduleNotifications(match, tx);
+  });
+  return match;
+}
+export async function selectTemplate(practice: Practice) {
   const persisted = await db.templateVersion.findUnique({
-    where: { code: templates[parsed.practice].code },
+    where: { code: templates[practice].code },
   });
   const template = persisted
     ? (persisted.content as unknown as Match['template'])
-    : templates[parsed.practice];
+    : templates[practice];
   if (process.env.REQUIRE_APPROVED_TEMPLATES === 'true' && template.status !== 'VERIFIED')
     throw new Error('TEMPLATE_UNAPPROVED');
-  const match = createMatch(parsed, inventory.equipment, template);
-  match.outfits = structuredClone(inventory.outfits);
-  await db.match.create({
-    data: {
-      id: match.id,
-      userId,
-      kickoffAt: new Date(match.kickoffAt),
-      status: match.status,
-      state: json(match),
-    },
-  });
-  await scheduleNotifications(match);
-  return match;
+  return template;
 }
 export async function syncOne(userId: string, input: unknown) {
   const op: Operation = operationSchema.parse(input);
@@ -163,15 +169,17 @@ export async function transferTunnel(
 export async function rematch(userId: string, id: string, kickoffAt: string) {
   const row = await ownedMatch(userId, id);
   const next = createRematch(row.state as unknown as Match, kickoffAt);
-  await db.match.create({
-    data: {
-      id: next.id,
-      userId,
-      kickoffAt: new Date(next.kickoffAt),
-      status: next.status,
-      state: json(next),
-    },
+  await db.$transaction(async (tx) => {
+    await tx.match.create({
+      data: {
+        id: next.id,
+        userId,
+        kickoffAt: new Date(next.kickoffAt),
+        status: next.status,
+        state: json(next),
+      },
+    });
+    await scheduleNotifications(next, tx);
   });
-  await scheduleNotifications(next);
   return next;
 }

@@ -216,6 +216,16 @@ export function summarize(match: Match) {
     openIssues,
   };
 }
+// Browsing cards must never move the preparation clock. An unfinished stage
+// stays active even when the referee consults an earlier or later card.
+export function activeStage(match: Match) {
+  const index = match.template.steps.findIndex((step) => !match.runs[step.code].completedAt);
+  const activeIndex = index < 0 ? match.template.steps.length - 1 : index;
+  return {
+    active: match.template.steps[activeIndex],
+    next: match.template.steps[Math.min(activeIndex + 1, match.template.steps.length - 1)],
+  };
+}
 export function createRematch(match: Match, kickoffAt: string) {
   if (match.status !== 'POSTPONED') throw new Error('NOT_POSTPONED');
   const next = createMatch({ ...match, kickoffAt }, match.bag, match.template);

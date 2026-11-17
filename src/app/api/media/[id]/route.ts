@@ -9,7 +9,11 @@ export async function GET(r: Request, c: { params: Promise<{ id: string }> }) {
     const asset = await db.mediaAsset.findFirst({ where: { id, userId: uid } });
     if (!asset) throw new Error('NOT_FOUND');
     const bytes = await readFile(
-      path.join(process.env.MEDIA_ROOT ?? 'data/media', asset.storageKey),
+      /* turbopackIgnore: true */
+      path.join(
+        /* turbopackIgnore: true */ process.env.MEDIA_ROOT ?? 'data/media',
+        asset.storageKey,
+      ),
     );
     return new Response(bytes, {
       headers: {

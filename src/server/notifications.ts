@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { scheduledAt } from '@/domain/time';
 import type { Match } from '@/domain/types';
+import type { Prisma } from '@/generated/prisma/client';
 export function shouldNotify(match: Match, stepCode: string | null, kind: string) {
   if (kind === 'BAG') return match.status === 'DRAFT' && match.bag.some((i) => !i.packed);
   return (
@@ -10,7 +11,7 @@ export function shouldNotify(match: Match, stepCode: string | null, kind: string
     !match.runs[stepCode]?.completedAt
   );
 }
-export async function scheduleNotifications(match: Match) {
+export async function scheduleNotifications(match: Match, client: Prisma.TransactionClient = db) {
   const jobs = [
     {
       stepCode: null,
@@ -27,7 +28,7 @@ export async function scheduleNotifications(match: Match) {
       })),
     ),
   ];
-  await db.notificationJob.createMany({
+  await client.notificationJob.createMany({
     data: jobs.map((j) => ({ ...j, matchId: match.id })),
     skipDuplicates: true,
   });

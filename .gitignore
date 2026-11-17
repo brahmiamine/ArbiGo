@@ -9,4 +9,4 @@ playwright-report/
 test-results/
 *.tsbuildinfo
 .superpowers/
-data/
+/data/

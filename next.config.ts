@@ -3,6 +3,7 @@ const config: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
   serverExternalPackages: ['argon2'],
+  outputFileTracingExcludes: { '/*': ['./.env*', './tests/**/*', './docs/**/*'] },
   async headers() {
     return [
       {

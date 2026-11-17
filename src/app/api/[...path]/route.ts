@@ -1,9 +1,15 @@
 import { db } from '@/lib/db';
 import { ok, fail, userId, sameOrigin, jsonBody } from '@/server/http';
-import { newMatch, ownedMatch, syncOne, transferTunnel, rematch } from '@/server/matches';
+import {
+  newMatch,
+  ownedMatch,
+  syncOne,
+  transferTunnel,
+  rematch,
+  selectTemplate,
+} from '@/server/matches';
 import { inventorySchema, operationSchema } from '@/server/validation';
 import { matchInputSchema, createMatch } from '@/domain/match';
-import { templates } from '@/domain/templates';
 import { z } from 'zod';
 import type { Match, Inventory } from '@/domain/types';
 import { Prisma } from '@/generated/prisma/client';
@@ -190,7 +196,12 @@ async function mutate(r: Request, c: Context, method: string) {
         if (old.status !== 'DRAFT') throw new Error('CLOSED');
         const user = await db.user.findUniqueOrThrow({ where: { id: uid } });
         const inventory = user.inventory as unknown as Inventory;
-        const next = createMatch(input, inventory.equipment, templates[input.practice], old.id);
+        const next = createMatch(
+          input,
+          inventory.equipment,
+          await selectTemplate(input.practice),
+          old.id,
+        );
         next.bag = next.bag.map((i) => ({
           ...i,
           packed: old.bag.find((previous) => previous.id === i.id)?.packed ?? false,
@@ -198,13 +209,15 @@ async function mutate(r: Request, c: Context, method: string) {
         next.appliedOperations = old.appliedOperations;
         next.version = old.version + 1;
         next.outfits = inventory.outfits;
-        const result = await db.match.updateMany({
-          where: { id: old.id, userId: uid, version: expectedVersion, status: 'DRAFT' },
-          data: { state: json(next), kickoffAt: new Date(next.kickoffAt), version: next.version },
+        await db.$transaction(async (tx) => {
+          const result = await tx.match.updateMany({
+            where: { id: old.id, userId: uid, version: expectedVersion, status: 'DRAFT' },
+            data: { state: json(next), kickoffAt: new Date(next.kickoffAt), version: next.version },
+          });
+          if (!result.count) throw new Error('VERSION_CONFLICT');
+          await tx.notificationJob.deleteMany({ where: { matchId: old.id, sentAt: null } });
+          await scheduleNotifications(next, tx);
         });
-        if (!result.count) throw new Error('VERSION_CONFLICT');
-        await db.notificationJob.deleteMany({ where: { matchId: old.id, sentAt: null } });
-        await scheduleNotifications(next);
         return ok(next, next.version);
       }
       // Explicit endpoints share the exact same validated event pipeline as offline batches.

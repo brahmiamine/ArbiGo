@@ -1,4 +1,4 @@
-import type { BagItem, Equipment, KitColors, Outfit } from './types';
+import type { BagItem, Equipment, KitColors, Outfit, Match } from './types';
 export function defaultEquipment(): Equipment[] {
   return [
     ['shirt-blue', 'Maillot bleu', 'SHIRT', 'bleu'],
@@ -71,7 +71,9 @@ export function rankOutfits(outfits: Outfit[], bag: BagItem[], colors: KitColors
         opponents.some((opp) => family[c] && family[c] === family[opp]),
       );
       const complete =
-        Object.values(colors).every((v) => v.length > 0) && mine.every((c) => family[c]);
+        Object.values(colors).every((v) => v.length > 0) &&
+        mine.every((c) => family[c]) &&
+        opponents.every((c) => family[c]);
       return {
         ...outfit,
         rating: exact
@@ -93,4 +95,24 @@ export function rankOutfits(outfits: Outfit[], bag: BagItem[], colors: KitColors
         ({ RECOMMENDED: 0, CHECK: 1, AVOID: 2 })[a.rating] -
         { RECOMMENDED: 0, CHECK: 1, AVOID: 2 }[b.rating],
     );
+}
+export function previousTeamColors(matches: Match[], current: Match): Partial<KitColors> {
+  const normalize = (team: string) => team.trim().toLocaleLowerCase('fr');
+  const history = matches
+    .filter((m) => m.id !== current.id && m.colorsConfirmedAt)
+    .sort((a, b) => b.colorsConfirmedAt!.localeCompare(a.colorsConfirmedAt!));
+  const result: Partial<KitColors> = {};
+  for (const [team, players, keeper] of [
+    [current.homeTeam, 'home', 'homeKeeper'],
+    [current.awayTeam, 'away', 'awayKeeper'],
+  ] as const) {
+    const previous = history.find((m) =>
+      [m.homeTeam, m.awayTeam].some((t) => normalize(t) === normalize(team)),
+    );
+    if (!previous) continue;
+    const home = normalize(previous.homeTeam) === normalize(team);
+    result[players] = [...previous.colors[home ? 'home' : 'away']];
+    result[keeper] = [...previous.colors[home ? 'homeKeeper' : 'awayKeeper']];
+  }
+  return result;
 }

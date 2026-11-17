@@ -1,5 +1,7 @@
 'use client';
 import Link from 'next/link';
+import { useState } from 'react';
+import { Button, Notice } from '@/components/ui';
 import {
   Home,
   CalendarDays,
@@ -142,6 +144,9 @@ function Shell() {
           </div>
         </header>
         <main className="page-content">
+          {!app.demo && app.matches.length === 1 && !app.profile.preferences.pushEnabled && (
+            <PushInvitation />
+          )}
           {active ? (
             active.status === 'DRAFT' ? (
               <MatchDetail match={active} />
@@ -181,5 +186,38 @@ function Shell() {
       </nav>
       {toast}
     </div>
+  );
+}
+function PushInvitation() {
+  const app = useApp();
+  const key = `arbigo:push-invitation:${app.profile!.id}`;
+  const [dismissed, setDismissed] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem(key) === 'seen',
+  );
+  if (dismissed) return null;
+  const dismiss = () => {
+    localStorage.setItem(key, 'seen');
+    setDismissed(true);
+  };
+  return (
+    <Notice>
+      Votre premier match est créé. Vous pouvez activer les rappels du sac et des étapes dans votre
+      profil. Sur iPhone compatible, installez d’abord ArbiGo sur l’écran d’accueil.
+      <div className="row-actions">
+        <Button
+          variant="secondary"
+          onClick={() => {
+            dismiss();
+            app.setActiveId(null);
+            app.setTab('profile');
+          }}
+        >
+          Configurer les notifications
+        </Button>
+        <Button variant="ghost" onClick={dismiss}>
+          Plus tard
+        </Button>
+      </div>
+    </Notice>
   );
 }

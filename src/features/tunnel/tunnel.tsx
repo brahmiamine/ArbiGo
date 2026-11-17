@@ -27,10 +27,10 @@ import { useApp } from '../app-provider';
 import { Badge, Button, Modal, Notice, Progress } from '@/components/ui';
 import type { Match, Step, Control, OperationInput, KitColors } from '@/domain/types';
 import { countdown, formatTime, scheduledAt } from '@/domain/time';
-import { summarize } from '@/domain/match';
+import { summarize, activeStage } from '@/domain/match';
 import { warmupPhases } from '@/domain/templates';
 import { elapsedWarmup } from '@/domain/warmup';
-import { rankOutfits, palette } from '@/domain/equipment';
+import { rankOutfits, palette, previousTeamColors } from '@/domain/equipment';
 import { ColorPicker } from '../bag/inventory';
 function useNow() {
   const [now, setNow] = useState(Date.now);
@@ -47,9 +47,10 @@ function useNow() {
 }
 function Countdown({ target, label }: { target: string; label: string }) {
   const now = useNow();
+  const late = Date.parse(target) < now;
   return (
     <div className={`countdown ${Date.parse(target) < now ? 'late' : ''}`}>
-      <span>{label}</span>
+      <span>{late ? `${label} · RETARD` : label}</span>
       <strong>{countdown(target, now)}</strong>
     </div>
   );
@@ -77,6 +78,7 @@ export function Tunnel({ match: m }: { match: Match }) {
     previous = m.template.steps[m.currentStep - 1],
     next = m.template.steps[m.currentStep + 1],
     summary = summarize(m);
+  const scheduledNext = activeStage(m).next;
   const [muted, setMuted] = useState(() =>
       typeof window === 'undefined'
         ? false
@@ -141,8 +143,8 @@ export function Tunnel({ match: m }: { match: Match }) {
           <Countdown target={m.kickoffAt} label="COUP D’ENVOI DANS" />
           <div className="timer-divider" />
           <Countdown
-            target={scheduledAt(m.kickoffAt, next?.offset ?? 0)}
-            label={next ? 'PROCHAINE ÉTAPE DANS' : 'BILAN FINAL'}
+            target={scheduledAt(m.kickoffAt, scheduledNext.offset)}
+            label="PROCHAINE ÉTAPE"
           />
           <span className="tunnel-sync">
             {app.online ? <CloudCheck size={16} /> : <WifiOff size={16} />}
@@ -569,11 +571,22 @@ function CheckControl({
   );
 }
 function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<void> }) {
+  const { matches } = useApp();
+  const suggestions = previousTeamColors(matches, m);
   const [colors, setColors] = useState<KitColors>(m.colors),
     [selected, setSelected] = useState(m.selectedOutfitId ?? '');
   const ranked = rankOutfits(m.outfits, m.bag, colors);
   return (
     <div className="kit-control">
+      {!m.colorsConfirmedAt && Object.keys(suggestions).length > 0 && (
+        <Notice>
+          Des couleurs ont déjà été déclarées pour ces équipes. Elles doivent être reconfirmées pour
+          cette rencontre.
+          <Button variant="secondary" onClick={() => setColors({ ...colors, ...suggestions })}>
+            Reprendre ces pastilles pour vérification
+          </Button>
+        </Notice>
+      )}
       <div className="kit-colors">
         {(
           [

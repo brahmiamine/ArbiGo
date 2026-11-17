@@ -410,15 +410,18 @@ export function MatchDetail({ match: m }: { match: Match }) {
           <Progress value={(packed / m.bag.length) * 100} label="Sac préparé" />
           <div className="bag-checks">
             {m.bag.map((item) => (
-              <label key={item.id} className={item.packed ? 'checked' : ''}>
+              <label key={`${item.id}:${item.packed}`} className={item.packed ? 'checked' : ''}>
                 <input
                   type="checkbox"
-                  checked={item.packed}
-                  onChange={(e) =>
+                  defaultChecked={item.packed}
+                  onChange={(e) => {
+                    const input = e.currentTarget;
                     void app
-                      .dispatch(m.id, { type: 'BAG', itemId: item.id, packed: e.target.checked })
-                      .catch(() => {})
-                  }
+                      .dispatch(m.id, { type: 'BAG', itemId: item.id, packed: input.checked })
+                      .catch(() => {
+                        input.checked = item.packed;
+                      });
+                  }}
                 />
                 <span className="check-visual">
                   <Check size={15} />

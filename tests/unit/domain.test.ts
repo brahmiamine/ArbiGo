@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createMatch, applyOperation, summarize, createRematch } from '@/domain/match';
+import { createMatch, applyOperation, summarize, createRematch, activeStage } from '@/domain/match';
 import { templates } from '@/domain/templates';
-import { defaultEquipment, rankOutfits } from '@/domain/equipment';
+import { defaultEquipment, rankOutfits, previousTeamColors } from '@/domain/equipment';
 import { parseLocalKickoff, scheduledAt, countdown } from '@/domain/time';
 import { elapsedWarmup } from '@/domain/warmup';
 import type { Match, Operation, OperationInput } from '@/domain/types';
@@ -33,11 +33,22 @@ const op = (m: Match, action: OperationInput): Operation => ({
 const act = (m: Match, action: OperationInput) => applyOperation(m, op(m, action));
 
 describe('match preparation', () => {
+  it('keeps the next scheduled deadline independent from the displayed card', () => {
+    let m = act(fresh(), { type: 'START' });
+    const deadline = activeStage(m).next;
+    m = act(m, { type: 'NAVIGATE', index: 8 });
+    expect(activeStage(m).next).toEqual(deadline);
+    m = act(m, { type: 'COMPLETE', stepCode: 'arrival' });
+    expect(activeStage(m).active.code).toBe('pitch');
+    const following = activeStage(m).next;
+    m = act(m, { type: 'NAVIGATE', index: 0 });
+    expect(activeStage(m).next).toEqual(following);
+  });
   it('calculates Paris 15:00 schedule at H-75 and H-55', () => {
     const m = fresh();
     expect(scheduledAt(m.kickoffAt, -75)).toBe('2026-11-22T12:45:00.000Z');
     expect(scheduledAt(m.kickoffAt, -55)).toBe('2026-11-22T13:05:00.000Z');
-    expect(countdown(at, Date.parse('2026-11-22T14:02:30Z'))).toBe('-02:30');
+    expect(countdown(at, Date.parse('2026-11-22T14:02:30Z'))).toBe('+02:30');
   });
   it('parses Paris local time in summer and winter without host timezone', () => {
     expect(parseLocalKickoff('2026-07-12', '15:00', 'Europe/Paris')).toBe(
@@ -153,6 +164,22 @@ describe('match preparation', () => {
 });
 
 describe('outfit recommendations', () => {
+  it('treats an unknown opposing color as uncertain and suggests history without confirming it', () => {
+    const old = fresh();
+    old.id = 'old';
+    old.colorsConfirmedAt = '2026-11-01T12:00:00Z';
+    old.colors = { home: ['mauve'], homeKeeper: ['vert'], away: ['noir'], awayKeeper: ['jaune'] };
+    const current = fresh();
+    const suggestions = previousTeamColors([old, current], current);
+    expect(suggestions.home).toEqual(['mauve']);
+    expect(current.colorsConfirmedAt).toBeUndefined();
+    const ranked = rankOutfits(
+      [{ id: 'one', name: 'Rouge', itemIds: ['shirt'], primaryColor: 'rouge' }],
+      [{ id: 'shirt', label: 'Maillot', type: 'SHIRT', packed: true, colors: ['rouge'] }],
+      old.colors,
+    );
+    expect(ranked[0].rating).toBe('CHECK');
+  });
   it('excludes absent outfits and explains color conflict', () => {
     const m = fresh();
     m.bag.forEach((i) => (i.packed = true));

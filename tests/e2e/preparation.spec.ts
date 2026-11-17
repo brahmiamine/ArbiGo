@@ -18,7 +18,7 @@ test('mobile preparation, issue and postponed match keep independent state', asy
   await expect(page.locator('.issue-card')).toContainText('Ancrage à contrôler');
   await page.getByRole('button', { name: 'Options de la rencontre' }).click();
   await page.getByRole('button', { name: 'Signaler une rencontre non débutée' }).click();
-  await page.getByLabel('Motif', { exact: true }).selectOption('POSTPONED');
+  await page.getByRole('combobox', { name: 'Motif', exact: true }).selectOption('POSTPONED');
   await page.getByLabel('Précision').fill('Terrain impraticable');
   await page.getByRole('button', { name: 'Clôturer la préparation' }).click();
   await page

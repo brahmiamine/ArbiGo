@@ -5,6 +5,7 @@ import { authenticate, consumeToken } from '@/server/accounts';
 import { newMatch, syncOne, transferTunnel } from '@/server/matches';
 import { defaultEquipment } from '@/domain/equipment';
 import type { Operation, Match } from '@/domain/types';
+import { exportPersonalData, deleteAccount } from '@/server/privacy';
 const uid = crypto.randomUUID(),
   did = crypto.randomUUID(),
   did2 = crypto.randomUUID();
@@ -109,4 +110,30 @@ it('serializes two simultaneous starts to a single active match', async () => {
       action: { type: 'START' },
     }),
   ).rejects.toThrow('ACTIVE_TUNNEL');
+});
+it('exports only owned data and requires the current password before deletion', async () => {
+  const id = crypto.randomUUID();
+  await db.user.create({
+    data: {
+      id,
+      email: `${id}@test.local`,
+      name: 'Suppression',
+      passwordHash: await hashPassword('Delete-my-test-2026!'),
+      preferences: {},
+      inventory: { equipment: [], outfits: [] },
+    },
+  });
+  try {
+    const exported = await exportPersonalData(id);
+    expect(exported.account.id).toBe(id);
+    expect(exported.account).not.toHaveProperty('passwordHash');
+    expect(exported.matches).toEqual([]);
+    await expect(deleteAccount(id, 'Wrong-password')).rejects.toThrow('FORBIDDEN');
+    expect(await db.user.count({ where: { id } })).toBe(1);
+    await deleteAccount(id, 'Delete-my-test-2026!');
+    expect(await db.user.count({ where: { id } })).toBe(0);
+    expect(await db.user.count({ where: { id: uid } })).toBe(1);
+  } finally {
+    await db.user.deleteMany({ where: { id } });
+  }
 });
