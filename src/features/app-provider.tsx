@@ -10,12 +10,20 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { errorMessage } from '@/domain/errors';
+import {
+  initialNavigation,
+  readNavigation,
+  resolveNavigation,
+  navigationSearch,
+  type AppNavigation,
+  type Tab,
+} from '@/lib/navigation';
 import { operationBatch } from '@/lib/operation-batch';
 import { LocalStore } from '@/lib/local-store';
 import { api, ApiError } from '@/lib/api';
 import { createMatch } from '@/domain/match';
 import { templates } from '@/domain/templates';
-import { defaultEquipment } from '@/domain/equipment';
+import { defaultEquipment, upgradeInventory, INVENTORY_CATALOG_VERSION } from '@/domain/equipment';
 import { signOut } from 'next-auth/react';
 import type { Match, MatchInput, Inventory, OperationInput } from '@/domain/types';
 interface Profile {
@@ -25,7 +33,6 @@ interface Profile {
   preferences: { soundEnabled: boolean; pushEnabled: boolean; timezone: string; locale: 'fr' };
   vapidPublicKey: string;
 }
-type Tab = 'home' | 'matches' | 'bag' | 'profile';
 interface AppContextType {
   matches: Match[];
   inventory: Inventory;
@@ -38,6 +45,12 @@ interface AppContextType {
   setError: (s: string) => void;
   tab: Tab;
   setTab: (t: Tab) => void;
+  inventoryView: AppNavigation['inventoryView'];
+  setInventoryView: (v: AppNavigation['inventoryView']) => void;
+  matchFilter: AppNavigation['matchFilter'];
+  setMatchFilter: (v: AppNavigation['matchFilter']) => void;
+  matchView: AppNavigation['matchView'];
+  setMatchView: (v: AppNavigation['matchView']) => void;
   activeId: string | null;
   setActiveId: (s: string | null) => void;
   demo: boolean;
@@ -68,10 +81,57 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     [online, setOnline] = useState(true),
     [pending, setPending] = useState(0),
     [error, setError] = useState(''),
-    [tab, setTab] = useState<Tab>('home'),
-    [activeId, setActiveId] = useState<string | null>(null),
     [deviceId, setDeviceId] = useState(''),
     [conflicts, setConflicts] = useState<AppContextType['conflicts']>([]);
+  const [navigation, setNavigation] = useState<AppNavigation>(initialNavigation);
+  const { tab, activeId, matchView, matchFilter, inventoryView } = navigation;
+  const matchesRef = useRef<Match[]>([]);
+  const replaceNavigation = useRef(false);
+  const setTab = (tab: Tab) =>
+    setNavigation((n) => ({ ...n, tab, activeId: null, matchView: 'summary' }));
+  const setActiveId = (id: string | null) =>
+    setNavigation((n) => {
+      const match = matchesRef.current.find((m) => m.id === id);
+      return {
+        ...n,
+        activeId: id,
+        matchView: 'summary',
+        ...(id
+          ? {
+              tab: 'matches' as const,
+              matchFilter:
+                match && !['DRAFT', 'ACTIVE'].includes(match.status)
+                  ? ('history' as const)
+                  : ('upcoming' as const),
+            }
+          : {}),
+      };
+    });
+  const setInventoryView = (inventoryView: AppNavigation['inventoryView']) =>
+    setNavigation((n) => ({ ...n, inventoryView }));
+  const setMatchFilter = (matchFilter: AppNavigation['matchFilter']) =>
+    setNavigation((n) => ({ ...n, matchFilter }));
+  const setMatchView = (matchView: AppNavigation['matchView']) =>
+    setNavigation((n) => ({ ...n, matchView }));
+  useEffect(() => {
+    if (!ready) return;
+    const url = new URL(window.location.href);
+    const search = navigationSearch(navigation, url.search);
+    if (search !== url.search) {
+      const method = replaceNavigation.current ? 'replaceState' : 'pushState';
+      window.history[method](null, '', `${url.pathname}${search}${url.hash}`);
+    }
+    replaceNavigation.current = false;
+  }, [navigation, ready]);
+  useEffect(() => {
+    if (!ready) return;
+    const restore = () => {
+      replaceNavigation.current = true;
+      setNavigation(resolveNavigation(readNavigation(window.location.search), matchesRef.current));
+    };
+    window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
+  }, [ready]);
   const storeRef = useRef<LocalStore | null>(null),
     syncing = useRef(false),
     demoRef = useRef(demo);
@@ -79,12 +139,18 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     const store = storeRef.current;
     if (!store) return;
     const ms = await store.matches();
+    matchesRef.current = ms;
     setMatches(ms.sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt)));
     setInventory((await store.inventory()) ?? { equipment: [], outfits: [] });
     setPending((await store.pending()).length);
     setConflicts(await store.conflicts());
     const active = ms.find((m) => m.status === 'ACTIVE');
-    if (active) setActiveId(active.id);
+    if (active)
+      setNavigation((n) =>
+        n.activeId === active.id
+          ? n
+          : { ...n, tab: 'matches', activeId: active.id, matchView: 'summary' },
+      );
   }, []);
   const sync = useCallback(async () => {
     if (syncing.current || !storeRef.current || !navigator.onLine) return;
@@ -180,12 +246,13 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
         if (demo && !(await store.matches()).length) {
           const inv = {
             equipment: defaultEquipment(),
+            catalogVersion: INVENTORY_CATALOG_VERSION,
             outfits: [
               {
-                id: 'kit-blue',
-                name: 'La bleue',
-                itemIds: ['shirt-blue', 'shorts', 'socks', 'shoes'],
-                primaryColor: 'bleu',
+                id: 'kit-black',
+                name: 'La noire',
+                itemIds: ['shirt-black', 'shorts', 'socks', 'shoes'],
+                primaryColor: 'noir',
                 secondaryColor: 'noir',
               },
               {
@@ -229,12 +296,18 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
           );
           for (const id of photos) void store.media(id).catch(() => {});
         }
+        const storedInventory = await store.inventory();
+        if (storedInventory) await store.putInventory(upgradeInventory(storedInventory));
         if (canceled) return;
         if (localStorage.getItem(`arbigo:mute:${p.id}`) === null)
           localStorage.setItem(`arbigo:mute:${p.id}`, String(!p.preferences.soundEnabled));
         setProfile(p);
         setOnline(navigator.onLine);
         await refresh();
+        replaceNavigation.current = true;
+        setNavigation(
+          resolveNavigation(readNavigation(window.location.search), matchesRef.current),
+        );
         setReady(true);
         void sync();
         if ('serviceWorker' in navigator) await navigator.serviceWorker.register('/sw.js');
@@ -288,9 +361,10 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     return m;
   };
   const saveInventory = async (inv: Inventory) => {
-    if (!demo) await api('inventory', 'PUT', inv);
-    await storeRef.current!.putInventory(inv);
-    setInventory(inv);
+    const current = upgradeInventory(inv);
+    const saved = !demo ? await api<Inventory>('inventory', 'PUT', current) : current;
+    await storeRef.current!.putInventory(saved);
+    setInventory(saved);
   };
   const transfer = async (m: Match) => {
     if ((await storeRef.current!.pending()).some((o) => o.matchId === m.id))
@@ -331,6 +405,12 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
         setError,
         tab,
         setTab,
+        inventoryView,
+        setInventoryView,
+        matchFilter,
+        setMatchFilter,
+        matchView,
+        setMatchView,
         activeId,
         setActiveId,
         demo,

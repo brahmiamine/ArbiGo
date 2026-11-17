@@ -66,10 +66,16 @@ export const outfitSchema = z.object({
 });
 export const inventorySchema = z
   .object({
-    equipment: z.array(equipmentSchema).max(1000),
+    catalogVersion: z.number().int().min(0).max(100).optional(),
+    equipment: z.array(equipmentSchema).max(1006),
     outfits: z.array(outfitSchema).max(100),
   })
   .superRefine((value, ctx) => {
+    if ((value.catalogVersion ?? 0) < 2 && value.equipment.length > 1000)
+      ctx.addIssue({
+        code: 'custom',
+        message: 'L’ancien inventaire est limité à 1 000 articles avant sa mise à jour.',
+      });
     const ids = value.equipment.map((i) => i.id);
     if (new Set(ids).size !== ids.length)
       ctx.addIssue({ code: 'custom', message: 'Articles dupliqués' });

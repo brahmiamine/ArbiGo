@@ -11,9 +11,11 @@ import {
 import { inventorySchema, operationSchema } from '@/server/validation';
 import { matchInputSchema, createMatch } from '@/domain/match';
 import { z } from 'zod';
-import type { Match, Inventory } from '@/domain/types';
+import type { Match } from '@/domain/types';
 import { Prisma } from '@/generated/prisma/client';
 import { rateLimit } from '@/server/accounts';
+import { currentInventory } from '@/server/inventory';
+import { upgradeInventory } from '@/domain/equipment';
 import { scheduleNotifications } from '@/server/notifications';
 type Context = { params: Promise<{ path: string[] }> };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -29,14 +31,9 @@ export async function GET(r: Request, c: Context) {
       return ok({ ...user, vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? '' });
     }
     if (path[0] === 'inventory' || path[0] === 'equipment' || path[0] === 'outfits') {
-      const user = await db.user.findUniqueOrThrow({
-        where: { id: uid },
-        select: { inventory: true },
-      });
+      const inventory = await currentInventory(uid);
       return ok(
-        path[0] === 'inventory'
-          ? user.inventory
-          : (user.inventory as unknown as Inventory)[path[0]],
+        path[0] === 'inventory' ? inventory : inventory[path[0] as 'equipment' | 'outfits'],
       );
     }
     if (path[0] === 'devices')
@@ -47,16 +44,16 @@ export async function GET(r: Request, c: Context) {
         }),
       );
     if (path.join('/') === 'sync/bootstrap') {
-      const [matches, user, quarantine] = await Promise.all([
+      const [matches, inventory, quarantine] = await Promise.all([
         db.match.findMany({ where: { userId: uid }, orderBy: { kickoffAt: 'desc' }, take: 200 }),
-        db.user.findUniqueOrThrow({ where: { id: uid }, select: { inventory: true } }),
+        currentInventory(uid),
         db.syncOperation.findMany({
           where: { userId: uid, status: 'QUARANTINED' },
           orderBy: { receivedAt: 'desc' },
           take: 100,
         }),
       ]);
-      return ok({ matches: matches.map((m) => m.state), inventory: user.inventory, quarantine });
+      return ok({ matches: matches.map((m) => m.state), inventory, quarantine });
     }
     if (path[0] === 'matches') {
       if (!path[1])
@@ -148,7 +145,7 @@ async function mutate(r: Request, c: Context, method: string) {
       }
     }
     if (path[0] === 'inventory' && method === 'PUT') {
-      const parsed = inventorySchema.parse(b);
+      const parsed = upgradeInventory(inventorySchema.parse(b));
       const ids = parsed.equipment.flatMap((i) => (i.photoId ? [i.photoId] : []));
       if (
         ids.length &&
@@ -194,8 +191,7 @@ async function mutate(r: Request, c: Context, method: string) {
         const row = await ownedMatch(uid, path[1]);
         const old = row.state as unknown as Match;
         if (old.status !== 'DRAFT') throw new Error('CLOSED');
-        const user = await db.user.findUniqueOrThrow({ where: { id: uid } });
-        const inventory = user.inventory as unknown as Inventory;
+        const inventory = await currentInventory(uid);
         const next = createMatch(
           input,
           inventory.equipment,

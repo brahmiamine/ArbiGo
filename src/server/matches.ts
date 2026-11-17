@@ -3,7 +3,8 @@ import { db } from '@/lib/db';
 import { Prisma } from '@/generated/prisma/client';
 import { createMatch, createRematch, applyOperation, matchInputSchema } from '@/domain/match';
 import { templates } from '@/domain/templates';
-import type { Inventory, Match, Operation, Practice } from '@/domain/types';
+import type { Match, Operation, Practice } from '@/domain/types';
+import { currentInventory } from './inventory';
 import { operationSchema } from './validation';
 import { scheduleNotifications } from './notifications';
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -14,8 +15,7 @@ export async function ownedMatch(userId: string, id: string) {
 }
 export async function newMatch(userId: string, input: unknown) {
   const parsed = matchInputSchema.parse(input);
-  const user = await db.user.findUniqueOrThrow({ where: { id: userId } });
-  const inventory = user.inventory as unknown as Inventory;
+  const inventory = await currentInventory(userId);
   const template = await selectTemplate(parsed.practice);
   const match = createMatch(parsed, inventory.equipment, template);
   match.outfits = structuredClone(inventory.outfits);

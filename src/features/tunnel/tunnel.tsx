@@ -1,4 +1,5 @@
 'use client';
+import { FileDropzone } from '@/components/file-dropzone';
 import { StageAlerts } from './alerts';
 import { JerseyArt } from '@/components/equipment-art';
 import { MediaPhoto } from '../media';
@@ -547,32 +548,33 @@ function CheckControl({
               Commentaire facultatif
               <textarea name="comment" maxLength={2000} />
             </label>
-            <label>
-              Photo facultative
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                disabled={demo || uploading || !navigator.onLine}
-                onChange={async (e) => {
-                  const f = e.target.files?.[0];
-                  if (!f) return;
-                  setUploading(true);
-                  try {
-                    const data = new FormData();
-                    data.set('file', f);
-                    const res = await fetch('/api/media', { method: 'POST', body: data });
-                    const body = await res.json();
-                    if (!res.ok) throw new Error(body.error.message);
-                    setPhotoId(body.data.id);
-                  } catch (e) {
-                    setError(e instanceof Error ? e.message : 'Photo non enregistrée');
-                  } finally {
-                    setUploading(false);
-                  }
-                }}
-              />
-              {photoId && <Badge tone="green">Photo enregistrée</Badge>}
-            </label>
+            <FileDropzone
+              label="Photo facultative"
+              hint={
+                demo
+                  ? 'Ajout de photos disponible avec un compte'
+                  : 'JPEG, PNG ou WebP · 10 Mo maximum'
+              }
+              disabled={demo || !navigator.onLine}
+              busy={uploading}
+              onFile={async (file) => {
+                setUploading(true);
+                setError('');
+                try {
+                  const data = new FormData();
+                  data.set('file', file);
+                  const response = await fetch('/api/media', { method: 'POST', body: data });
+                  const body = await response.json();
+                  if (!response.ok) throw new Error(body.error.message);
+                  setPhotoId(body.data.id);
+                } catch (error) {
+                  setError(error instanceof Error ? error.message : 'Photo non enregistrée');
+                } finally {
+                  setUploading(false);
+                }
+              }}
+            />
+            {photoId && <Badge tone="green">Photo enregistrée</Badge>}
             {error && <p role="alert">{error}</p>}
             <Button type="submit" disabled={uploading}>
               Enregistrer l’anomalie

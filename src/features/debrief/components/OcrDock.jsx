@@ -1,5 +1,5 @@
-/* eslint-disable @next/next/no-img-element -- Client-side OCR previews use temporary Blob URLs. */
-import { memo, useEffect, useId, useRef } from 'react';
+import { FileDropzone } from '@/components/file-dropzone';
+import { memo, useEffect, useRef } from 'react';
 import { DESIGNATION_FIELDS } from '@/domain/designation/designation';
 import { summarizeOcr } from '@/domain/designation/ocrCopy';
 
@@ -31,7 +31,6 @@ function OcrDock({
   onRetry,
   onClear,
 }) {
-  const inputId = useId();
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -43,27 +42,18 @@ function OcrDock({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose, open]);
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files?.[0];
-    // Permet de re-sélectionner la même image juste après.
-    event.target.value = '';
-    if (!file) return;
-    await onSelectFile(file);
-  };
-
   const summary = summarizeOcr({ busy, progress, detectedCount, hasFile: Boolean(previewUrl) });
 
   return (
     <>
-      <input
-        ref={inputRef}
-        id={inputId}
-        className="ocr-file-input"
-        aria-label="Capture de désignation"
-        tabIndex={-1}
-        type="file"
+      <FileDropzone
+        inputOnly
+        inputRef={inputRef}
+        inputClassName="ocr-file-input"
+        label="Capture de désignation"
         accept="image/*"
-        onChange={handleFileChange}
+        validate={false}
+        onFile={onSelectFile}
       />
 
       <button
@@ -106,16 +96,15 @@ function OcrDock({
           </header>
 
           <div className="ocr-dock__body">
-            <label className="ocr-dropzone ocr-dropzone--has-image" htmlFor={inputId}>
-              {previewUrl ? (
-                <img src={previewUrl} alt="Capture analysée" />
-              ) : (
-                <div className="ocr-dropzone__empty">
-                  <span className="ocr-camera">＋</span>
-                  <strong>Choisir une capture</strong>
-                </div>
-              )}
-            </label>
+            <FileDropzone
+              label="Importer une capture"
+              accept="image/*"
+              validate={false}
+              hint="Image de votre désignation · 10 Mo maximum"
+              previewUrl={previewUrl}
+              busy={busy}
+              onFile={onSelectFile}
+            />
 
             <div className="ocr-progress" aria-live="polite">
               <div className="ocr-progress__meta">

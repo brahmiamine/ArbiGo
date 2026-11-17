@@ -1,11 +1,15 @@
-import type { BagItem, Equipment, KitColors, Outfit, Match } from './types';
+import type { BagItem, Equipment, KitColors, Outfit, Match, Inventory } from './types';
 export function defaultEquipment(): Equipment[] {
   return [
-    ['shirt-blue', 'Maillot bleu', 'SHIRT', 'bleu'],
+    ['shirt-yellow', 'Maillot jaune', 'SHIRT', 'jaune'],
+    ['shirt-red', 'Maillot rouge', 'SHIRT', 'rouge'],
+    ['shirt-purple', 'Maillot violet', 'SHIRT', 'violet'],
+    ['shirt-black', 'Maillot noir', 'SHIRT', 'noir'],
     ['shorts', 'Short noir', 'SHORTS', 'noir'],
     ['socks', 'Chaussettes noires', 'SOCKS', 'noir'],
     ['shoes', 'Chaussures de terrain', 'SHOES', 'noir'],
-    ['shirt-yellow', 'Maillot jaune', 'SHIRT', 'jaune'],
+    ['match-sheet', 'Feuille de match papier (remplace la FMI)', 'TOOL', ''],
+    ['match-notes', 'Feuille de notes (cartons, buts, incidents)', 'TOOL', ''],
     ['badge', 'Écusson', 'TOOL', ''],
     ['watch', 'Montre / chronomètre', 'TOOL', ''],
     ['whistle', 'Sifflet et sifflet de secours', 'TOOL', ''],
@@ -23,6 +27,61 @@ export function defaultEquipment(): Equipment[] {
     colors: color ? [color] : [],
     active: true,
   }));
+}
+export const INVENTORY_CATALOG_VERSION = 2;
+/** One-time update of stock suggestions; personal articles and archived match bags stay independent. */
+export function upgradeInventory(inventory: Inventory): Inventory {
+  if ((inventory.catalogVersion ?? 0) >= INVENTORY_CATALOG_VERSION) return inventory;
+  const blue = inventory.equipment.find(
+    (i) =>
+      i.id === 'shirt-blue' &&
+      i.type === 'SHIRT' &&
+      i.label === 'Maillot bleu' &&
+      i.colors.length === 1 &&
+      i.colors[0] === 'bleu' &&
+      !i.photoId,
+  );
+  const equipment = inventory.equipment.filter((i) => i !== blue).map((i) => structuredClone(i));
+  for (const item of defaultEquipment().filter((i) =>
+    [
+      'shirt-yellow',
+      'shirt-red',
+      'shirt-purple',
+      'shirt-black',
+      'match-sheet',
+      'match-notes',
+    ].includes(i.id),
+  )) {
+    const exists = equipment.some((i) =>
+      item.type === 'SHIRT'
+        ? i.type === 'SHIRT' && i.colors[0] === item.colors[0]
+        : i.type === item.type && i.label === item.label,
+    );
+    if (!exists) {
+      let id = item.id;
+      let suffix = 2;
+      while (equipment.some((i) => i.id === id)) id = `${item.id}-catalog-${suffix++}`;
+      equipment.push({ ...item, id });
+    }
+  }
+
+  const black = equipment.find((i) => i.type === 'SHIRT' && i.colors[0] === 'noir')!;
+  return {
+    ...inventory,
+    catalogVersion: INVENTORY_CATALOG_VERSION,
+    equipment,
+    outfits: inventory.outfits.map((o) =>
+      blue && o.itemIds.includes(blue.id)
+        ? {
+            ...o,
+            itemIds: o.itemIds.map((id) => (id === blue.id ? black.id : id)),
+            primaryColor: 'noir',
+            secondaryColor: o.secondaryColor === 'noir' ? undefined : o.secondaryColor,
+            name: o.name === 'La bleue' ? 'La noire' : o.name,
+          }
+        : structuredClone(o),
+    ),
+  };
 }
 const family: Record<string, string> = {
   bleu: 'blue',

@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { hashPassword, verifyPassword, hashToken, makeToken } from '@/lib/security';
-import { defaultEquipment } from '@/domain/equipment';
+import { defaultEquipment, INVENTORY_CATALOG_VERSION } from '@/domain/equipment';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
 export const emailSchema = z
@@ -74,7 +74,13 @@ export async function register(input: unknown) {
         timezone: 'Europe/Paris',
         locale: 'fr',
       },
-      inventory: JSON.parse(JSON.stringify({ equipment: defaultEquipment(), outfits: [] })),
+      inventory: JSON.parse(
+        JSON.stringify({
+          equipment: defaultEquipment(),
+          outfits: [],
+          catalogVersion: INVENTORY_CATALOG_VERSION,
+        }),
+      ),
     },
   });
   const token = makeToken();

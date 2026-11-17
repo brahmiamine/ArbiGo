@@ -38,10 +38,11 @@ export function History({ match: m }: { match: Match }) {
   const app = useApp();
   const [events, setEvents] = useState<Event[]>([]),
     [report, setReport] = useState(false),
-    [debriefOpen, setDebriefOpen] = useState(false),
     [finishing, setFinishing] = useState(false),
     [error, setError] = useState(''),
     [loading, setLoading] = useState(true);
+  const debriefOpen = app.matchView === 'debrief';
+  const setDebriefOpen = (open: boolean) => app.setMatchView(open ? 'debrief' : 'summary');
   const summary = summarize(m);
   useEffect(() => {
     if (debriefOpen) return;

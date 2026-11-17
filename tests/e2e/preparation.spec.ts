@@ -96,9 +96,9 @@ for (const width of [320, 390, 471]) {
     await page.goto('/demo');
     await page.locator('.match-card').first().click();
     await expect(page.getByText('Votre compte à rebours')).toHaveCount(0);
-    await expect(page.locator('.bag-checks .equipment-image')).toHaveCount(15);
+    await expect(page.locator('.bag-checks .equipment-image')).toHaveCount(19);
     for (const name of [
-      'Maillot bleu',
+      'Maillot noir',
       'Short noir',
       'Chaussettes noires',
       'Chaussures de terrain',
@@ -132,11 +132,11 @@ for (const width of [320, 390, 471]) {
           .locator('.jersey-fabric'),
       ).toHaveAttribute('fill', kit.hex);
     }
-    await page.getByRole('button', { name: /La bleue/ }).click();
+    await page.getByRole('button', { name: /La noire/ }).click();
     await expect(
       page.getByRole('button', { name: /Confirmer couleurs|Reconfirmer couleurs/ }),
     ).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /La bleue/ })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: /La noire/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -144,7 +144,7 @@ for (const width of [320, 390, 471]) {
     await expect(
       page.getByRole('heading', { name: 'Maillots et ballon', exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: /La bleue/ })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: /La noire/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );

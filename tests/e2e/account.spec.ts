@@ -142,6 +142,50 @@ test('real account: SMTP verification, authentication, match, reset, export and 
     },
   });
   expect(invalidPhoto.status()).toBe(403);
+  // Use the shared import zone through the actual authenticated UI, including rejection and drop.
+  await page.goto('/app?page=bag');
+  await page.getByRole('button', { name: 'Ajouter un article', exact: true }).click();
+  const picker = page.getByLabel('Photo facultative', { exact: true });
+  await picker.setInputFiles({
+    name: 'notes.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('not a photo'),
+  });
+  await expect(
+    page.getByRole('alert').filter({ hasText: /Format non pris en charge/ }),
+  ).toBeVisible();
+  await picker.setInputFiles({
+    name: 'too-large.png',
+    mimeType: 'image/png',
+    buffer: Buffer.alloc(10 * 1024 * 1024 + 1),
+  });
+  await expect(page.getByRole('alert').filter({ hasText: /dépasse 10 Mo/ })).toBeVisible();
+  const photoBuffer = await sharp({
+    create: { width: 32, height: 32, channels: 3, background: '#003287' },
+  })
+    .png()
+    .toBuffer();
+  await page.locator('.file-zone').evaluate(
+    (zone, bytes) => {
+      const transfer = new DataTransfer();
+      transfer.items.add(
+        new File([new Uint8Array(bytes)], 'mon-article.png', { type: 'image/png' }),
+      );
+      zone.dispatchEvent(new DragEvent('drop', { bubbles: true, dataTransfer: transfer }));
+    },
+    [...photoBuffer],
+  );
+  await expect(page.getByText('Photo enregistrée', { exact: true })).toBeVisible();
+  await expect(page.getByAltText('Aperçu du fichier sélectionné')).toBeVisible();
+  await expect(page.locator('.file-zone')).toContainText('mon-article.png');
+  await expect(page.locator('.file-import [role="alert"]')).toHaveCount(0);
+  await page.getByLabel('Nom de l’article', { exact: true }).fill('Mon article photographié');
+  await page.getByRole('button', { name: 'Enregistrer l’article', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.reload();
+  const photoRow = page.locator('.inventory-row').filter({ hasText: 'Mon article photographié' });
+  await expect(photoRow).toContainText('Photo enregistrée');
+  await expect(photoRow.locator('img')).toBeVisible();
   await page.goto('/auth/forgot');
   await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByRole('button', { name: 'Recevoir le lien' }).click();

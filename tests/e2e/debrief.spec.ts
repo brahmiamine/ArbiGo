@@ -10,13 +10,6 @@ async function history(page: Page) {
   await page.getByRole('button', { name: 'Historique', exact: true }).click();
   await page.locator('.match-card').first().click();
 }
-async function reopen(page: Page) {
-  await history(page);
-  await page.getByRole('button', { name: 'Ouvrir le débrief', exact: true }).click();
-  await expect(
-    page.getByRole('heading', { name: 'Débrief d’après-match', exact: true }),
-  ).toBeVisible();
-}
 async function finishMatch(page: Page) {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -54,6 +47,15 @@ test('complete debrief persists offline, exports PDF with logos, copies and rese
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await finishMatch(page);
   await expect(page.locator('.debrief-app .card')).toHaveCount(8);
+  await expect(page.locator('.debrief-heading img')).toHaveCount(0);
+  expect((await page.locator('.debrief-heading').boundingBox())!.height).toBeLessThan(75);
+  await expect(page.getByLabel('Point fort 1', { exact: true })).toHaveJSProperty(
+    'tagName',
+    'TEXTAREA',
+  );
+  expect(
+    (await page.getByLabel('Point fort 1', { exact: true }).boundingBox())!.height,
+  ).toBeGreaterThanOrEqual(136);
   await expect(page.getByLabel('Équipe domicile', { exact: true })).toHaveValue(
     'Paris 13 Atletico',
   );
@@ -64,7 +66,7 @@ test('complete debrief persists offline, exports PDF with logos, copies and rese
     ['Mot 1', 'Calme'],
     ['Mot 2', 'Juste'],
     ['Mot 3', 'Présent'],
-    ['Point fort 1', 'Placement'],
+    ['Point fort 1', 'Placement\nAnticipation des transitions'],
     ['Point fort 2', 'Communication'],
     ['Point d’amélioration', 'Lecture des fautes'],
     ['Décision / situation n°1', '23e minute : avantage'],
@@ -92,8 +94,13 @@ test('complete debrief persists offline, exports PDF with logos, copies and rese
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: 'test-results/debrief-471.png' });
   await page.reload();
-  await reopen(page);
+  await expect(
+    page.getByRole('heading', { name: 'Débrief d’après-match', exact: true }),
+  ).toBeVisible();
   await expect(page.getByLabel('Mot 1', { exact: true })).toHaveValue('Calme');
+  await expect(page.getByLabel('Point fort 1', { exact: true })).toHaveValue(
+    'Placement\nAnticipation des transitions',
+  );
   await expect(page.getByRole('slider', { name: 'Auto-évaluation sur 10' })).toHaveValue('7.5');
   await page.waitForLoadState('networkidle');
   await context.setOffline(true);
@@ -102,7 +109,9 @@ test('complete debrief persists offline, exports PDF with logos, copies and rese
     .fill('Objectif conservé hors ligne');
   await saved(page);
   await page.reload();
-  await reopen(page);
+  await expect(
+    page.getByRole('heading', { name: 'Débrief d’après-match', exact: true }),
+  ).toBeVisible();
   await expect(page.getByLabel('Objectif du prochain match', { exact: true })).toHaveValue(
     'Objectif conservé hors ligne',
   );

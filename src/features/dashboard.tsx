@@ -272,8 +272,9 @@ export function Dashboard() {
 }
 export function Matches() {
   const app = useApp();
-  const [history, setHistory] = useState(false),
-    [creating, setCreating] = useState(false);
+  const history = app.matchFilter === 'history';
+  const setHistory = (value: boolean) => app.setMatchFilter(value ? 'history' : 'upcoming');
+  const [creating, setCreating] = useState(false);
   const filtered = app.matches.filter((m) =>
     history ? !['DRAFT', 'ACTIVE'].includes(m.status) : ['DRAFT', 'ACTIVE'].includes(m.status),
   );

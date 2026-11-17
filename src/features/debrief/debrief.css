@@ -1132,3 +1132,27 @@
 .debrief-heading .eyebrow {
   color: #526278;
 }
+
+.page-content:has(> .debrief-app) {
+  padding-top: 14px;
+}
+.debrief-heading {
+  margin: 8px 0;
+  gap: 8px;
+}
+.debrief-heading h1 {
+  font-size: 28px;
+  margin: 0 0 4px;
+}
+.debrief-heading p {
+  font-size: 11px;
+  line-height: 1.4;
+}
+.debrief-app .field--textarea textarea {
+  min-height: 136px;
+}
+@media (max-width: 600px) {
+  .debrief-heading h1 {
+    font-size: 26px;
+  }
+}

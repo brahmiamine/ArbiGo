@@ -1,7 +1,8 @@
 'use client';
+import { FileDropzone } from '@/components/file-dropzone';
 import { EquipmentImage } from '../media';
 import { useState, type FormEvent } from 'react';
-import { Plus, Shirt, Trash2, Pencil, ArrowUp, ArrowDown, Camera } from 'lucide-react';
+import { Plus, Shirt, Trash2, Pencil, ArrowUp, ArrowDown } from 'lucide-react';
 import { useApp } from '../app-provider';
 import { Button, Modal, Empty, Badge, Notice } from '@/components/ui';
 import { palette } from '@/domain/equipment';
@@ -39,8 +40,9 @@ export function InventoryScreen() {
   const app = useApp();
   const [editing, setEditing] = useState<Equipment | 'new' | null>(null),
     [outfit, setOutfit] = useState(false),
-    [view, setView] = useState<'items' | 'outfits'>('items'),
     [failure, setFailure] = useState('');
+  const view = app.inventoryView;
+  const setView = app.setInventoryView;
   async function save(inv: Inventory) {
     try {
       await app.saveInventory(inv);
@@ -55,6 +57,7 @@ export function InventoryScreen() {
     )
       return;
     await save({
+      ...app.inventory,
       equipment: app.inventory.equipment.filter((i) => i.id !== item.id),
       outfits: app.inventory.outfits.filter((o) => !o.itemIds.includes(item.id)),
     }).catch(() => {});
@@ -290,34 +293,31 @@ function ItemForm({ item, onSave }: { item?: Equipment; onSave: (i: Equipment) =
           ))}
         </select>
       </label>
-      <label className="upload">
-        <Camera size={20} />
-        Photo facultative · JPEG/PNG/WebP, 10 Mo maximum
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          disabled={demo || busy}
-          onChange={async (e) => {
-            const f = e.target.files?.[0];
-            if (!f) return;
-            setBusy(true);
-            try {
-              const data = new FormData();
-              data.set('file', f);
-              const res = await fetch('/api/media', { method: 'POST', body: data });
-              const b = await res.json();
-              if (!res.ok) throw new Error(b.error.message);
-              setPhotoId(b.data.id);
-            } catch (e) {
-              setError(e instanceof Error ? e.message : 'Photo non enregistrée');
-            } finally {
-              setBusy(false);
-            }
-          }}
-        />
-        {photoId && <Badge tone="green">Photo enregistrée</Badge>}
-        {demo && <span className="tiny">Ajout de photos disponible avec un compte.</span>}
-      </label>
+      <FileDropzone
+        label="Photo facultative"
+        hint={
+          demo ? 'Ajout de photos disponible avec un compte' : 'JPEG, PNG ou WebP · 10 Mo maximum'
+        }
+        disabled={demo}
+        busy={busy}
+        onFile={async (file) => {
+          setBusy(true);
+          setError('');
+          try {
+            const data = new FormData();
+            data.set('file', file);
+            const res = await fetch('/api/media', { method: 'POST', body: data });
+            const body = await res.json();
+            if (!res.ok) throw new Error(body.error.message);
+            setPhotoId(body.data.id);
+          } catch (error) {
+            setError(error instanceof Error ? error.message : 'Photo non enregistrée');
+          } finally {
+            setBusy(false);
+          }
+        }}
+      />
+      {photoId && <Badge tone="green">Photo enregistrée</Badge>}
       {error && (
         <p role="alert" className="form-error">
           {error}
@@ -331,7 +331,7 @@ function ItemForm({ item, onSave }: { item?: Equipment; onSave: (i: Equipment) =
 }
 function OutfitForm({ onSave }: { onSave: (o: Outfit) => Promise<void> }) {
   const { inventory } = useApp();
-  const [primary, setPrimary] = useState('bleu'),
+  const [primary, setPrimary] = useState('jaune'),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
   const slots = [
@@ -364,7 +364,7 @@ function OutfitForm({ onSave }: { onSave: (o: Outfit) => Promise<void> }) {
     >
       <label>
         Nom de la tenue
-        <input name="name" placeholder="La bleue" maxLength={100} required />
+        <input name="name" placeholder="La jaune" maxLength={100} required />
       </label>
       <div className="form-grid">
         {slots.map(([type, label]) => (

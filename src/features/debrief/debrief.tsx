@@ -15,6 +15,7 @@ import IdentitySection from './components/IdentitySection';
 import DebriefSections from './components/DebriefSections';
 import ExportCard from './components/ExportCard';
 import OcrDock from './components/OcrDock';
+import { loadLogoDataUrls } from './assets/logos';
 import { copyToClipboard } from './services/clipboard';
 
 export default function Debrief({ match, onBack }: { match: Match; onBack: () => void }) {
@@ -30,7 +31,11 @@ export default function Debrief({ match, onBack }: { match: Match; onBack: () =>
   const optional: string[] = getUnfilledOptionalFields(form);
   useEffect(() => {
     // Prepare the PDF engine while this screen is open so the first export also works offline.
-    void Promise.all([import('jspdf'), import('./services/pdf/debriefPdf')]).catch(() => {});
+    void Promise.all([
+      import('jspdf'),
+      import('./services/pdf/debriefPdf'),
+      loadLogoDataUrls(),
+    ]).catch(() => {});
   }, []);
   async function exportPdf() {
     if (exporting) return;
@@ -60,18 +65,10 @@ export default function Debrief({ match, onBack }: { match: Match; onBack: () =>
       </button>
       <header className="debrief-heading">
         <div>
-          <span className="eyebrow">APRÈS-MATCH</span>
           <h1>Débrief d’après-match</h1>
           <p>
             {match.homeTeam} / {match.awayTeam}
           </p>
-        </div>
-        <div className="debrief-logos" aria-label="FFF et District de Paris">
-          {/* Official local assets are also used by the PDF exporter. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/debrief/logos/fff-logo.png" alt="Logo FFF" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/debrief/logos/district75-logo.png" alt="Logo District 75" />
         </div>
       </header>
       <div className="debrief-save" role="status">

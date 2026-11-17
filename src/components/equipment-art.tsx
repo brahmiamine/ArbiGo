@@ -102,6 +102,31 @@ export function EquipmentArt({ item }: { item: Equipment }) {
             </>
           );
           break;
+        case 'match-sheet':
+        case 'match-notes':
+          drawing = (
+            <>
+              <path d="M23 10h40l15 15v65H23Z" fill="#fff" stroke="#172841" strokeWidth="2" />
+              <path d="M63 10v15h15" fill="#e5eaf3" stroke="#172841" strokeWidth="2" />
+              <path
+                d="M32 36h36M32 45h36M32 54h36M32 63h24M32 72h24"
+                stroke="#89939b"
+                strokeWidth="2"
+              />
+              {item.id === 'match-sheet' ? (
+                <>
+                  <path d="M32 36v45m18-45v45m18-45v45" stroke="#003287" strokeWidth="2" />
+                  <path d="M31 28h24" stroke="#003287" strokeWidth="4" />
+                </>
+              ) : (
+                <>
+                  <rect x="48" y="62" width="14" height="22" rx="2" fill="#f2d429" />
+                  <rect x="63" y="60" width="14" height="22" rx="2" fill="#e60028" />
+                </>
+              )}
+            </>
+          );
+          break;
         case 'cards':
           drawing = (
             <>

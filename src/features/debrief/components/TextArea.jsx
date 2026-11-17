@@ -11,7 +11,7 @@ function TextArea({ label, ariaLabel, name, index, value, onChange, placeholder 
       {label ? <span>{label}</span> : null}
       <textarea
         rows={rows}
-        aria-label={label ? undefined : ariaLabel}
+        aria-label={label || ariaLabel}
         maxLength={
           name === 'matchNumber' ||
           name === 'referee' ||

@@ -1,6 +1,5 @@
 import { memo } from 'react';
 import { RELATION_OPTIONS } from '@/domain/debrief/formModel';
-import Field from './Field';
 import RatingField from './RatingField';
 import Section from './Section';
 import TextArea from './TextArea';
@@ -36,7 +35,8 @@ function DebriefSections({ form, onChange }) {
         subtitle="Ce qui a particulièrement bien fonctionné"
       >
         <div className="stack">
-          <Field
+          <TextArea
+            rows={5}
             label="Point fort 1"
             name="strengths"
             index={0}
@@ -44,7 +44,8 @@ function DebriefSections({ form, onChange }) {
             onChange={onChange}
             placeholder="Ex. Bonne maîtrise globale du match"
           />
-          <Field
+          <TextArea
+            rows={5}
             label="Point fort 2"
             name="strengths"
             index={1}

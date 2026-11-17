@@ -8,6 +8,8 @@ Dans **Mes matchs → Historique**, ouvrir une rencontre dont le coup d’envoi 
 
 L’identité est préremplie depuis le match et le profil, avec la date et l’heure dans le fuseau du match. La modifier dans le rapport, y compris par OCR, ne modifie pas la désignation ni le journal de préparation. **Vider les champs** ne vide que ce rapport, après confirmation.
 
+L’URL conserve l’écran ouvert (onglet, rencontre, historique, tenues ou débrief) après rechargement et permet le retour navigateur. Seules les rencontres du compte sont résolues ; un tunnel actif garde la priorité. L’en-tête compact du formulaire n’affiche plus de logos ; ceux-ci restent présents dans le PDF. Les deux points forts se saisissent sur plusieurs lignes.
+
 ## Sauvegarde et synchronisation
 
 Chaque changement déclenche immédiatement une transaction IndexedDB et une opération `DEBRIEF` contenant les champs modifiés. Les données sont isolées par compte et par rencontre. L’indication **Enregistré sur cet appareil** attend la fin des écritures locales ; l’état de synchronisation est affiché séparément. Une écriture échouée propose une nouvelle tentative, avec la saisie conservée à l’écran.

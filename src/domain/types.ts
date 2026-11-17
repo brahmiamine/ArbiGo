@@ -142,6 +142,7 @@ export interface Operation {
   action: OperationInput;
 }
 export interface Inventory {
+  catalogVersion?: number;
   equipment: Equipment[];
   outfits: Outfit[];
 }
