@@ -1,3 +1,4 @@
+import { preparationActions } from '../helpers/preparation';
 import { describe, expect, it } from 'vitest';
 import {
   createMatch,
@@ -186,8 +187,10 @@ describe('match preparation', () => {
     expect(next.bag.every((i) => !i.packed)).toBe(true);
   });
   it('requires final review acknowledgment before kickoff', () => {
-    const m = act(fresh(), { type: 'START' });
+    let m = act(fresh(), { type: 'START' });
     expect(() => act(m, { type: 'KICKOFF', acknowledged: false })).toThrow();
+    expect(() => act(m, { type: 'KICKOFF', acknowledged: true })).toThrow('PREPARATION_REQUIRED');
+    for (const action of preparationActions(m)) m = act(m, action);
     const done = act(m, { type: 'KICKOFF', acknowledged: true });
     expect(done.status).toBe('COMPLETED');
     expect(done.closedAt).toBe('2026-11-22T12:45:00.000Z');

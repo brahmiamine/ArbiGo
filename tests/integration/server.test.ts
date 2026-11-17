@@ -1,3 +1,4 @@
+import { preparationActions } from '../helpers/preparation';
 import { beforeAll, afterAll, expect, it } from 'vitest';
 import { db } from '@/lib/db';
 import { hashPassword, makeToken, hashToken } from '@/lib/security';
@@ -157,6 +158,10 @@ it('saves owned finished-match debriefs across devices without rewriting prepara
   await expect(write({ type: 'DEBRIEF', changes: { objective: 'Trop tôt' } })).rejects.toThrow(
     'DEBRIEF_UNAVAILABLE',
   );
+  await expect(write({ type: 'KICKOFF', acknowledged: true })).rejects.toThrow(
+    'PREPARATION_REQUIRED',
+  );
+  for (const action of preparationActions(current)) await write(action);
   await write({ type: 'KICKOFF', acknowledged: true });
   await expect(
     write({ type: 'DEBRIEF', changes: { objective: 'Encore trop tôt' } }),

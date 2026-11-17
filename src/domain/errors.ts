@@ -19,6 +19,8 @@ export const errorMessages: Record<string, string> = {
   OUTFIT_NOT_PACKED: 'Cette tenue complète n’est pas dans le sac de cette rencontre.',
   PHASE_ORDER: 'Terminez la phase précédente avant de commencer.',
   PHASE_STATE: 'Cette action n’est pas disponible pour cette phase.',
+  PREPARATION_REQUIRED:
+    'Validez toutes les étapes et résolvez les anomalies avant le coup d’envoi.',
   REVIEW_REQUIRED: 'Prenez connaissance du bilan et confirmez votre décision.',
   COMMENT_REQUIRED: 'Précisez le motif de clôture.',
   DEBRIEF_UNAVAILABLE: 'Le débrief est disponible après la fin d’un match joué.',

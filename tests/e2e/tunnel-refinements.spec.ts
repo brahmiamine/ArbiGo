@@ -22,7 +22,7 @@ test('only footer navigation changes steps; illustrated controls, full-screen sh
   await swipe(page);
   await page.mouse.wheel(0, 450);
   await expect(page.locator('.tunnel-step-position')).toContainText('ÉTAPE 01');
-  await expect(page.locator('.adjacent-step')).toHaveCount(0);
+  await expect(page.locator('.adjacent-step.next')).toContainText('Mon vestiaire');
   await page.getByRole('button', { name: 'Confirmer mon arrivée' }).click();
   await expect(page.locator('.tunnel-step-position')).toContainText('ÉTAPE 01');
   await next(page);

@@ -20,6 +20,29 @@ async function finishMatch(page: Page) {
   await page.locator('.match-card').first().click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
   for (let i = 0; i < 12; i++) {
+    if (i === 0) await page.getByRole('button', { name: 'Confirmer mon arrivée' }).click();
+    else if (i === 1) {
+      await page.getByLabel('Numéro de mon vestiaire').fill('A1');
+      await page.getByRole('button', { name: 'Valider cette étape', exact: true }).click();
+    } else if (i === 2) {
+      await page.getByLabel('Vestiaire · Paris 13 Atletico').fill('2');
+      await page.getByLabel('Vestiaire · FC Belleville').fill('3');
+      await page.getByRole('button', { name: 'Valider cette étape', exact: true }).click();
+    } else if (i === 7 || i === 9)
+      await page.getByRole('button', { name: 'Confirmer les consignes données' }).click();
+    else {
+      if (i === 8) {
+        for (let phase = 0; phase < 4; phase++) {
+          if (phase)
+            await page.getByRole('button', { name: `Phase ${phase + 1} :`, exact: false }).click();
+          await page.getByRole('button', { name: 'Démarrer', exact: true }).click();
+          await page.getByRole('button', { name: 'Terminer la phase', exact: true }).click();
+        }
+      }
+      for (const control of await page.locator('.step-fieldset .control').all())
+        await control.getByRole('button', { name: 'Conforme / fait', exact: true }).click();
+      await page.getByRole('button', { name: 'Valider cette étape', exact: true }).click();
+    }
     await page.getByRole('button', { name: 'Suivant', exact: true }).click();
     if (i === 5) {
       await expect(page.locator('.jersey-preview')).toBeVisible();

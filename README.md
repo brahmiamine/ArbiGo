@@ -10,7 +10,7 @@ PWA mobile de préparation d’avant-match pour arbitres : matchs, inventaire, s
 - Football à 11, football à 8 et futsal : snapshots de modèles distincts, versionnés et identifiés comme brouillons tant que la revue applicable n’est pas achevée.
 - Inventaire personnalisable, photos réencodées et sac indépendant pour chaque match. Les anciens assemblages restent conservés dans les données, sans onglet ni formulaire de tenues.
 - Tunnel sans onglets, contrôles manuels, anomalies et revérification, deux compteurs et navigation sans validation implicite.
-- Navigation du tunnel uniquement avec Précédent/Suivant en bas ; contrôles illustrés hors ligne, exemples de consignes avec confirmation unique et aperçu plein écran du maillot avant la prise en charge de la feuille. La suggestion compare les maillots du sac aux couleurs des joueurs et gardiens ; les couleurs manquantes restent à vérifier.
+- Navigation du tunnel avec Précédent/Suivant en bas et raccourcis depuis le bilan ; contrôles illustrés hors ligne, exemples de consignes avec confirmation unique et aperçu plein écran du maillot avant la prise en charge de la feuille. La suggestion compare les maillots du sac aux couleurs des joueurs et gardiens ; les couleurs manquantes restent à vérifier.
 - Sans rencontre à venir, l’accueil affiche les trois derniers matchs et la liste présente le plus récent.
 - Les cartes des matchs à venir affichent le temps restant avant le coup d’envoi, actualisé chaque seconde, sur l’accueil et dans Mes matchs. À l’horaire prévu, le compteur reste à zéro sans démarrer ni clôturer la rencontre.
 - Le profil permet de modifier le nom, une photo privée et les textes des consignes aux capitaines, assistants et officiels de futsal. Les champs modifiés sont enregistrés séparément et restent disponibles dans le profil local pour la préparation hors ligne.
@@ -71,3 +71,5 @@ MariaDB conserve l’agrégat de préparation dans `Match.state` (JSON, version 
 Voir [l’exploitation](docs/DEPLOYMENT.md), [les contrats API](docs/API.md), [les références réglementaires](docs/REGULATORY.md) et [la recette](docs/ACCEPTANCE.md).
 
 Le tunnel inclut après l’arrivée le vestiaire de l’arbitre, puis ceux des deux équipes. Les numéros sont propres au match et sauvegardés hors ligne. L’indicateur de préparation compare la première étape non validée à son horaire : en avance à plus d’une minute, à l’heure dans une marge de ±1 minute, en retard au-delà. Le dernier jalon est le coup d’envoi.
+
+L’en-tête du tunnel rappelle les couleurs déclarées et le vestiaire de chaque équipe. Les étapes voisines affichent leur statut sans navigation au défilement ; les lignes du bilan ouvrent directement la fiche correspondante. Le coup d’envoi nécessite désormais toutes les étapes validées, les anomalies résolues et une confirmation explicite.

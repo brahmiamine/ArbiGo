@@ -36,7 +36,7 @@ import { countdown, formatTime, scheduledAt } from '@/domain/time';
 import { summarize, needsLockerSteps, stageStatus } from '@/domain/match';
 import { warmupPhases } from '@/domain/templates';
 import { elapsedWarmup } from '@/domain/warmup';
-import { rankMatchShirts, previousTeamColors } from '@/domain/equipment';
+import { palette, rankMatchShirts, previousTeamColors } from '@/domain/equipment';
 import { ColorPicker } from '../bag/inventory';
 function useNow() {
   const [now, setNow] = useState(Date.now);
@@ -65,6 +65,61 @@ function StepStatusBadge({ match, step }: { match: Match; step: Step }) {
   const now = useNow();
   const status = stageStatus(match, step, now);
   return <Badge tone={status.tone}>{status.label}</Badge>;
+}
+function TeamHeader({ match }: { match: Match }) {
+  return (
+    <div className="tunnel-teams" aria-label="Équipes et vestiaires">
+      {(['home', 'away'] as const).map((side) => {
+        const name = side === 'home' ? match.homeTeam : match.awayTeam;
+        const colors = match.colors[side];
+        return (
+          <div className="tunnel-team" key={side}>
+            <strong title={name}>{name}</strong>
+            <div className="tunnel-team-details">
+              <span
+                className="team-color-dots"
+                role="img"
+                aria-label={`${name} · ${colors.length ? colors.join(' et ') : 'couleur non renseignée'}`}
+              >
+                {(colors.length ? colors : ['']).map((color, i) => (
+                  <i
+                    key={`${color}-${i}`}
+                    style={{ backgroundColor: palette[color] ?? '#e4eaf2' }}
+                  />
+                ))}
+              </span>
+              <span className="team-color-name">{colors.join(' / ') || 'Couleur —'}</span>
+              <span className="team-locker" title={`Vestiaire · ${name}`}>
+                Vest. {match.lockerRooms?.[side] || '—'}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+function AdjacentStep({
+  match,
+  step,
+  direction,
+}: {
+  match: Match;
+  step: Step;
+  direction: 'previous' | 'next';
+}) {
+  const Icon = direction === 'previous' ? ArrowUp : ArrowDown;
+  return (
+    <div
+      className={`adjacent-step ${direction}`}
+      role="group"
+      aria-label={direction === 'previous' ? 'Étape précédente' : 'Étape suivante'}
+    >
+      <Icon size={16} aria-hidden="true" />
+      <span>{step.title}</span>
+      <StepStatusBadge match={match} step={step} />
+    </div>
+  );
 }
 function beep(muted: boolean) {
   if (muted) return;
@@ -199,13 +254,7 @@ function TunnelContent({ match: m }: { match: Match }) {
       <StageAlerts match={m} muted={muted} />
       <header className="tunnel-header">
         <div className="tunnel-match">
-          <div>
-            <strong>
-              {m.homeTeam}
-              <span> / </span>
-              {m.awayTeam}
-            </strong>
-          </div>
+          <TeamHeader match={m} />
           <div className="tunnel-tools">
             <button
               className="icon-button"
@@ -257,6 +306,9 @@ function TunnelContent({ match: m }: { match: Match }) {
         </div>
       )}
       <main className="tunnel-body" ref={body}>
+        {(showJersey || previous) && (
+          <AdjacentStep match={m} step={showJersey ? step : previous} direction="previous" />
+        )}
         {showJersey ? (
           <JerseyPreview
             match={m}
@@ -331,7 +383,7 @@ function TunnelContent({ match: m }: { match: Match }) {
                   </div>
                 )}
                 {step.kind === 'final' ? (
-                  <FinalReview m={m} act={act} />
+                  <FinalReview m={m} act={act} go={go} />
                 ) : step.kind === 'locker' ? null : (
                   <Button
                     className="validate-step"
@@ -397,6 +449,7 @@ function TunnelContent({ match: m }: { match: Match }) {
             </section>
           </>
         )}
+        {next && <AdjacentStep match={m} step={next} direction="next" />}
       </main>
       <footer className="tunnel-footer">
         <Button
@@ -819,7 +872,15 @@ function Warmup({ m, act }: { m: Match; act: (a: OperationInput) => Promise<bool
     </div>
   );
 }
-function FinalReview({ m, act }: { m: Match; act: (a: OperationInput) => Promise<boolean> }) {
+function FinalReview({
+  m,
+  act,
+  go,
+}: {
+  m: Match;
+  act: (a: OperationInput) => Promise<boolean>;
+  go: (index: number) => Promise<void>;
+}) {
   const summary = summarize(m);
   const [ack, setAck] = useState(false);
   const app = useApp();
@@ -834,10 +895,14 @@ function FinalReview({ m, act }: { m: Match; act: (a: OperationInput) => Promise
         {m.template.steps
           .filter((s) => s.kind !== 'final')
           .map((s) => (
-            <div key={s.code}>
+            <button
+              type="button"
+              key={s.code}
+              onClick={() => void go(m.template.steps.findIndex((step) => step.code === s.code))}
+            >
               <span>{s.title}</span>
               <StepStatusBadge match={m} step={s} />
-            </div>
+            </button>
           ))}
       </div>
       {summary.openIssues.map((i) => (
@@ -851,7 +916,7 @@ function FinalReview({ m, act }: { m: Match; act: (a: OperationInput) => Promise
         J’ai pris connaissance du bilan et je confirme ma décision de donner le coup d’envoi.
       </label>
       <Button
-        disabled={!ack}
+        disabled={!ack || !summary.complete}
         onClick={async () => {
           if (await act({ type: 'KICKOFF', acknowledged: ack })) app.setActiveId(null);
         }}

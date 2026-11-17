@@ -1,3 +1,4 @@
+import { preparationActions } from '../helpers/preparation';
 import { describe, expect, it } from 'vitest';
 import { applyOperation, createMatch } from '@/domain/match';
 import { templates } from '@/domain/templates';
@@ -29,8 +30,11 @@ function action(m: Match, action: OperationInput, deviceId = 'a') {
     action,
   });
 }
-const played = () =>
-  action(action(fresh(), { type: 'START' }), { type: 'KICKOFF', acknowledged: true });
+const played = () => {
+  let m = action(fresh(), { type: 'START' });
+  for (const input of preparationActions(m)) m = action(m, input);
+  return action(m, { type: 'KICKOFF', acknowledged: true });
+};
 
 describe('optional kit selections', () => {
   it('validates the kit stage after ball checks without colors or outfit', () => {

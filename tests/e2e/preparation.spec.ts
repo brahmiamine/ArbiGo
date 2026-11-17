@@ -54,7 +54,8 @@ test('offline tunnel survives reload with local queue', async ({ page, context }
   await expect(page.getByRole('heading', { name: 'Mon vestiaire' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Mon vestiaire' })).toBeVisible();
-  await expect(page.locator('.adjacent-step')).toHaveCount(0);
+  await expect(page.locator('.adjacent-step.previous')).toContainText('Arrivée au stade');
+  await expect(page.locator('.adjacent-step.previous')).toContainText('Validée');
   await page.getByRole('button', { name: 'Précédent', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Étape validée' })).toBeVisible();
   await context.setOffline(false);

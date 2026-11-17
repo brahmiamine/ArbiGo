@@ -1,3 +1,4 @@
+import { preparationActions } from '../helpers/preparation';
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import sharp from 'sharp';
 
@@ -149,6 +150,7 @@ test('real account: SMTP verification, authentication, match, reset, export and 
     { type: 'SELECT_SHIRT', itemId: 'shirt-red' },
     { type: 'BRIEFING', stepCode: 'captains' },
     { type: 'BRIEFING', stepCode: 'assistants' },
+    ...preparationActions(match),
     { type: 'KICKOFF', acknowledged: true },
     { type: 'FINISH_MATCH' },
     {

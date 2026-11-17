@@ -3878,3 +3878,80 @@ select {
   font-size: 22px;
   font-weight: 700;
 }
+
+.tunnel-teams {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  min-width: 0;
+}
+.tunnel-team {
+  min-width: 0;
+}
+.tunnel-team strong {
+  margin: 0 0 3px;
+}
+.tunnel-team-details {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px 5px;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.team-color-dots {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 2px;
+}
+.team-color-dots i {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #17284155;
+  border-radius: 50%;
+}
+.team-color-name,
+.team-locker {
+  overflow-wrap: anywhere;
+}
+.team-locker {
+  font-weight: 700;
+}
+.tunnel-body .adjacent-step {
+  padding: 9px 12px;
+  min-height: 46px;
+  gap: 8px;
+}
+.tunnel-body .adjacent-step > span:first-of-type {
+  min-width: 0;
+}
+.tunnel-body .adjacent-step > .badge {
+  flex: 0 1 auto;
+  text-align: center;
+  font-size: 10px;
+}
+.review-steps > button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  gap: 10px;
+}
+.review-steps > button:hover,
+.review-steps > button:focus-visible {
+  background: #f0f4fc;
+}
+@media (max-width: 380px) {
+  .tunnel-teams {
+    gap: 8px;
+  }
+  .tunnel-team-details {
+    font-size: 9px;
+  }
+  .team-color-name {
+    max-width: 70px;
+  }
+}

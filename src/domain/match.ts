@@ -237,6 +237,7 @@ export function applyOperation(match: Match, op: Operation): Match {
     }
     case 'KICKOFF':
       if (!a.acknowledged) throw new Error('REVIEW_REQUIRED');
+      if (!summarize(m).complete) throw new Error('PREPARATION_REQUIRED');
       m.status = 'COMPLETED';
       m.closedAt = at;
       m.runs.final.completedAt = at;
