@@ -1,0 +1,394 @@
+/* Shared visual language, extracted from the match debrief. */
+:root {
+  --font-sans:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Barlow Condensed', var(--font-sans);
+  --fff-blue: #003287;
+  --fff-blue-dark: #00266a;
+  --fff-red: #e60028;
+  --fff-red-dark: #c90024;
+  --fff-gold: #be965a;
+  --blue: var(--fff-blue);
+  --navy: var(--fff-blue-dark);
+  --red: var(--fff-red);
+  --gold: var(--fff-gold);
+  --primary: var(--fff-blue);
+  --primary-hover: var(--fff-blue-dark);
+  --accent: var(--fff-red);
+  --surface: #ffffff;
+  --background: #f5f5f5;
+  --surface-muted: #f8fafc;
+  --primary-soft: #edf2fc;
+  --text: #1a1a1a;
+  --text-secondary: #3e4758;
+  --muted: #526278;
+  --placeholder: #667085;
+  --border: #e5e7eb;
+  --field-border: #d9dee8;
+  --gold-ink: #866430;
+  --on-primary: #ffffff;
+  --on-primary-muted: #dce7f7;
+  --green: #126344;
+  --success-soft: #e8f5ee;
+  --amber: #795019;
+  --warning-soft: #fcf2dc;
+  --error: #a11832;
+  --error-soft: #fce9ec;
+  --error-border: #edc4cc;
+  --ink: var(--text);
+  --line: var(--border);
+  --paper: var(--background);
+  --radius: 12px;
+  --radius-control: 11px;
+  --radius-dialog: 14px;
+  --shadow: 0 16px 45px rgb(0 50 135 / 9%);
+  --shadow-dialog: 0 20px 60px rgb(0 38 106 / 20%);
+  color-scheme: light;
+  accent-color: var(--blue);
+  caret-color: var(--blue);
+  scrollbar-color: var(--field-border) var(--background);
+  scrollbar-width: thin;
+}
+
+body,
+.debrief-app {
+  font-family: var(--font-sans);
+  color: var(--text);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+body {
+  background: var(--background);
+}
+::selection {
+  background: var(--primary-soft);
+  color: var(--blue);
+}
+
+/* Both button implementations consume the same dimensions, palette and states. */
+.button,
+.debrief-app .btn {
+  font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  white-space: normal;
+  min-height: 44px;
+  padding: 11px 13px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+  box-shadow: none;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.15s ease;
+}
+.button.primary,
+.debrief-app .btn--primary {
+  background: var(--red);
+  color: var(--on-primary);
+}
+.button.primary:hover:not(:disabled),
+.debrief-app .btn--primary:hover:not(:disabled) {
+  background: var(--fff-red-dark);
+}
+.button.secondary,
+.debrief-app .btn--secondary,
+.debrief-app .btn--outline {
+  color: var(--blue);
+  background: var(--surface);
+  border-color: var(--field-border);
+}
+.button.secondary:hover:not(:disabled),
+.debrief-app .btn--secondary:hover:not(:disabled),
+.debrief-app .btn--outline:hover:not(:disabled) {
+  background: var(--primary-soft);
+  border-color: var(--blue);
+}
+.button.ghost {
+  color: var(--blue);
+  background: transparent;
+}
+.button.ghost:hover:not(:disabled) {
+  background: var(--primary-soft);
+}
+.button.danger {
+  color: var(--error);
+  background: var(--error-soft);
+  border-color: var(--error-border);
+}
+.button.danger:hover:not(:disabled) {
+  border-color: var(--error);
+}
+.debrief-app .btn--ghost {
+  color: var(--on-primary);
+  background: rgb(255 255 255 / 12%);
+  border-color: rgb(255 255 255 / 18%);
+}
+.debrief-app .btn--danger {
+  color: #ffd6dc;
+  background: transparent;
+  border-color: rgb(255 160 175 / 35%);
+}
+.button:active:not(:disabled),
+.debrief-app .btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.button:disabled,
+.debrief-app .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Text fields match the reference report on desktop as well as mobile. */
+.form input:not([type='checkbox'], [type='radio'], [type='file'], [type='range'], [type='color']),
+.form textarea,
+.form select,
+.debrief-app .field input,
+.debrief-app .field textarea,
+.debrief-app .word-input {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  background: var(--surface);
+  padding: 12px 13px;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease;
+}
+.form input:not([type='checkbox'], [type='radio'], [type='file'], [type='range'], [type='color']),
+.form select,
+.debrief-app .field input,
+.debrief-app .word-input {
+  min-height: 44px;
+}
+.form label:not(.file-zone),
+.debrief-app .field > span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-secondary);
+}
+.form input::placeholder,
+.form textarea::placeholder,
+.debrief-app .field input::placeholder,
+.debrief-app .field textarea::placeholder,
+.debrief-app .word-input::placeholder {
+  color: var(--placeholder);
+}
+.form
+  input:not([type='checkbox'], [type='radio'], [type='file'], [type='range'], [type='color']):focus,
+.form textarea:focus,
+.form select:focus,
+.debrief-app .field input:focus,
+.debrief-app .field textarea:focus,
+.debrief-app .word-input:focus {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-color: var(--blue);
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgb(0 50 135 / 8%);
+}
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+
+/* Cards use the debrief's white surface, quiet outline and compact rounding. */
+.panel,
+.match-card,
+.prep-list,
+.stats > div,
+.step-card,
+.debrief-app .card,
+.outfit-card,
+.empty {
+  background: var(--surface);
+  border-color: var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+.debrief-app .card--identity {
+  border-top-color: var(--gold);
+}
+.match-card {
+  border-top: 4px solid var(--gold);
+}
+.match-card:hover {
+  border-color: var(--blue);
+  border-top-color: var(--gold);
+  box-shadow: none;
+}
+.panel > h2,
+.panel > .section-heading,
+.step-card > .step-title {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+.section-heading h2,
+.panel > h2 {
+  color: var(--blue);
+}
+.panel > h2 {
+  font-size: 17px;
+  line-height: 1.4;
+}
+.match-teams strong,
+.dashboard-home .match-teams strong {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.match-teams {
+  align-items: center;
+}
+.match-teams > strong {
+  flex: 1;
+  min-width: 0;
+}
+.match-teams > span {
+  flex-shrink: 0;
+}
+.modal {
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-dialog);
+  box-shadow: var(--shadow-dialog);
+}
+.modal::backdrop {
+  background: rgb(0 38 106 / 48%);
+}
+
+.tunnel,
+.jersey-preview {
+  background: var(--background);
+}
+
+/* Navigation, uploads and transient states use the same neutral and blue surfaces. */
+.sidebar,
+.bottom-nav,
+.tunnel-header,
+.tunnel-footer,
+.jersey-timing {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.sidebar nav button,
+.bottom-nav button {
+  color: var(--muted);
+}
+.sidebar nav button.active,
+.bottom-nav button.active {
+  background: var(--primary-soft);
+  color: var(--blue);
+}
+.sidebar-caption,
+.optional {
+  color: var(--muted);
+}
+.file-zone,
+.match-designation-import {
+  background: var(--surface-muted);
+  border-color: var(--field-border);
+  border-radius: var(--radius);
+}
+.file-zone.dragging,
+.file-zone:hover:not(.disabled) {
+  background: var(--primary-soft);
+  border-color: var(--blue);
+}
+.file-zone-icon,
+.step-icon,
+.empty-icon,
+.avatar {
+  background: var(--primary-soft);
+  color: var(--blue);
+}
+.team-logo,
+.equipment-image,
+.sidebar-card,
+.segmented {
+  background: var(--surface-muted);
+}
+.badge.blue {
+  color: var(--blue);
+  background: var(--primary-soft);
+}
+.badge.green,
+.notice.green,
+.step-timing.ahead,
+.schedule-indicator.ahead {
+  color: var(--green);
+  background: var(--success-soft);
+}
+.badge.amber,
+.notice,
+.step-timing.late,
+.schedule-indicator.late {
+  color: var(--amber);
+  background: var(--warning-soft);
+}
+.badge.red,
+.form-error {
+  color: var(--error);
+  background: var(--error-soft);
+}
+.badge.gray {
+  color: var(--muted);
+  background: var(--surface-muted);
+}
+.tunnel-body .step-title h1 {
+  color: var(--text);
+}
+.countdown strong,
+.warmup-clock,
+.match-countdown strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.auth-layout {
+  background: var(--background);
+  align-items: center;
+  padding: 24px 16px;
+}
+.auth-panel {
+  max-width: 440px;
+  min-height: 0;
+  padding: 28px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--gold);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+@media (max-width: 600px) {
+  .auth-panel {
+    padding: 24px 20px;
+  }
+  .match-teams strong,
+  .dashboard-home .match-teams strong {
+    font-size: 17px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .debrief-app .btn {
+    transition: none;
+  }
+}

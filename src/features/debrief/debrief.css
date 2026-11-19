@@ -1,31 +1,8 @@
 .debrief-app {
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
-  color: #1a1a1a;
-  background: #f5f5f5;
+  font-family: var(--font-sans);
+  color: var(--text);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  /* Charte FFF / District 75 : bleu 0/50/135, rouge 230/0/40, or 190/150/90 */
-  --fff-blue: #003287;
-  --fff-blue-dark: #00266a;
-  --fff-red: #e60028;
-  --fff-gold: #be965a;
-  --primary: var(--fff-blue);
-  --primary-hover: var(--fff-blue-dark);
-  --accent: var(--fff-red);
-  --gold: var(--fff-gold);
-  --surface: #ffffff;
-  --background: #f5f5f5;
-  --text: #1a1a1a;
-  --muted: #526278;
-  --border: #e5e7eb;
-  --shadow: 0 16px 45px rgba(0, 50, 135, 0.09);
 }
 
 .debrief-app * {
@@ -160,7 +137,7 @@
   margin-bottom: 4px;
 }
 .debrief-app .progress-meta strong {
-  color: #fff;
+  color: var(--surface);
 }
 .debrief-app .progress-track {
   height: 4px;
@@ -171,7 +148,7 @@
 .debrief-app .progress-bar {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--fff-gold), #f2c56f, #fff);
+  background: linear-gradient(90deg, var(--fff-gold), #f2c56f, var(--surface));
   transition: width 0.25s ease;
 }
 
@@ -200,7 +177,7 @@
   gap: 12px;
   padding: 20px 22px 16px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, #fff, #fbfcff);
+  background: linear-gradient(180deg, var(--surface), #fbfcff);
 }
 .debrief-app .section-number {
   min-width: 33px;
@@ -251,7 +228,7 @@
   gap: 7px;
 }
 .debrief-app .field > span {
-  color: #3e4758;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 800;
 }
@@ -259,9 +236,9 @@
 .debrief-app .field textarea,
 .debrief-app .word-input {
   width: 100%;
-  border: 1px solid #d9dee8;
+  border: 1px solid var(--field-border);
   border-radius: 11px;
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   padding: 12px 13px;
   outline: none;
@@ -278,7 +255,7 @@
 .debrief-app .field input::placeholder,
 .debrief-app .field textarea::placeholder,
 .debrief-app .word-input::placeholder {
-  color: #a0a7b5;
+  color: var(--placeholder);
 }
 .debrief-app .field input:focus,
 .debrief-app .field textarea:focus,
@@ -307,7 +284,7 @@
 .debrief-app .choice-card {
   position: relative;
   min-height: 62px;
-  border: 1px solid #dce1e9;
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
   display: flex;
@@ -423,31 +400,13 @@
   gap: 8px;
   min-width: 300px;
 }
-.debrief-app .btn {
-  border: 0;
-  border-radius: 10px;
-  padding: 11px 13px;
-  font-size: 12px;
-  font-weight: 900;
-  transition:
-    transform 0.15s ease,
-    filter 0.15s ease;
-}
-.debrief-app .btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-}
-.debrief-app .btn--primary {
-  background: var(--fff-red);
-  color: #fff;
-}
 .debrief-app .btn--secondary {
-  background: #fff;
+  background: var(--surface);
   color: var(--fff-blue);
 }
 .debrief-app .btn--ghost {
   background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  color: var(--surface);
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 .debrief-app .btn--danger {
@@ -463,7 +422,7 @@
   justify-content: center;
   align-items: center;
   gap: 9px;
-  color: #7d8490;
+  color: var(--muted);
   font-size: 10px;
   text-align: center;
 }
@@ -588,7 +547,7 @@
   border: 0;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--fff-blue), #06409d);
-  color: #fff;
+  color: var(--surface);
   box-shadow: 0 16px 34px rgba(0, 35, 95, 0.32);
   transition:
     transform 0.15s ease,
@@ -615,12 +574,12 @@
   padding: 0 5px;
   border-radius: 999px;
   background: var(--fff-red);
-  color: #fff;
+  color: var(--surface);
   font-size: 11px;
   font-weight: 900;
   display: grid;
   place-items: center;
-  border: 2px solid #fff;
+  border: 2px solid var(--surface);
 }
 
 .debrief-app .ocr-dock {
@@ -645,7 +604,7 @@
   gap: 10px;
   padding: 13px 16px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, #fff, #fbfcff);
+  background: linear-gradient(180deg, var(--surface), #fbfcff);
 }
 .debrief-app .ocr-dock__icon {
   font-size: 18px;
@@ -747,7 +706,7 @@
   place-items: center;
   border-radius: 50%;
   background: var(--fff-blue);
-  color: #fff;
+  color: var(--surface);
   font-size: 28px;
   line-height: 1;
   box-shadow: 0 8px 20px rgba(0, 50, 135, 0.18);
@@ -758,7 +717,7 @@
   flex-wrap: wrap;
 }
 .debrief-app .btn--ocr-ghost {
-  background: #fff;
+  background: var(--surface);
   color: var(--fff-blue);
   border: 1px solid #d7ddea;
 }
@@ -776,7 +735,7 @@
   display: flex;
   gap: 12px;
   justify-content: space-between;
-  color: #596273;
+  color: var(--muted);
   font-size: 11px;
   line-height: 1.4;
 }
@@ -801,7 +760,7 @@
   border: 1px solid #dde3ec;
   border-radius: 14px;
   overflow: hidden;
-  background: #fff;
+  background: var(--surface);
 }
 .debrief-app .ocr-result__head {
   display: flex;
@@ -819,7 +778,7 @@
   border-radius: 8px;
   padding: 8px 10px;
   background: var(--fff-red);
-  color: #fff;
+  color: var(--surface);
   font-size: 10px;
   font-weight: 900;
 }
@@ -839,7 +798,7 @@
   border-right: 0;
 }
 .debrief-app .ocr-value span {
-  color: #8a92a0;
+  color: var(--muted);
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
@@ -851,7 +810,7 @@
   overflow-wrap: anywhere;
 }
 .debrief-app .ocr-value--empty strong {
-  color: #a6acb7;
+  color: var(--muted);
   font-weight: 600;
 }
 .debrief-app .ocr-raw {
@@ -928,7 +887,7 @@
 
 /* Modales de confirmation */
 .debrief-app .btn--outline {
-  background: #fff;
+  background: var(--surface);
   color: var(--fff-blue);
   border: 1px solid var(--border);
 }
@@ -991,7 +950,7 @@
 }
 .debrief-app .section-number {
   min-width: 23px;
-  color: #866430;
+  color: var(--gold-ink);
 }
 .debrief-app .section-content,
 .debrief-app .card--identity .form-grid {
@@ -1009,10 +968,10 @@
 .debrief-app .rating-scale,
 .debrief-app .ocr-value span,
 .debrief-app .ocr-value--empty strong {
-  color: #526278;
+  color: var(--muted);
 }
 .debrief-app .choice-card input:focus-visible + .choice-radio {
-  outline: 3px solid #438fe0;
+  outline: 3px solid var(--blue);
   outline-offset: 3px;
 }
 .debrief-app .ocr-fab {
@@ -1038,7 +997,7 @@
   margin: 4px 0;
 }
 .debrief-heading p {
-  color: #526278;
+  color: var(--muted);
   font-size: 12px;
   overflow-wrap: anywhere;
 }
@@ -1058,12 +1017,12 @@
   flex-wrap: wrap;
   gap: 6px;
   font-size: 11px;
-  color: #526278;
+  color: var(--muted);
 }
 .debrief-progress {
   margin-top: 10px;
   font-size: 11px;
-  color: #526278;
+  color: var(--muted);
 }
 .debrief-progress > .progress {
   margin-top: 5px;
@@ -1130,7 +1089,7 @@
 }
 
 .debrief-heading .eyebrow {
-  color: #526278;
+  color: var(--muted);
 }
 
 .debrief-app .section-heading {
