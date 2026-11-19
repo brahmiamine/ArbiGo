@@ -34,6 +34,8 @@ async function upscaleImage(file, scale) {
  * Le moteur est chargé à la demande : tesseract.js ne fait pas partie du bundle initial.
  * Quand un nom d'équipe manque à la première lecture, une seconde lecture sur l'image agrandie
  * est tentée et la meilleure des deux est conservée.
+ * @param {File} file
+ * @param {(progress: number, status: string) => void} onProgress
  */
 export async function recognizeDesignationImage(file, onProgress = () => {}) {
   const { createWorker } = await import('tesseract.js');
@@ -55,7 +57,23 @@ export async function recognizeDesignationImage(file, onProgress = () => {}) {
 
   const read = async (image) => {
     const { data } = await worker.recognize(image, {}, { text: true, tsv: true });
-    return tsvToText(data.tsv) || data.text || '';
+    const bitmap = await createImageBitmap(image);
+    const { width, height } = bitmap;
+    bitmap.close();
+    const words = String(data.tsv ?? '')
+      .split('\n')
+      .slice(1)
+      .map((row) => row.split('\t'))
+      .filter((cells) => cells[0] === '5' && cells[11]?.trim())
+      .map((cells) => ({
+        text: cells[11].trim(),
+        line: `${cells[2]}/${cells[3]}/${cells[4]}`,
+        left: Number(cells[6]) / width,
+        top: Number(cells[7]) / height,
+        width: Number(cells[8]) / width,
+        height: Number(cells[9]) / height,
+      }));
+    return { text: tsvToText(data.tsv) || data.text || '', words };
   };
 
   try {
@@ -63,12 +81,12 @@ export async function recognizeDesignationImage(file, onProgress = () => {}) {
     const oversized = Math.max(bitmap.width, bitmap.height) > 2400;
     bitmap.close();
     const first = await read(oversized ? await upscaleImage(file, 1) : file);
-    if (!needsSecondReading(extractDesignationFields(first))) return first;
+    if (!needsSecondReading(extractDesignationFields(first.text))) return first;
 
     try {
       onProgress(0, 'Seconde lecture…');
       const second = await read(await upscaleImage(file, SECOND_READING_SCALE));
-      return pickBestReading(first, second);
+      return pickBestReading(first.text, second.text) === second.text ? second : first;
     } catch (error) {
       // La seconde lecture est un bonus : sa panne ne doit pas faire perdre la première.
       console.warn('Seconde lecture ignorée', error);

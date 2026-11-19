@@ -10,6 +10,7 @@ export async function updateDraft(
   store: LocalStore,
   demo: boolean,
 ) {
+  if (m.status !== 'DRAFT') throw new Error('Cette préparation est déjà démarrée.');
   if ((await store.pending()).some((o) => o.matchId === m.id))
     throw new Error(
       'Synchronisez les dernières modifications du sac avant de modifier la rencontre.',

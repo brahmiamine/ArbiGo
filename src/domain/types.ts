@@ -79,6 +79,9 @@ export interface WarmupPhase {
 export interface MatchInput {
   homeTeam: string;
   awayTeam: string;
+  homeLogoId?: string;
+  awayLogoId?: string;
+  designation?: Partial<Pick<DebriefForm, 'matchNumber' | 'referee' | 'assistant1' | 'assistant2'>>;
   practice: Practice;
   kickoffAt: string;
   timezone: string;

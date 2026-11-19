@@ -1,135 +1,265 @@
 'use client';
 import { useState, type FormEvent } from 'react';
 import { useApp } from '../app-provider';
-import { Button } from '@/components/ui';
+import { Button, Progress } from '@/components/ui';
+import { FileDropzone } from '@/components/file-dropzone';
 import { updateDraft } from './update-draft';
 import { parseLocalKickoff, localDateParts } from '@/domain/time';
 import type { Match, MatchInput } from '@/domain/types';
+import { useMatchDesignation } from './designation/use-match-designation';
+import { TeamLogoInput } from './team-logo-input';
+import { saveTeamLogo, type TeamLogoDraft } from './team-logo-files';
+
 export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: Match }) {
   const app = useApp();
-  const { create, setError } = app;
   const local = initial ? localDateParts(initial.kickoffAt, initial.timezone) : undefined;
+  const [fields, setFields] = useState({
+    homeTeam: initial?.homeTeam ?? '',
+    awayTeam: initial?.awayTeam ?? '',
+    date: local?.date ?? '',
+    time: local?.time ?? '15:00',
+    stadium: initial?.stadium ?? '',
+    competition: initial?.competition ?? '',
+    category: initial?.category ?? '',
+  });
+  const [designation, setDesignation] = useState<MatchInput['designation']>(initial?.designation);
+  const [homeLogo, setHomeLogo] = useState<TeamLogoDraft>({ id: initial?.homeLogoId });
+  const [awayLogo, setAwayLogo] = useState<TeamLogoDraft>({ id: initial?.awayLogoId });
   const [busy, setBusy] = useState(false),
-    [category, setCategory] = useState(initial?.category ?? ''),
     [failure, setFailure] = useState('');
+  const ocr = useMatchDesignation(({ fields: detected, logos }) => {
+    setFields((current) => ({
+      ...current,
+      ...Object.fromEntries(
+        Object.entries(detected).filter(([key, value]) => key in current && !!value),
+      ),
+    }));
+    setDesignation((current) => ({
+      ...current,
+      ...Object.fromEntries(
+        Object.entries(detected).filter(
+          ([key, value]) =>
+            ['matchNumber', 'referee', 'assistant1', 'assistant2'].includes(key) && !!value,
+        ),
+      ),
+    }));
+    for (const [side, update] of [
+      ['home', setHomeLogo],
+      ['away', setAwayLogo],
+    ] as const) {
+      update((current) =>
+        current.source === 'manual' || current.id
+          ? current
+          : logos[side]
+            ? { file: logos[side], source: 'automatic' }
+            : {},
+      );
+    }
+  });
+  const disabled = busy || ocr.busy;
+  const change = (key: keyof typeof fields, value: string) =>
+    setFields((current) => ({ ...current, [key]: value }));
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (disabled) return;
     setBusy(true);
     setFailure('');
-    const d = new FormData(e.currentTarget);
     try {
+      if (!app.store) throw new Error('Le formulaire n’est pas encore prêt. Réessayez.');
+      const kickoffAt = parseLocalKickoff(
+        fields.date,
+        fields.time,
+        initial?.timezone ?? 'Europe/Paris',
+      );
+      const homeLogoId = await saveTeamLogo(homeLogo, app.store, app.demo);
+      setHomeLogo((current) => ({ id: homeLogoId, source: current.source }));
+      const awayLogoId = await saveTeamLogo(awayLogo, app.store, app.demo);
+      setAwayLogo((current) => ({ id: awayLogoId, source: current.source }));
       const input: MatchInput = {
-        homeTeam: String(d.get('homeTeam')),
-        awayTeam: String(d.get('awayTeam')),
-        kickoffAt: parseLocalKickoff(String(d.get('date')), String(d.get('time')), 'Europe/Paris'),
-        timezone: 'Europe/Paris',
+        ...fields,
+        homeLogoId,
+        awayLogoId,
+        designation,
+        kickoffAt,
+        timezone: initial?.timezone ?? 'Europe/Paris',
         practice: initial?.practice ?? 'FOOT_11',
-        stadium: String(d.get('stadium') ?? ''),
-        competition: String(d.get('competition') ?? ''),
-        category: String(d.get('category') ?? ''),
       };
       if (initial) {
-        await updateDraft(initial, input, app.inventory, app.store!, app.demo);
+        await updateDraft(initial, input, app.inventory, app.store, app.demo);
         await app.refresh();
-      } else await create(input);
+      } else await app.create(input);
       onDone();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Création impossible';
-      setFailure(message);
-      setError('');
+      setFailure(err instanceof Error ? err.message : 'Création impossible');
+      app.setError('');
     } finally {
       setBusy(false);
     }
   }
   return (
-    <form onSubmit={submit} className="form">
+    <form onSubmit={submit} className="form match-form">
       <p className="muted">Une rencontre, un sac et un parcours qui vous sont propres.</p>
-      <datalist id="old-teams">
-        {[...new Set(app.matches.flatMap((m) => [m.homeTeam, m.awayTeam]))].map((team) => (
-          <option key={team}>{team}</option>
-        ))}
-      </datalist>
-      <div className="form-grid">
-        <label>
-          Équipe domicile
-          <input
-            name="homeTeam"
-            defaultValue={initial?.homeTeam}
-            list="old-teams"
-            autoComplete="off"
-            maxLength={100}
-            required
-            placeholder="Paris 13 Atletico"
-          />
-        </label>
-        <label>
-          Équipe visiteuse
-          <input
-            name="awayTeam"
-            defaultValue={initial?.awayTeam}
-            list="old-teams"
-            autoComplete="off"
-            maxLength={100}
-            required
-            placeholder="FC Belleville"
-          />
-        </label>
-        <label>
-          Date
-          <input type="date" name="date" defaultValue={local?.date} required />
-        </label>
-        <label>
-          Coup d’envoi
-          <input type="time" name="time" defaultValue={local?.time ?? '15:00'} required />
-        </label>
-      </div>
-      <label>
-        Stade <span className="optional">facultatif</span>
-        <input
-          name="stadium"
-          defaultValue={initial?.stadium}
-          maxLength={200}
-          placeholder="Nom du stade"
+      <section className="match-designation-import" aria-label="Importer une désignation">
+        <FileDropzone
+          label="Lire une désignation depuis une image"
+          onFile={ocr.read}
+          disabled={disabled}
+          hint="Capture ou photo · lecture sur cet appareil · noms, date, heure et logos si repérables"
         />
-      </label>
-      <div className="form-grid">
-        <label>
-          Compétition <span className="optional">facultatif</span>
-          <input
-            name="competition"
-            defaultValue={initial?.competition}
-            list="competitions"
-            maxLength={100}
+        {ocr.status && <p role={ocr.failed ? 'alert' : 'status'}>{ocr.status}</p>}
+        {ocr.busy && <Progress value={ocr.progress} label="Lecture de la désignation" />}
+        {ocr.failed && (
+          <Button type="button" variant="secondary" onClick={() => void ocr.retry()}>
+            Réessayer la lecture
+          </Button>
+        )}
+      </section>
+      <fieldset className="match-form-fields" disabled={disabled}>
+        <datalist id="old-teams">
+          {[...new Set(app.matches.flatMap((m) => [m.homeTeam, m.awayTeam]))].map((team) => (
+            <option key={team}>{team}</option>
+          ))}
+        </datalist>
+        <div className="form-grid">
+          <label>
+            Équipe domicile
+            <input
+              name="homeTeam"
+              value={fields.homeTeam}
+              onChange={(e) => change('homeTeam', e.target.value)}
+              list="old-teams"
+              autoComplete="off"
+              maxLength={100}
+              required
+              placeholder="Paris 13 Atletico"
+            />
+          </label>
+          <label>
+            Équipe visiteuse
+            <input
+              name="awayTeam"
+              value={fields.awayTeam}
+              onChange={(e) => change('awayTeam', e.target.value)}
+              list="old-teams"
+              autoComplete="off"
+              maxLength={100}
+              required
+              placeholder="FC Belleville"
+            />
+          </label>
+        </div>
+        <div className="form-grid team-logo-fields">
+          <TeamLogoInput
+            label="Logo domicile"
+            value={homeLogo}
+            disabled={disabled}
+            onChange={setHomeLogo}
           />
-          <datalist id="competitions">
-            <option>Championnat D4</option>
-            <option>Coupe</option>
-            <option>Amical</option>
-          </datalist>
-        </label>
-        <label>
-          Catégorie <span className="optional">facultatif</span>
-          <input
-            name="category"
-            value={category}
-            onChange={(event) => setCategory(event.currentTarget.value)}
-            list="categories"
-            maxLength={100}
+          <TeamLogoInput
+            label="Logo visiteur"
+            value={awayLogo}
+            disabled={disabled}
+            onChange={setAwayLogo}
           />
-          <datalist id="categories">
-            <option>Seniors</option>
-            <option>U18</option>
-            <option>U16</option>
-            <option>U13</option>
-          </datalist>
+        </div>
+        <div className="form-grid">
+          <label>
+            Date
+            <input
+              type="date"
+              name="date"
+              value={fields.date}
+              onChange={(e) => change('date', e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Coup d’envoi
+            <input
+              type="time"
+              name="time"
+              value={fields.time}
+              onChange={(e) => change('time', e.target.value)}
+              required
+            />
+          </label>
+        </div>
+        <label>
+          Stade <span className="optional">facultatif</span>
+          <input
+            name="stadium"
+            value={fields.stadium}
+            onChange={(e) => change('stadium', e.target.value)}
+            maxLength={200}
+            placeholder="Nom du stade"
+          />
         </label>
-      </div>
+        <div className="form-grid">
+          <label>
+            Compétition <span className="optional">facultatif</span>
+            <input
+              name="competition"
+              value={fields.competition}
+              onChange={(e) => change('competition', e.target.value)}
+              list="competitions"
+              maxLength={100}
+            />
+            <datalist id="competitions">
+              <option>Championnat D4</option>
+              <option>Coupe</option>
+              <option>Amical</option>
+            </datalist>
+          </label>
+          <label>
+            Catégorie <span className="optional">facultatif</span>
+            <input
+              name="category"
+              value={fields.category}
+              onChange={(e) => change('category', e.target.value)}
+              list="categories"
+              maxLength={100}
+            />
+            <datalist id="categories">
+              <option>Seniors</option>
+              <option>U18</option>
+              <option>U16</option>
+              <option>U13</option>
+            </datalist>
+          </label>
+        </div>
+        {designation && (
+          <details className="designation-details">
+            <summary>Informations de désignation</summary>
+            <div className="form-grid">
+              {(
+                [
+                  ['matchNumber', 'Numéro du match'],
+                  ['referee', 'Arbitre désigné'],
+                  ['assistant1', 'Assistant 1'],
+                  ['assistant2', 'Assistant 2'],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key}>
+                  {label}
+                  <input
+                    value={designation[key] ?? ''}
+                    maxLength={200}
+                    onChange={(e) =>
+                      setDesignation((current) => ({ ...current, [key]: e.target.value }))
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+          </details>
+        )}
+      </fieldset>
       {failure && (
         <p className="form-error" role="alert">
           {failure}
         </p>
       )}
-      <Button disabled={busy} type="submit">
+      <Button disabled={disabled} type="submit">
         {busy ? 'Enregistrement…' : initial ? 'Enregistrer la rencontre' : 'Créer la rencontre'}
       </Button>
     </form>

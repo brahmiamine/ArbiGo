@@ -188,73 +188,18 @@ test('complete debrief persists offline, exports PDF with logos, copies and rese
   );
 });
 
-test('self-hosted OCR fills detected identity and leaves analysis untouched, with usable error recovery', async ({
+test('the debrief uses match information without exposing the designation OCR importer', async ({
   page,
-  context,
 }) => {
-  test.setTimeout(120000);
+  test.setTimeout(90000);
   await finishMatch(page);
-  await page.getByLabel('Objectif du prochain match', { exact: true }).fill('Objectif déjà saisi');
-  const importCapture = (number: string) =>
-    page.evaluate(async (number) => {
-      const lines = [
-        'DISTRICT PARISIEN DE FOOTBALL',
-        'dimanche 4 octobre 2026 à 11H00',
-        'CDM D1 - Journée 1',
-        'MAYDAY FC',
-        '2 - 1',
-        'BENFICA ARGOSELO S.',
-        'Arbitre centre : MOHAMED BRAHMI',
-        `Numéro du match : ${number}`,
-      ];
-      const canvas = document.createElement('canvas');
-      canvas.width = 1200;
-      canvas.height = 60 + lines.length * 60;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'black';
-      ctx.font = 'bold 36px Arial';
-      lines.forEach((line, i) => ctx.fillText(line, 30, 50 + i * 60));
-      const blob = await new Promise<Blob>((resolve) =>
-        canvas.toBlob((b) => resolve(b!), 'image/png'),
-      );
-      const data = new DataTransfer();
-      data.items.add(new File([blob], 'designation.png', { type: 'image/png' }));
-      const input = document.querySelector<HTMLInputElement>('.ocr-file-input')!;
-      input.files = data.files;
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-    }, number);
-  await importCapture('56608650');
-  await expect(page.getByLabel('Numéro du match', { exact: true })).toHaveValue('56608650', {
-    timeout: 90000,
-  });
-  await expect(page.getByLabel('Arbitre', { exact: true })).toHaveValue('MOHAMED BRAHMI');
-  await expect(page.getByLabel('Objectif du prochain match', { exact: true })).toHaveValue(
-    'Objectif déjà saisi',
+  await expect(page.getByLabel('Équipe domicile', { exact: true })).toHaveValue(
+    'Paris 13 Atletico',
   );
-  await expect(page.locator('#ocr-dock')).toHaveCount(0);
-  await saved(page);
-  await page.locator('.ocr-file-input').setInputFiles({
-    name: 'notes.txt',
-    mimeType: 'text/plain',
-    buffer: Buffer.from('Pas une image'),
-  });
-  await expect(page.locator('#ocr-dock')).toContainText('Choisis une image ou une capture');
-  await page
-    .getByRole('dialog', { name: 'Lire une désignation depuis une image' })
-    .getByRole('button', { name: 'Fermer', exact: true })
-    .click();
-  await context.setOffline(true);
-  await importCapture('56608651');
-  await expect(page.getByLabel('Numéro du match', { exact: true })).toHaveValue('56608651', {
-    timeout: 60000,
-  });
-  await saved(page);
-  await context.setOffline(false);
-  await page.getByRole('button', { name: 'Bilan de la rencontre' }).click();
-  await page.getByRole('button', { name: 'Ouvrir le débrief' }).click();
-  await expect(page.getByLabel('Numéro du match', { exact: true })).toHaveValue('56608651');
+  await expect(page.locator('.ocr-file-input, .ocr-fab, .ocr-dock')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Lire une désignation depuis une image' }),
+  ).toHaveCount(0);
 });
 
 test('kit step no longer requires color or packed outfit confirmation', async ({ page }) => {

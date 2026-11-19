@@ -10,6 +10,7 @@ import {
 } from '@/server/matches';
 import { inventorySchema, operationSchema } from '@/server/validation';
 import { matchInputSchema, createMatch } from '@/domain/match';
+import { assertMatchLogosOwned } from '@/server/match-logos';
 import { z } from 'zod';
 import type { Match } from '@/domain/types';
 import { Prisma } from '@/generated/prisma/client';
@@ -179,6 +180,7 @@ async function mutate(r: Request, c: Context, method: string) {
         const row = await ownedMatch(uid, path[1]);
         const old = row.state as unknown as Match;
         if (old.status !== 'DRAFT') throw new Error('CLOSED');
+        await assertMatchLogosOwned(uid, input);
         const inventory = await currentInventory(uid);
         const next = createMatch(
           input,

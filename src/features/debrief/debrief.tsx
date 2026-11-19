@@ -1,4 +1,5 @@
 'use client';
+import { TeamIdentity } from '@/components/team-identity';
 import { useEffect, useState } from 'react';
 import { Button, Modal, Notice, Progress } from '@/components/ui';
 import type { Match } from '@/domain/types';
@@ -9,18 +10,15 @@ import {
 } from '@/domain/debrief/formModel';
 import { buildDebriefText } from '@/domain/debrief/debriefText';
 import { useMatchDebrief } from './use-match-debrief';
-import { useDesignationOcr } from './hooks/useDesignationOcr';
 import IdentitySection from './components/IdentitySection';
 import DebriefSections from './components/DebriefSections';
 import ExportCard from './components/ExportCard';
-import OcrDock from './components/OcrDock';
 import { loadLogoDataUrls } from './assets/logos';
 import { copyToClipboard } from './services/clipboard';
 
 export default function Debrief({ match, onBack }: { match: Match; onBack: () => void }) {
   const editor = useMatchDebrief(match);
   const { form } = editor;
-  const ocr = useDesignationOcr({ onApply: editor.updateMany });
   const [dialog, setDialog] = useState<'pdf' | 'clear' | null>(null);
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState('');
@@ -65,7 +63,8 @@ export default function Debrief({ match, onBack }: { match: Match; onBack: () =>
         <div>
           <h1>Débrief d’après-match</h1>
           <p>
-            {match.homeTeam} / {match.awayTeam}
+            <TeamIdentity name={match.homeTeam} logoId={match.homeLogoId} /> /{' '}
+            <TeamIdentity name={match.awayTeam} logoId={match.awayLogoId} />
           </p>
         </div>
       </header>
@@ -102,20 +101,6 @@ export default function Debrief({ match, onBack }: { match: Match; onBack: () =>
           onRequestClear={() => setDialog('clear')}
         />
       </div>
-      <OcrDock
-        open={ocr.open}
-        onClose={ocr.close}
-        previewUrl={ocr.previewUrl}
-        busy={ocr.busy}
-        progress={ocr.progress}
-        status={ocr.status}
-        fields={ocr.fields}
-        detectedCount={ocr.detectedCount}
-        rawText={ocr.rawText}
-        onSelectFile={ocr.selectFile}
-        onRetry={ocr.retry}
-        onClear={ocr.clear}
-      />
       {dialog === 'pdf' && (
         <Modal
           title={missing.length ? 'Des champs restent à remplir' : 'Tout est prêt pour l’export'}
@@ -161,7 +146,6 @@ export default function Debrief({ match, onBack }: { match: Match; onBack: () =>
             <Button
               variant="danger"
               onClick={() => {
-                ocr.clear();
                 editor.reset();
                 setDialog(null);
               }}

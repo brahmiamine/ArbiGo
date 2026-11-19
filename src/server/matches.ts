@@ -12,6 +12,7 @@ import { templates } from '@/domain/templates';
 import type { ProfilePreferences } from '@/domain/profile';
 import type { Match, Operation, Practice } from '@/domain/types';
 import { currentInventory } from './inventory';
+import { assertMatchLogosOwned } from './match-logos';
 import { operationSchema } from './validation';
 import { scheduleNotifications } from './notifications';
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
@@ -22,6 +23,7 @@ export async function ownedMatch(userId: string, id: string) {
 }
 export async function newMatch(userId: string, input: unknown) {
   const parsed = matchInputSchema.parse(input);
+  await assertMatchLogosOwned(userId, parsed);
   const inventory = await currentInventory(userId);
   const template = await selectTemplate(parsed.practice);
   const user = await db.user.findUniqueOrThrow({

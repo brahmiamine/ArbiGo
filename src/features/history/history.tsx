@@ -1,4 +1,5 @@
 'use client';
+import { TeamIdentity } from '@/components/team-identity';
 import dynamic from 'next/dynamic';
 import { useState, useEffect, type FormEvent } from 'react';
 import { Flag, Clock3, Check, AlertTriangle } from 'lucide-react';
@@ -86,7 +87,9 @@ export function History({ match: m }: { match: Match }) {
       <PageHeader
         title={
           <>
-            {m.homeTeam} <span className="muted">/</span> {m.awayTeam}
+            <TeamIdentity name={m.homeTeam} logoId={m.homeLogoId} />{' '}
+            <span className="muted">/</span>{' '}
+            <TeamIdentity name={m.awayTeam} logoId={m.awayLogoId} />
           </>
         }
         meta={

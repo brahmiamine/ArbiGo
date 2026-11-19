@@ -1,4 +1,5 @@
 'use client';
+import { TeamIdentity } from '@/components/team-identity';
 import { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { palette } from '@/domain/equipment';
@@ -43,7 +44,12 @@ export function JerseyPreview({
           ] as const
         ).map((team) => (
           <section key={team.players}>
-            <h2>{team.name}</h2>
+            <h2>
+              <TeamIdentity
+                name={team.name}
+                logoId={team.players === 'home' ? m.homeLogoId : m.awayLogoId}
+              />
+            </h2>
             <div className="jersey-opponent-roles">
               {(
                 [

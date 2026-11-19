@@ -12,6 +12,16 @@ import { createMatchDebrief, debriefChangesSchema } from './debrief/schema';
 export const matchInputSchema = z.object({
   homeTeam: z.string().trim().min(1).max(100),
   awayTeam: z.string().trim().min(1).max(100),
+  homeLogoId: z.uuid().optional(),
+  awayLogoId: z.uuid().optional(),
+  designation: z
+    .object({
+      matchNumber: z.string().trim().max(200).optional(),
+      referee: z.string().trim().max(200).optional(),
+      assistant1: z.string().trim().max(200).optional(),
+      assistant2: z.string().trim().max(200).optional(),
+    })
+    .optional(),
   practice: z.enum(['FOOT_11', 'FOOT_8', 'FUTSAL']),
   kickoffAt: z.iso.datetime({ offset: true }),
   timezone: z.string().refine((v) => {

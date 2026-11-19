@@ -1,4 +1,5 @@
 'use client';
+import { TeamIdentity } from '@/components/team-identity';
 import { useState } from 'react';
 import {
   Plus,
@@ -86,9 +87,13 @@ export function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void 
         )}
       </div>
       <div className="match-teams">
-        <strong>{match.homeTeam}</strong>
+        <strong>
+          <TeamIdentity name={match.homeTeam} logoId={match.homeLogoId} />
+        </strong>
         <span>VS</span>
-        <strong>{match.awayTeam}</strong>
+        <strong>
+          <TeamIdentity name={match.awayTeam} logoId={match.awayLogoId} />
+        </strong>
       </div>
       <div className="match-meta">
         <span>
@@ -322,6 +327,7 @@ export function Matches() {
 export function MatchDetail({ match: m }: { match: Match }) {
   const app = useApp();
   const [starting, setStarting] = useState(false);
+  const [editing, setEditing] = useState(false);
   const packed = m.bag.filter((i) => i.packed).length;
   async function start() {
     setStarting(true);
@@ -340,7 +346,9 @@ export function MatchDetail({ match: m }: { match: Match }) {
       <PageHeader
         title={
           <>
-            {m.homeTeam} <span className="muted">/</span> {m.awayTeam}
+            <TeamIdentity name={m.homeTeam} logoId={m.homeLogoId} />{' '}
+            <span className="muted">/</span>{' '}
+            <TeamIdentity name={m.awayTeam} logoId={m.awayLogoId} />
           </>
         }
         meta={
@@ -349,7 +357,18 @@ export function MatchDetail({ match: m }: { match: Match }) {
             {m.stadium ? ` · ${m.stadium}` : ''}
           </>
         }
-      />
+      >
+        {m.status === 'DRAFT' && (
+          <Button variant="secondary" disabled={starting} onClick={() => setEditing(true)}>
+            Modifier la rencontre
+          </Button>
+        )}
+      </PageHeader>
+      {editing && (
+        <Modal title="Modifier la rencontre" onClose={() => setEditing(false)}>
+          <MatchForm initial={m} onDone={() => setEditing(false)} />
+        </Modal>
+      )}
       <div className="dashboard-grid">
         <section className="panel match-bag">
           <div className="section-heading">

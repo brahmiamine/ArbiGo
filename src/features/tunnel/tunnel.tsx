@@ -1,4 +1,5 @@
 'use client';
+import { TeamIdentity } from '@/components/team-identity';
 import { FileDropzone } from '@/components/file-dropzone';
 import { StageAlerts } from './alerts';
 import { JerseyArt } from '@/components/equipment-art';
@@ -75,7 +76,12 @@ export function TeamHeader({ match }: { match: Match }) {
         const colors = match.colors[side];
         return (
           <div className="tunnel-team" key={side}>
-            <strong title={name}>{name}</strong>
+            <strong title={name}>
+              <TeamIdentity
+                name={name}
+                logoId={side === 'home' ? match.homeLogoId : match.awayLogoId}
+              />
+            </strong>
             <div className="tunnel-team-details">
               <span
                 className="team-color-dots"
@@ -830,7 +836,12 @@ function KitControl({ m, act }: { m: Match; act: (a: OperationInput) => Promise<
           >
             <header className="kit-team-heading">
               <span className="eyebrow">{team.side}</span>
-              <h2>{team.name}</h2>
+              <h2>
+                <TeamIdentity
+                  name={team.name}
+                  logoId={team.players === 'home' ? m.homeLogoId : m.awayLogoId}
+                />
+              </h2>
             </header>
             <div className="kit-colors">
               {(

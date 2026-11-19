@@ -49,6 +49,9 @@ export function createMatchDebrief(
     kickoffAt: string;
     timezone: string;
     competition?: string;
+    designation?: Partial<
+      Pick<DebriefForm, 'matchNumber' | 'referee' | 'assistant1' | 'assistant2'>
+    >;
   },
   referee = '',
 ): DebriefForm {
@@ -60,7 +63,10 @@ export function createMatchDebrief(
     date: local.date,
     time: local.time,
     competition: match.competition ?? '',
-    referee,
+    matchNumber: match.designation?.matchNumber ?? '',
+    referee: match.designation?.referee || referee,
+    assistant1: match.designation?.assistant1 ?? '',
+    assistant2: match.designation?.assistant2 ?? '',
   };
 }
 

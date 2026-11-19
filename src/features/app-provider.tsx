@@ -287,6 +287,10 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
               i.photoId ? [i.photoId] : [],
             ),
           );
+          for (const match of b.matches) {
+            if (match.homeLogoId) photos.add(match.homeLogoId);
+            if (match.awayLogoId) photos.add(match.awayLogoId);
+          }
           for (const id of photos) void store.media(id).catch(() => {});
         }
         if (p.preferences.avatarPhotoId)
