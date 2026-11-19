@@ -79,7 +79,7 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
           <input type="date" name="date" defaultValue={local?.date} required />
         </label>
         <label>
-          Coup d’envoi · heure de Paris
+          Coup d’envoi
           <input type="time" name="time" defaultValue={local?.time ?? '15:00'} required />
         </label>
       </div>
