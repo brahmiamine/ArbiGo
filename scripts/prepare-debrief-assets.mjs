@@ -21,3 +21,9 @@ for (const language of ['fra', 'eng']) {
     path.join(target, `${language}.traineddata.gz`),
   );
 }
+
+await mkdir(path.resolve('public/quiz'), { recursive: true });
+await copyFile(
+  require.resolve('pdfjs-dist/build/pdf.worker.min.mjs'),
+  path.resolve('public/quiz/pdf.worker.min.mjs'),
+);

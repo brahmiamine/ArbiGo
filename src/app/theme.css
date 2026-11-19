@@ -392,3 +392,219 @@ textarea:focus-visible {
     transition: none;
   }
 }
+
+/* Quizfff is part of the shared shell: local styles never recolor the outer app. */
+.quiz-app {
+  --fff-blue: var(--blue);
+  --fff-blue-dark: var(--navy);
+  --fff-red: var(--red);
+  --fff-gold: var(--gold);
+  --fff-blue-light: var(--blue);
+  --fff-gold-light: var(--gold-ink);
+  --white: var(--surface);
+  --off-white: var(--background);
+  --gray-100: var(--border);
+  --gray-300: var(--field-border);
+  --gray-600: var(--muted);
+  --success: var(--green);
+  --success-bg: var(--success-soft);
+  --danger: var(--error);
+  --danger-bg: var(--error-soft);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --shadow-card: none;
+  --max-width: 920px;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background: var(--background);
+  min-height: 0;
+  min-width: 0;
+}
+.quiz-app .app-shell {
+  min-height: 0;
+  max-width: none;
+  padding: 0;
+}
+.quiz-app .screen {
+  padding: 16px 0;
+}
+.quiz-app .card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+.quiz-app .app-title {
+  color: var(--blue);
+  font-family: var(--font-display);
+  font-size: 28px;
+}
+.quiz-app .app-subtitle {
+  color: var(--muted);
+}
+.quiz-app .logos-row {
+  display: none;
+}
+.quiz-app .btn {
+  min-height: 44px;
+  border-radius: var(--radius-control);
+  font: 800 12px/1.4 var(--font-sans);
+}
+.quiz-app .btn-primary {
+  background: var(--red);
+  color: white;
+}
+.quiz-app .btn-secondary {
+  background: var(--surface);
+  color: var(--blue);
+  border: 1px solid var(--field-border);
+}
+.quiz-app .quiz-nav {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: none;
+  transform: none;
+  left: auto;
+  bottom: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px;
+  margin-top: 16px;
+  z-index: auto;
+  background: var(--surface);
+}
+.quiz-app .quiz-nav-item {
+  flex: 1;
+  min-width: 64px;
+  color: var(--muted);
+}
+.quiz-app .quiz-nav-item-active {
+  background: var(--primary-soft);
+  color: var(--blue);
+}
+.quiz-extra-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.quiz-app input,
+.quiz-app select,
+.quiz-app textarea {
+  font-family: var(--font-sans);
+  border-radius: var(--radius-control);
+  accent-color: var(--blue);
+}
+.quiz-app[data-theme='dark'] {
+  --white: #182238;
+  --off-white: #101827;
+  --gray-100: #314057;
+  --gray-300: #526278;
+  --gray-600: #d4deec;
+  --text: #f1f5f9;
+  --surface: #182238;
+  --background: #101827;
+  --muted: #d4deec;
+  --border: #314057;
+  --field-border: #526278;
+  --primary-soft: #23395c;
+  --fff-blue-dark: #eef4ff;
+  --fff-blue: #a6c8ff;
+  --fff-gold-light: #e8cd8a;
+  --blue: #a6c8ff;
+  --navy: #eef4ff;
+  --red: #e60028;
+  --gold: #be965a;
+  color-scheme: dark;
+  padding: 12px;
+  border-radius: var(--radius);
+}
+.match-weather {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+}
+.match-weather > span:first-child {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--blue);
+  font-weight: 700;
+}
+.match-weather small {
+  display: block;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.weather-location-picker ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.weather-location-picker button {
+  width: 100%;
+  text-align: left;
+}
+.quiz-app .badge {
+  white-space: normal;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.quiz-app .question-card,
+.quiz-app .question-topline,
+.quiz-app .question-meta,
+.quiz-app .screen {
+  min-width: 0;
+}
+.quiz-app .question-meta {
+  flex-wrap: wrap;
+}
+.quiz-app .option-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.quiz-app .quiz-screen > .quiz-header {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--blue);
+  color: var(--on-primary);
+}
+.quiz-app .quiz-header .btn-link {
+  color: var(--on-primary);
+}
+.quiz-app .settings-switch-track {
+  pointer-events: none;
+}
+.quiz-app .settings-switch:focus-within {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 24px;
+}
+.quiz-app .quiz-nav {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  margin: 0 0 12px;
+}
+.quiz-app .settings-switch input {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  pointer-events: auto;
+  z-index: 1;
+  cursor: pointer;
+}
+.quiz-app .quiz-screen > .quiz-header {
+  background: var(--primary);
+}

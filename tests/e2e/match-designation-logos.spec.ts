@@ -46,7 +46,7 @@ test('manual logos survive creation, editing, cards, stage navigation and offlin
   await page.getByRole('button', { name: 'Modifier la rencontre', exact: true }).click();
   const edit = page.getByRole('dialog', { name: 'Modifier la rencontre', exact: true });
   await expect(edit.locator('.saved-logo img')).toHaveCount(2);
-  await edit.getByLabel('Stade', { exact: false }).fill('Terrain Alpha');
+  await edit.getByRole('textbox', { name: 'Stade facultatif', exact: true }).fill('Terrain Alpha');
   await edit.getByRole('button', { name: 'Enregistrer la rencontre', exact: true }).click();
   await expect(edit).toBeHidden();
   await expect(page.locator('.page-heading .team-logo img')).toHaveCount(2);
@@ -71,7 +71,9 @@ test('local OCR fills a new match and extracts visible badges from the same scre
 }) => {
   test.setTimeout(120000);
   const dialog = await newMatch(page);
-  await dialog.getByLabel('Stade', { exact: false }).fill('Stade conservé');
+  await dialog
+    .getByRole('textbox', { name: 'Stade facultatif', exact: true })
+    .fill('Stade conservé');
   await page.evaluate(async () => {
     const canvas = document.createElement('canvas');
     canvas.width = 1200;
@@ -115,7 +117,9 @@ test('local OCR fills a new match and extracts visible badges from the same scre
   );
   await expect(dialog.getByLabel('Date', { exact: true })).toHaveValue('2026-10-04');
   await expect(dialog.getByLabel('Coup d’envoi', { exact: true })).toHaveValue('11:00');
-  await expect(dialog.getByLabel('Stade', { exact: false })).toHaveValue('Stade conservé');
+  await expect(dialog.getByRole('textbox', { name: 'Stade facultatif', exact: true })).toHaveValue(
+    'Stade conservé',
+  );
   await expect(dialog.getByRole('region', { name: 'Logo domicile', exact: true })).toContainText(
     'Logo repéré',
   );

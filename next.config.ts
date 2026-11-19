@@ -3,7 +3,7 @@ const config: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
   serverExternalPackages: ['argon2'],
-  outputFileTracingExcludes: { '/*': ['./.env*', './tests/**/*', './docs/**/*'] },
+  outputFileTracingExcludes: { '/*': ['./.env*', './tests/**/*', './docs/**/*', './work/**/*'] },
   async headers() {
     return [
       {
@@ -16,7 +16,7 @@ const config: NextConfig = {
           {
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com; media-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
           },
         ],
       },

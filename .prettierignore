@@ -10,3 +10,6 @@ test-results
 next-env.d.ts
 
 public/debrief/ocr/
+
+work/
+public/quiz/pdf.worker.min.mjs

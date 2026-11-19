@@ -74,10 +74,10 @@ test('locker steps save independently offline, timing stays visible, and shell i
   await page.screenshot({ path: 'test-results/locker-steps-471.png', fullPage: true });
   await page.getByRole('button', { name: 'Précédent', exact: true }).click();
   await expect(page.getByLabel('Numéro de mon vestiaire')).toHaveValue('A2');
-  await page.getByLabel('Numéro de mon vestiaire').fill('B1');
-  await page.getByRole('button', { name: 'Enregistrer les vestiaires', exact: true }).click();
+  await expect(page.getByLabel('Numéro de mon vestiaire')).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Étape validée', exact: true })).toBeDisabled();
   await page.reload();
-  await expect(page.getByLabel('Numéro de mon vestiaire')).toHaveValue('B1');
+  await expect(page.getByLabel('Numéro de mon vestiaire')).toHaveValue('A2');
   await context.setOffline(false);
 });
 

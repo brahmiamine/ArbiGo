@@ -84,6 +84,15 @@ export function Profile() {
   return (
     <>
       <PageHeader title="Profil" />
+      <Button
+        variant="secondary"
+        onClick={() => {
+          app.setActiveId(null);
+          app.setTab('quiz');
+        }}
+      >
+        Ouvrir les quiz et leurs paramètres
+      </Button>
       <div className="profile-grid">
         <section className="panel profile-account">
           <div className="profile-identity">

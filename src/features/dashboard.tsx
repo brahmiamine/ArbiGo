@@ -1,4 +1,5 @@
 'use client';
+import { MatchWeather } from './matches/match-weather';
 import { TeamIdentity } from '@/components/team-identity';
 import { useState } from 'react';
 import {
@@ -107,6 +108,7 @@ export function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void 
         <ChevronRight size={20} />
       </div>
       {['DRAFT', 'ACTIVE'].includes(match.status) && <MatchCountdown kickoffAt={match.kickoffAt} />}
+      <MatchWeather match={match} />
       <div className="bag-mini">
         <Backpack size={15} />
         <span>
@@ -369,6 +371,7 @@ export function MatchDetail({ match: m }: { match: Match }) {
           <MatchForm initial={m} onDone={() => setEditing(false)} />
         </Modal>
       )}
+      <MatchWeather match={m} compact={false} />
       <div className="dashboard-grid">
         <section className="panel match-bag">
           <div className="section-heading">

@@ -12,3 +12,6 @@ test-results/
 /data/
 
 /public/debrief/ocr/
+
+/public/quiz/pdf.worker.min.mjs
+work/

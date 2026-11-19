@@ -2,7 +2,16 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button, Notice } from '@/components/ui';
-import { Home, CalendarDays, Backpack, UserRound, ArrowUpRight, X, Flag } from 'lucide-react';
+import {
+  Home,
+  CalendarDays,
+  Backpack,
+  UserRound,
+  BookOpenCheck,
+  ArrowUpRight,
+  X,
+  Flag,
+} from 'lucide-react';
 import { AppProvider, useApp } from './app-provider';
 import { Dashboard, Matches, MatchDetail } from './dashboard';
 import { InventoryScreen } from './bag/inventory';
@@ -11,11 +20,13 @@ import { ProfileAvatar } from './media';
 import { Tunnel } from './tunnel/tunnel';
 import { SportcashCheckout } from './tunnel/checkout';
 import { requiresCheckout } from '@/domain/match';
+import { QuizScreen } from './quiz/quiz-screen';
 import { History } from './history/history';
 const navigation = [
   { id: 'home', label: 'Accueil', icon: Home },
   { id: 'matches', label: 'Mes matchs', icon: CalendarDays },
   { id: 'bag', label: 'Mon sac', icon: Backpack },
+  { id: 'quiz', label: 'Quiz', icon: BookOpenCheck },
   { id: 'profile', label: 'Profil', icon: UserRound },
 ] as const;
 export function AppRoot({ demo = false }: { demo?: boolean }) {
@@ -136,6 +147,8 @@ function Shell() {
             <Dashboard />
           ) : app.tab === 'matches' ? (
             <Matches />
+          ) : app.tab === 'quiz' ? (
+            <QuizScreen />
           ) : app.tab === 'bag' ? (
             <InventoryScreen />
           ) : (

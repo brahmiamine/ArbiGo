@@ -86,6 +86,7 @@ export interface MatchInput {
   kickoffAt: string;
   timezone: string;
   stadium?: string;
+  weatherLocation?: import('./weather').WeatherLocation;
   competition?: string;
   category?: string;
 }

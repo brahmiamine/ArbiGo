@@ -6,6 +6,8 @@ export default defineConfig([
   ...ts,
   globalIgnores([
     'src/generated/**',
+    'work/**',
+    'public/quiz/**',
     'public/debrief/ocr/**',
     'coverage/**',
     'test-results/**',

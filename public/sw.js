@@ -23,6 +23,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/icons/') ||
     url.pathname.startsWith('/debrief/') ||
+    url.pathname.startsWith('/quiz/') ||
     url.pathname === '/icon.svg'
   ) {
     event.respondWith(
@@ -31,7 +32,7 @@ self.addEventListener('fetch', (event) => {
           hit = await cache.match(request);
         if (hit) return hit;
         const response = await fetch(request);
-        if (response.ok) await cache.put(request, response.clone());
+        if (response.status === 200) await cache.put(request, response.clone());
         return response;
       })(),
     );
