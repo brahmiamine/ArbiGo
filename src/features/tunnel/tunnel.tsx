@@ -238,6 +238,7 @@ function TunnelContent({ match: m }: { match: Match }) {
     }
   });
   const readonly = m.ownerDeviceId !== app.deviceId;
+  const completed = !!m.runs[step.code].completedAt;
   const showJersey = !readonly && step.kind === 'kit' && jerseyPreview;
   const briefing = step.code === 'captains' || step.code === 'assistants';
   const body = useRef<HTMLElement>(null);
@@ -271,7 +272,7 @@ function TunnelContent({ match: m }: { match: Match }) {
   async function go(index: number, direct = false) {
     if (readonly || busy) return;
     if (!direct && step.kind === 'kit' && index === m.currentStep + 1 && !showJersey) {
-      if (!m.selectedShirtId) {
+      if (!completed && !m.selectedShirtId) {
         const suggested = rankMatchShirts(m)[0];
         if (suggested && !(await act({ type: 'SELECT_SHIRT', itemId: suggested.id }))) return;
       }
@@ -365,7 +366,7 @@ function TunnelContent({ match: m }: { match: Match }) {
         {showJersey ? (
           <JerseyPreview
             match={m}
-            busy={busy}
+            busy={busy || completed}
             onSelect={(itemId) => act({ type: 'SELECT_SHIRT', itemId })}
           />
         ) : (
@@ -406,7 +407,8 @@ function TunnelContent({ match: m }: { match: Match }) {
                 </div>
                 <StepStatusBadge match={m} step={step} />
               </div>
-              <fieldset className="step-fieldset" disabled={readonly || busy}>
+              {completed && <p className="muted">Étape validée : consultation uniquement.</p>}
+              <fieldset className="step-fieldset" disabled={readonly || busy || completed}>
                 {step.kind === 'locker' && <LockerRooms match={m} code={step.code} act={act} />}
                 {step.kind === 'checkin' && (
                   <div className="sportcash-checkin">
@@ -489,7 +491,7 @@ function TunnelContent({ match: m }: { match: Match }) {
                       <div className="issue-actions">
                         <Button
                           variant="ghost"
-                          disabled={readonly}
+                          disabled={readonly || busy || completed}
                           onClick={() =>
                             void act({ type: 'ISSUE_UPDATE', issueId: issue.id, status: 'WAITING' })
                           }
@@ -498,7 +500,7 @@ function TunnelContent({ match: m }: { match: Match }) {
                         </Button>
                         <Button
                           variant="secondary"
-                          disabled={readonly}
+                          disabled={readonly || busy || completed}
                           onClick={() =>
                             void act({
                               type: 'ISSUE_UPDATE',
@@ -715,7 +717,7 @@ function CheckControl({
           </button>
         )}
       </div>
-      {problem && (
+      {problem && !m.runs[step.code].completedAt && (
         <Modal title="Signaler un problème" onClose={() => setProblem(false)}>
           <form
             className="form"

@@ -90,6 +90,13 @@ export function createMatch(
     appliedOperations: [],
   };
 }
+function assertStepEditable(match: Match, code: string) {
+  if (match.runs[code]?.completedAt) throw new Error('STEP_COMPLETED');
+}
+function assertStepIssuesResolved(match: Match, code: string) {
+  if (match.issues.some((issue) => issue.stepCode === code && issue.status !== 'RESOLVED'))
+    throw new Error('ISSUES_UNRESOLVED');
+}
 export function applyOperation(match: Match, op: Operation): Match {
   if (match.id !== op.matchId) throw new Error('MATCH_MISMATCH');
   if (match.appliedOperations.includes(op.id)) return match;
@@ -124,6 +131,7 @@ export function applyOperation(match: Match, op: Operation): Match {
       const code = 'referee' in rooms ? 'referee-locker' : 'team-lockers';
       if (!m.template.steps.some((step) => step.code === code && step.kind === 'locker'))
         throw new Error('STEP_UNKNOWN');
+      assertStepEditable(m, code);
       m.lockerRooms = { ...m.lockerRooms, ...rooms };
       m.runs[code].completedAt = at;
       break;
@@ -147,6 +155,7 @@ export function applyOperation(match: Match, op: Operation): Match {
       break;
     }
     case 'SELECT_SHIRT': {
+      assertStepEditable(m, 'kit');
       if (!m.bag.some((item) => item.id === a.itemId && item.type === 'SHIRT'))
         throw new Error('SHIRT_UNAVAILABLE');
       m.selectedShirtId = a.itemId;
@@ -156,6 +165,7 @@ export function applyOperation(match: Match, op: Operation): Match {
       const step = m.template.steps.find((s) => s.code === a.stepCode);
       const control = step?.controls.find((c) => c.code === a.controlCode);
       if (!control) throw new Error('CONTROL_UNKNOWN');
+      assertStepEditable(m, a.stepCode);
       if (a.value === 'NA' && !control.allowNA) throw new Error('NA_FORBIDDEN');
       if (a.value === 'PROBLEM' && !a.reason?.trim()) throw new Error('REASON_REQUIRED');
       if (
@@ -172,7 +182,6 @@ export function applyOperation(match: Match, op: Operation): Match {
         comment: a.comment,
         photoId: a.photoId,
       };
-      delete m.runs[a.stepCode].completedAt;
       if (a.value === 'PROBLEM')
         m.issues.push({
           id: op.id,
@@ -190,8 +199,10 @@ export function applyOperation(match: Match, op: Operation): Match {
     case 'BRIEFING': {
       const step = m.template.steps.find((s) => s.code === a.stepCode);
       if (!step || !['captains', 'assistants'].includes(step.code)) throw new Error('STEP_UNKNOWN');
+      assertStepEditable(m, step.code);
+      assertStepIssuesResolved(m, step.code);
       const run = m.runs[step.code];
-      // Keep earlier answers and unresolved issues from existing match journals.
+      // Keep the answers already recorded before confirming the briefing.
       for (const control of step.controls) run.answers[control.code] ??= { value: 'OK', at };
       run.completedAt = at;
       break;
@@ -199,6 +210,8 @@ export function applyOperation(match: Match, op: Operation): Match {
     case 'COMPLETE': {
       const step = m.template.steps.find((s) => s.code === a.stepCode);
       if (!step || step.kind === 'final') throw new Error('STEP_UNKNOWN');
+      assertStepEditable(m, step.code);
+      assertStepIssuesResolved(m, step.code);
       if (step.kind === 'locker') throw new Error('LOCKER_ROOMS_REQUIRED');
       if (step.controls.some((c) => !m.runs[step.code].answers[c.code]))
         throw new Error('CHECKS_REQUIRED');
@@ -210,6 +223,7 @@ export function applyOperation(match: Match, op: Operation): Match {
     case 'ISSUE_UPDATE': {
       const issue = m.issues.find((i) => i.id === a.issueId);
       if (!issue) throw new Error('ISSUE_UNKNOWN');
+      assertStepEditable(m, issue.stepCode);
       issue.status = a.status;
       if (a.comment) issue.comment = a.comment;
       if (a.status === 'RESOLVED') {
@@ -219,6 +233,7 @@ export function applyOperation(match: Match, op: Operation): Match {
       break;
     }
     case 'COLORS': {
+      assertStepEditable(m, 'kit');
       const outfit = rankOutfits(m.outfits, m.bag, a.colors).find(
         (o) => o.id === a.selectedOutfitId,
       );
@@ -229,6 +244,7 @@ export function applyOperation(match: Match, op: Operation): Match {
       break;
     }
     case 'WARMUP': {
+      assertStepEditable(m, 'warmup');
       const p = m.warmup[a.phase];
       if (!p) throw new Error('PHASE_UNKNOWN');
       if (a.command === 'START') {

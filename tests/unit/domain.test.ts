@@ -41,7 +41,7 @@ const op = (m: Match, action: OperationInput): Operation => ({
 const act = (m: Match, action: OperationInput) => applyOperation(m, op(m, action));
 
 describe('match preparation', () => {
-  it('keeps unresolved anomalies visible on completed stages and distinguishes whole-stage NA', () => {
+  it('requires resolved anomalies before completion and distinguishes whole-stage NA', () => {
     let m = act(fresh(), { type: 'START' });
     const pitch = m.template.steps.find((s) => s.code === 'pitch')!;
     for (const control of pitch.controls)
@@ -52,8 +52,10 @@ describe('match preparation', () => {
         value: control.code === 'goals' ? 'PROBLEM' : 'OK',
         reason: control.code === 'goals' ? 'Danger' : undefined,
       });
+    expect(() => act(m, { type: 'COMPLETE', stepCode: pitch.code })).toThrow('ISSUES_UNRESOLVED');
+    m = act(m, { type: 'ISSUE_UPDATE', issueId: m.issues[0].id, status: 'RESOLVED' });
     m = act(m, { type: 'COMPLETE', stepCode: pitch.code });
-    expect(stageStatus(m, pitch).label).toBe('Validée avec anomalie à suivre');
+    expect(stageStatus(m, pitch).label).toBe('Validée');
     const captains = m.template.steps.find((s) => s.code === 'captains')!;
     for (const control of captains.controls)
       m = act(m, {

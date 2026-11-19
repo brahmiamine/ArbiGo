@@ -14,7 +14,7 @@ const act = (m: Match, action: OperationInput) =>
     action,
   });
 const kickoff = { type: 'KICKOFF', acknowledged: true } as const;
-it('requires every preparatory stage for all practices, reblocks edited checks, and preserves historical closure', () => {
+it('requires every preparatory stage for all practices, rejects edits to validated checks, and preserves historical closure', () => {
   for (const practice of ['FOOT_11', 'FOOT_8', 'FUTSAL'] as const) {
     let m = act(
       createMatch(
@@ -41,15 +41,16 @@ it('requires every preparatory stage for all practices, reblocks edited checks, 
       expect(() => act(missing, kickoff)).toThrow('PREPARATION_REQUIRED');
     }
     expect(unchanged.status).toBe('ACTIVE');
-    const edited = act(m, { type: 'ANSWER', stepCode: 'pitch', controlCode: 'goals', value: 'OK' });
-    expect(() => act(edited, kickoff)).toThrow('PREPARATION_REQUIRED');
+    expect(() =>
+      act(m, { type: 'ANSWER', stepCode: 'pitch', controlCode: 'goals', value: 'OK' }),
+    ).toThrow('STEP_COMPLETED');
     const done = act(m, kickoff);
     expect(done.status).toBe('COMPLETED');
     expect(done.runs.final.completedAt).toBe('2026-12-01T14:00:00Z');
     expect(() => act(done, kickoff)).toThrow('CLOSED');
   }
 });
-it('blocks unresolved issues even after stage completion and allows resolved problems and applicable NA', () => {
+it('requires issue resolution before stage completion and allows applicable NA', () => {
   let m = act(
     createMatch(
       {
@@ -64,7 +65,12 @@ it('blocks unresolved issues even after stage completion and allows resolved pro
     ),
     { type: 'START' },
   );
-  for (const input of preparationActions(m)) m = act(m, input);
+  for (const input of preparationActions(m).filter(
+    (action) => !('stepCode' in action && action.stepCode === 'pitch'),
+  ))
+    m = act(m, input);
+  for (const control of m.template.steps.find((step) => step.code === 'pitch')!.controls)
+    m = act(m, { type: 'ANSWER', stepCode: 'pitch', controlCode: control.code, value: 'OK' });
   m = act(m, { type: 'ANSWER', stepCode: 'pitch', controlCode: 'corners', value: 'NA' });
   m = act(m, {
     type: 'ANSWER',
@@ -73,10 +79,11 @@ it('blocks unresolved issues even after stage completion and allows resolved pro
     value: 'PROBLEM',
     reason: 'But à fixer',
   });
-  m = act(m, { type: 'COMPLETE', stepCode: 'pitch' });
-  expect(summarize(m).missing).toEqual([]);
+  expect(() => act(m, { type: 'COMPLETE', stepCode: 'pitch' })).toThrow('ISSUES_UNRESOLVED');
+  expect(summarize(m).missing).toEqual(['Tour du terrain']);
   expect(() => act(m, kickoff)).toThrow('PREPARATION_REQUIRED');
   m = act(m, { type: 'ISSUE_UPDATE', issueId: m.issues[0].id, status: 'RESOLVED' });
+  m = act(m, { type: 'COMPLETE', stepCode: 'pitch' });
   expect(() => act(m, { type: 'KICKOFF', acknowledged: false })).toThrow('REVIEW_REQUIRED');
   expect(act(m, kickoff).status).toBe('COMPLETED');
 });

@@ -55,7 +55,7 @@ it('uses stored schedules for all practices, handles offsets and equivalent time
     }
   }
 });
-it('keeps validation deltas fixed when browsing later or waiting; a new validation updates the recorded result', () => {
+it('keeps validation deltas fixed when browsing later or waiting; rejects attempts to overwrite the validation time', () => {
   let m = fresh();
   const act = (action: Parameters<typeof applyOperation>[1]['action'], at: string) => {
     m = applyOperation(m, {
@@ -75,6 +75,8 @@ it('keeps validation deltas fixed when browsing later or waiting; a new validati
   expect(result?.value).toBe('−3 min');
   act({ type: 'NAVIGATE', index: m.template.steps.length - 1 }, '2026-11-17T14:10:00Z');
   expect(stageTiming(m, step)).toEqual(result);
-  act({ type: 'COMPLETE', stepCode: 'arrival' }, '2026-11-17T12:47:00Z');
-  expect(stageTiming(m, step)?.value).toBe('+2 min');
+  expect(() => act({ type: 'COMPLETE', stepCode: 'arrival' }, '2026-11-17T12:47:00Z')).toThrow(
+    'STEP_COMPLETED',
+  );
+  expect(stageTiming(m, step)).toEqual(result);
 });

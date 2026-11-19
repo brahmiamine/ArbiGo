@@ -1,5 +1,5 @@
 'use client';
-import { useState, type FormEvent } from 'react';
+import { type FormEvent } from 'react';
 import { Button } from '@/components/ui';
 import { Check } from 'lucide-react';
 import type { Match, OperationInput } from '@/domain/types';
@@ -20,15 +20,15 @@ export function LockerRooms({
         { key: 'home' as const, label: `Vestiaire · ${match.homeTeam}` },
         { key: 'away' as const, label: `Vestiaire · ${match.awayTeam}` },
       ];
-  const [changed, setChanged] = useState(false);
   const completed = !!match.runs[code].completedAt;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (completed) return;
     const data = new FormData(event.currentTarget);
     const rooms = referee
       ? { referee: String(data.get('referee')).trim() }
       : { home: String(data.get('home')).trim(), away: String(data.get('away')).trim() };
-    if (await act({ type: 'LOCKER_ROOMS', rooms })) setChanged(false);
+    await act({ type: 'LOCKER_ROOMS', rooms });
   }
   return (
     <form className="form locker-rooms" onSubmit={submit}>
@@ -43,17 +43,13 @@ export function LockerRooms({
             pattern={'.*\\S.*'}
             autoComplete="off"
             placeholder="Ex. 3 ou A2"
-            onChange={() => setChanged(true)}
+            disabled={completed}
           />
         </label>
       ))}
-      <Button type="submit" disabled={completed && !changed}>
+      <Button type="submit" disabled={completed}>
         <Check size={19} />
-        {completed && !changed
-          ? 'Étape validée'
-          : completed
-            ? 'Enregistrer les vestiaires'
-            : 'Valider cette étape'}
+        {completed ? 'Étape validée' : 'Valider cette étape'}
       </Button>
     </form>
   );

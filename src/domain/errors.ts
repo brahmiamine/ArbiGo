@@ -11,6 +11,8 @@ export const errorMessages: Record<string, string> = {
   NOT_STARTED: 'Démarrez d’abord le tunnel.',
   ALREADY_STARTED: 'Cette préparation est déjà démarrée.',
   STEP_UNKNOWN: 'Cette étape n’est pas disponible.',
+  STEP_COMPLETED: 'Cette étape est validée et ne peut plus être modifiée.',
+  ISSUES_UNRESOLVED: 'Résolvez les anomalies de cette étape avant de la valider.',
   CONTROL_UNKNOWN: 'Ce contrôle n’est pas disponible.',
   NA_FORBIDDEN: 'Ce contrôle ne peut pas être marqué sans objet.',
   REASON_REQUIRED: 'Précisez le motif du problème.',

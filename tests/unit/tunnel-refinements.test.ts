@@ -51,7 +51,7 @@ it('confirms both briefings atomically on stored templates for every practice wi
     }
   }
 });
-it('keeps previous briefing answers and unresolved issues intact', () => {
+it('requires briefing anomalies to be resolved and preserves earlier answers', () => {
   let m = act(fresh(), { type: 'START' });
   m = act(m, {
     type: 'ANSWER',
@@ -61,6 +61,8 @@ it('keeps previous briefing answers and unresolved issues intact', () => {
     reason: 'Capitaine absent',
   });
   m = act(m, { type: 'ANSWER', stepCode: 'captains', controlCode: 'call', value: 'NA' });
+  expect(() => act(m, { type: 'BRIEFING', stepCode: 'captains' })).toThrow('ISSUES_UNRESOLVED');
+  m = act(m, { type: 'ISSUE_UPDATE', issueId: m.issues[0].id, status: 'RESOLVED' });
   const issues = structuredClone(m.issues),
     answers = structuredClone(m.runs.captains.answers);
   m = act(m, { type: 'BRIEFING', stepCode: 'captains' });
@@ -71,7 +73,7 @@ it('keeps previous briefing answers and unresolved issues intact', () => {
       m,
       m.template.steps.find((s) => s.code === 'captains')!,
     ).label,
-  ).toBe('Validée avec anomalie à suivre');
+  ).toBe('Validée');
 });
 it('cannot use a briefing to bypass checks, match closure or device ownership', () => {
   let m = fresh();

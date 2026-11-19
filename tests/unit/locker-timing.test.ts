@@ -104,8 +104,10 @@ it('validates locker numbers atomically and keeps navigation and other stages se
   expect(m.currentStep).toBe(0);
   m = act(m, { type: 'LOCKER_ROOMS', rooms: { home: '3', away: '4' } });
   expect(m.lockerRooms).toEqual({ referee: 'A2', home: '3', away: '4' });
-  m = act(m, { type: 'LOCKER_ROOMS', rooms: { referee: 'B1' } });
-  expect(m.lockerRooms).toEqual({ referee: 'B1', home: '3', away: '4' });
+  expect(() => act(m, { type: 'LOCKER_ROOMS', rooms: { referee: 'B1' } })).toThrow(
+    'STEP_COMPLETED',
+  );
+  expect(m.lockerRooms).toEqual({ referee: 'A2', home: '3', away: '4' });
   expect(m.runs.arrival.completedAt).toBeUndefined();
   const foreign = { ...m, ownerDeviceId: 'another-device' };
   expect(() => act(foreign, { type: 'LOCKER_ROOMS', rooms: { referee: '2' } })).toThrow(
