@@ -14,7 +14,7 @@ export default function Notes() {
   return (
     <div className="screen collection-screen notes-screen">
       <div className="notes-web-header">
-        <h1 className="app-title">Mes notes</h1>
+        <h1 className="app-title">Notes</h1>
         <a className="notes-source-link" href={NOTION_URL} target="_blank" rel="noreferrer">
           Ouvrir dans Notion ↗
         </a>

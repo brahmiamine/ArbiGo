@@ -3,6 +3,10 @@ export interface WeatherLocation {
   latitude: number;
   longitude: number;
 }
+export function hasUpcomingForecast(match: { status: string; kickoffAt: string }, now: number) {
+  const delay = Date.parse(match.kickoffAt) - now;
+  return ['DRAFT', 'ACTIVE'].includes(match.status) && delay > 0 && delay <= 15 * 86400000;
+}
 export interface WeatherHour {
   at: string;
   temperature: number;

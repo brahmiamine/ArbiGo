@@ -1,11 +1,17 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { CloudSun } from 'lucide-react';
-import { weatherLabel, type WeatherHour } from '@/domain/weather';
+import { hasUpcomingForecast, weatherLabel, type WeatherHour } from '@/domain/weather';
 import type { Match } from '@/domain/types';
 import { useApp } from '../app-provider';
 export function MatchWeather({ match, compact = true }: { match: Match; compact?: boolean }) {
   const [saved, setResult] = useState<{ query: string; hours: WeatherHour[]; reason?: string }>();
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+  const eligible = hasUpcomingForecast(match, now);
   const { profile } = useApp();
   const location =
     profile?.preferences.weatherLocation === undefined
@@ -20,7 +26,7 @@ export function MatchWeather({ match, compact = true }: { match: Match; compact?
     : '';
   const result = saved?.query === query ? saved : undefined;
   useEffect(() => {
-    if (!location) return;
+    if (!location || !eligible) return;
     const controller = new AbortController();
     void fetch(
       `/api/weather?${new URLSearchParams({ latitude: String(location.latitude), longitude: String(location.longitude), kickoff: match.kickoffAt })}`,
@@ -35,14 +41,15 @@ export function MatchWeather({ match, compact = true }: { match: Match; compact?
           setResult({ query, hours: [], reason: 'Météo indisponible hors ligne.' });
       });
     return () => controller.abort();
-  }, [location, match.kickoffAt, query]);
+  }, [location, match.kickoffAt, query, eligible]);
   const date = new Intl.DateTimeFormat('fr', {
     timeZone: match.timezone,
     dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(match.kickoffAt));
+  if (!eligible) return null;
   return (
-    <span className="match-weather">
+    <span className={`match-weather ${compact ? 'match-weather-compact' : 'match-weather-detail'}`}>
       <span>
         <CloudSun size={16} /> Météo · {date}
       </span>
@@ -54,7 +61,7 @@ export function MatchWeather({ match, compact = true }: { match: Match; compact?
         <>
           <span>{location.name}</span>
           <span>
-            {result.hours.map((hour) => (
+            {(compact ? result.hours.slice(0, 1) : result.hours).map((hour) => (
               <small key={hour.at}>
                 {new Intl.DateTimeFormat('fr', {
                   timeZone: match.timezone,

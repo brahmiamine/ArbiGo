@@ -144,14 +144,8 @@ export function Profile() {
         </section>
         <section className="panel">
           <h2>Météo des rencontres</h2>
-          <p className="muted">
-            Lieu proposé pour les nouvelles rencontres. Vérifiez qu’il correspond au stade.
-          </p>
-          <WeatherLocationPicker
-            label="Lieu météo par défaut"
-            value={weatherLocation}
-            onChange={setWeatherLocation}
-          />
+          <p className="muted">Position utilisée pour la météo des matchs à venir.</p>
+          <WeatherLocationPicker value={weatherLocation} onChange={setWeatherLocation} />
           <Button
             variant="secondary"
             onClick={() =>

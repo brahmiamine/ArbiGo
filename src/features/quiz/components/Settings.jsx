@@ -277,13 +277,13 @@ export default function Settings({
         href={NOTES_URL}
         target="_blank"
         rel="noreferrer"
-        aria-label="Ouvrir Mes notes dans Notion"
+        aria-label="Ouvrir Notes dans Notion"
       >
         <span className="settings-link-icon" aria-hidden="true">
           ✎
         </span>
         <span className="settings-link-copy">
-          <strong>Mes notes</strong>
+          <strong>Notes</strong>
           <small>Ouvrir le résumé arbitre directement dans Notion</small>
         </span>
         <span className="settings-link-arrow" aria-hidden="true">

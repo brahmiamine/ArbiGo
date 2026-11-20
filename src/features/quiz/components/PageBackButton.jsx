@@ -7,7 +7,7 @@ export default function PageBackButton({ onBack }) {
   }, []);
 
   return (
-    <div className="quiz-header">
+    <div className="quiz-header quiz-page-back">
       <div className="quiz-header-actions">
         <Button type="button" variant="ghost" className="btn-link" onClick={onBack}>
           ← Retour

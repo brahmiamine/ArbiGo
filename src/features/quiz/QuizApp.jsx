@@ -1,6 +1,7 @@
 'use client';
 import { setQuizOwner, quizSessionStorage } from './utils/accountStorage';
 import Terrain from './components/Terrain';
+import PageBackButton from './components/PageBackButton';
 import Notes from './components/Notes';
 import lot1 from './data/questions-lot1.json';
 import lot2 from './data/questions-lot2.json';
@@ -555,8 +556,18 @@ export default function App({ ownerId }) {
           onBack={() => navigateTo('reviews')}
         />
       )}
-      {state.screen === 'terrain' && <Terrain />}
-      {state.screen === 'notes' && <Notes />}
+      {state.screen === 'terrain' && (
+        <>
+          <PageBackButton onBack={() => navigateTo('home')} />
+          <Terrain />
+        </>
+      )}
+      {state.screen === 'notes' && (
+        <>
+          <PageBackButton onBack={() => navigateTo('home')} />
+          <Notes />
+        </>
+      )}
       {state.screen === 'documents' && <Documents />}
       {state.screen === 'settings' && (
         <Settings
@@ -590,7 +601,7 @@ export default function App({ ownerId }) {
             Terrain
           </button>
           <button className="button secondary" onClick={() => navigateTo('notes')}>
-            Mes notes
+            Notes
           </button>
         </div>
       )}

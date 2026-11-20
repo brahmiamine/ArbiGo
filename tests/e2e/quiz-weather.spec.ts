@@ -5,13 +5,16 @@ test('weather location from the phone can be saved in settings and reused for a 
 }) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 48.85, longitude: 2.35 });
+  await page.route('**/api/weather/address?*', (route) =>
+    route.fulfill({ json: { address: '13 rue du Général Guillaumat, 75015 Paris' } }),
+  );
   await page.goto('/demo?page=profile');
   const panel = page
     .locator('section')
     .filter({ has: page.getByRole('heading', { name: 'Météo des rencontres' }) });
   await panel.getByRole('button', { name: 'Utiliser ma position' }).click();
   await expect(
-    panel.getByText('Lieu retenu : Position du téléphone', { exact: false }),
+    panel.getByText('13 rue du Général Guillaumat, 75015 Paris', { exact: false }),
   ).toBeVisible();
   await panel.getByRole('button', { name: 'Enregistrer le lieu météo' }).click();
   await expect(panel.getByText('Lieu météo enregistré.')).toBeVisible();
@@ -59,14 +62,17 @@ test('quiz settings, lots, session reload and shared navigation form one app', a
 });
 test('weather uses selected stadium coordinates and kickoff, and never blocks match creation', async ({
   page,
+  context,
 }) => {
-  await page.route('**/api/weather/locations?*', (route) =>
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 48.85, longitude: 2.35 });
+  await page.route('**/api/weather/address?*', (route) =>
     route.fulfill({
       json: {
-        locations: [
-          { name: 'Paris, France', latitude: 48.85, longitude: 2.35 },
-          { name: 'Lyon, France', latitude: 45.76, longitude: 4.84 },
-        ],
+        address:
+          new URL(route.request().url()).searchParams.get('latitude') === '48.85'
+            ? 'Paris, France'
+            : 'Lyon, France',
       },
     }),
   );
@@ -78,8 +84,9 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
     }),
   );
   await page.goto('/demo?page=profile');
-  await page.getByPlaceholder('Rechercher la ville du stade').fill('Paris');
-  await page.getByRole('button', { name: 'Paris, France', exact: true }).click();
+  await expect(page.locator('.weather-location-picker input')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Utiliser ma position' }).click();
+  await expect(page.locator('.weather-detected-address')).toContainText('Paris, France');
   await page.getByRole('button', { name: 'Enregistrer le lieu météo' }).click();
   await expect(page.getByText('Lieu météo enregistré.')).toBeVisible();
   await page
@@ -102,19 +109,25 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
   await expect(card).toContainText('12 °C');
   await expect(card).toContainText('01/12/2026');
   await expect(card).toContainText('Source Open-Meteo');
+  expect((await card.locator('.match-weather').boundingBox())!.height).toBeLessThan(130);
+  await page.screenshot({ path: 'work/weather-card-small.png' });
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
     .getByRole('button', { name: 'Profil', exact: true })
     .click();
-  await page.getByPlaceholder('Rechercher la ville du stade').fill('Lyon');
-  await page.getByRole('button', { name: 'Lyon, France', exact: true }).click();
+  await context.setGeolocation({ latitude: 45.76, longitude: 4.84 });
+  await page.getByRole('button', { name: 'Utiliser ma position' }).click();
+  await expect(page.locator('.weather-detected-address')).toContainText('Lyon, France');
   await page.getByRole('button', { name: 'Enregistrer le lieu météo' }).click();
   await expect(page.getByText('Lieu météo enregistré.')).toBeVisible();
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
     .getByRole('button', { name: 'Mes matchs', exact: true })
     .click();
-  await expect(card).toContainText('Lyon, France');
+  await expect(card.locator('.match-weather')).toHaveCSS('font-size', '11px');
+  await card.click();
+  await expect(page.locator('.match-weather')).toContainText('Lyon, France');
+  expect((await page.locator('.match-weather').boundingBox())!.height).toBeLessThan(180);
 });
 
 test('training corrections, favorites, results and statistics persist across views', async ({
@@ -179,8 +192,14 @@ test('documents, pitch zoom and quiz-local dark settings remain inside ArbiGo', 
   await expect(page.locator('.document-viewer-loading')).toHaveCount(0, { timeout: 20000 });
   await expect(page.locator('.document-viewer-error')).toHaveCount(0);
   await page.goto('/demo?page=quiz&quiz=terrain');
+  await expect(page.getByRole('button', { name: '← Retour', exact: true })).toHaveCSS(
+    'color',
+    'rgb(26, 26, 26)',
+  );
   await page.getByRole('button', { name: 'Agrandir le zoom', exact: true }).click();
   await expect(page.locator('.terrain-zoom-value')).toContainText('125');
+  await page.goto('/demo?page=quiz&quiz=notes');
+  await expect(page.getByRole('heading', { name: 'Notes', exact: true })).toBeVisible();
   await page.goto('/demo?page=quiz&quiz=settings');
   await page
     .getByRole('group', { name: 'Thème du quiz' })

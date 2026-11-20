@@ -677,3 +677,44 @@ textarea:focus-visible {
 .weather-location-picker > .button {
   margin-top: 6px;
 }
+
+/* Small forecast summaries keep the match itself prominent. */
+.match-weather {
+  gap: 3px;
+  padding: 8px 0;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.match-weather small {
+  font-size: 10px;
+  line-height: 1.5;
+}
+.match-weather-compact > span:nth-child(2) {
+  display: none;
+}
+.match-weather-detail > span:nth-child(3) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 14px;
+}
+.weather-detected-address {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.quiz-app:not([data-theme='dark']) .quiz-header .btn-link,
+.quiz-app:not([data-theme='dark']) .document-viewer-back {
+  color: #1a1a1a;
+  background: #fff;
+  border-radius: var(--radius-control);
+  padding: 8px 12px;
+}
+.quiz-app .quiz-page-back {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+.detail > .text-button,
+.page-content > .text-button,
+.debrief-app > .text-button {
+  color: #1a1a1a;
+}
