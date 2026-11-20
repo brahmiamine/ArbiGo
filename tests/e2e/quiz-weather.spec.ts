@@ -21,9 +21,18 @@ test('weather location from the phone can be saved in settings and reused for a 
     .getByRole('button', { name: 'Accueil', exact: true })
     .click();
   await page.getByRole('button', { name: 'Nouveau match', exact: true }).click();
-  await expect(page.getByPlaceholder('Rechercher la ville du stade')).toHaveValue(
-    'Position du téléphone',
-  );
+  await expect(
+    page.getByRole('dialog').getByRole('button', { name: 'Utiliser ma position' }),
+  ).toHaveCount(0);
+  await page.getByLabel('Équipe domicile', { exact: true }).fill('Club A');
+  await page.getByLabel('Équipe visiteuse', { exact: true }).fill('Club B');
+  await page.getByLabel('Date', { exact: true }).fill('2026-12-01');
+  await page.getByRole('button', { name: 'Créer la rencontre' }).click();
+  await page
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .click();
+  await expect(page.locator('.match-card').filter({ hasText: 'Club A' })).toContainText('Météo');
 });
 test('quiz settings, lots, session reload and shared navigation form one app', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -53,7 +62,12 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
 }) => {
   await page.route('**/api/weather/locations?*', (route) =>
     route.fulfill({
-      json: { locations: [{ name: 'Paris, France', latitude: 48.85, longitude: 2.35 }] },
+      json: {
+        locations: [
+          { name: 'Paris, France', latitude: 48.85, longitude: 2.35 },
+          { name: 'Lyon, France', latitude: 45.76, longitude: 4.84 },
+        ],
+      },
     }),
   );
   await page.route('**/api/weather?*', (route) =>
@@ -63,13 +77,22 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
       },
     }),
   );
-  await page.goto('/demo');
+  await page.goto('/demo?page=profile');
+  await page.getByPlaceholder('Rechercher la ville du stade').fill('Paris');
+  await page.getByRole('button', { name: 'Paris, France', exact: true }).click();
+  await page.getByRole('button', { name: 'Enregistrer le lieu météo' }).click();
+  await expect(page.getByText('Lieu météo enregistré.')).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('button', { name: 'Accueil', exact: true })
+    .click();
   await page.getByRole('button', { name: 'Nouveau match', exact: true }).click();
   await page.getByLabel('Équipe domicile', { exact: true }).fill('Météo domicile');
   await page.getByLabel('Équipe visiteuse', { exact: true }).fill('Météo visiteurs');
   await page.getByLabel('Date', { exact: true }).fill('2026-12-01');
-  await page.getByPlaceholder('Rechercher la ville du stade').fill('Paris');
-  await page.getByRole('button', { name: 'Paris, France', exact: true }).click();
+  await expect(
+    page.getByRole('dialog').getByPlaceholder('Rechercher la ville du stade'),
+  ).toHaveCount(0);
   await page.getByRole('button', { name: 'Créer la rencontre', exact: true }).click();
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
@@ -79,6 +102,19 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
   await expect(card).toContainText('12 °C');
   await expect(card).toContainText('01/12/2026');
   await expect(card).toContainText('Source Open-Meteo');
+  await page
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('button', { name: 'Profil', exact: true })
+    .click();
+  await page.getByPlaceholder('Rechercher la ville du stade').fill('Lyon');
+  await page.getByRole('button', { name: 'Lyon, France', exact: true }).click();
+  await page.getByRole('button', { name: 'Enregistrer le lieu météo' }).click();
+  await expect(page.getByText('Lieu météo enregistré.')).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .click();
+  await expect(card).toContainText('Lyon, France');
 });
 
 test('training corrections, favorites, results and statistics persist across views', async ({

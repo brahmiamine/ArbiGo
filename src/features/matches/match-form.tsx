@@ -7,7 +7,6 @@ import { updateDraft } from './update-draft';
 import { parseLocalKickoff, localDateParts } from '@/domain/time';
 import type { Match, MatchInput } from '@/domain/types';
 import { useMatchDesignation } from './designation/use-match-designation';
-import { WeatherLocationPicker } from './weather-location-picker';
 import { TeamLogoInput } from './team-logo-input';
 import { saveTeamLogo, type TeamLogoDraft } from './team-logo-files';
 
@@ -23,7 +22,7 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
     competition: initial?.competition ?? '',
     category: initial?.category ?? '',
   });
-  const [weatherLocation, setWeatherLocation] = useState(
+  const [weatherLocation] = useState(
     initial ? initial.weatherLocation : (app.profile?.preferences.weatherLocation ?? undefined),
   );
   const [designation, setDesignation] = useState<MatchInput['designation']>(initial?.designation);
@@ -199,7 +198,6 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
             placeholder="Nom du stade"
           />
         </label>
-        <WeatherLocationPicker value={weatherLocation} onChange={setWeatherLocation} />
         <div className="form-grid">
           <label>
             Compétition <span className="optional">facultatif</span>

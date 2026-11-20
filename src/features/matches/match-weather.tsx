@@ -3,9 +3,14 @@ import { useEffect, useState } from 'react';
 import { CloudSun } from 'lucide-react';
 import { weatherLabel, type WeatherHour } from '@/domain/weather';
 import type { Match } from '@/domain/types';
+import { useApp } from '../app-provider';
 export function MatchWeather({ match, compact = true }: { match: Match; compact?: boolean }) {
   const [saved, setResult] = useState<{ query: string; hours: WeatherHour[]; reason?: string }>();
-  const location = match.weatherLocation;
+  const { profile } = useApp();
+  const location =
+    profile?.preferences.weatherLocation === undefined
+      ? match.weatherLocation
+      : profile.preferences.weatherLocation;
   const query = location
     ? new URLSearchParams({
         latitude: String(location.latitude),
@@ -42,7 +47,7 @@ export function MatchWeather({ match, compact = true }: { match: Match; compact?
         <CloudSun size={16} /> Météo · {date}
       </span>
       {!location ? (
-        <small>Précisez la ville du stade pour la météo.</small>
+        <small>Définissez votre lieu météo dans les paramètres du profil.</small>
       ) : !result ? (
         <small>Chargement des prévisions…</small>
       ) : result.hours.length ? (

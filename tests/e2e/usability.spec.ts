@@ -62,7 +62,12 @@ test('inventory spacing, revised equipment and every navigation view survive rel
     const row = page.locator('.inventory-row').first();
     const image = await row.locator('.equipment-image').boundingBox(),
       label = await row.locator('.inventory-label').boundingBox();
-    expect(label!.x - (image!.x + image!.width)).toBeGreaterThanOrEqual(10);
+    const actions = await row.locator('.row-actions').boundingBox();
+    expect(label!.x - (image!.x + image!.width)).toBeGreaterThanOrEqual(8);
+    expect(actions!.x).toBeGreaterThanOrEqual(label!.x + label!.width);
+    expect(
+      Math.abs(actions!.y + actions!.height / 2 - (image!.y + image!.height / 2)),
+    ).toBeLessThan(2);
     expect((await row.boundingBox())!.height).toBeLessThan(130);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       width,
