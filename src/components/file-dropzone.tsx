@@ -13,6 +13,7 @@ interface Props {
   inputClassName?: string;
   previewUrl?: string;
   validate?: boolean;
+  compact?: boolean;
 }
 /** One accessible file picker for gallery selection, keyboard use and drag-and-drop. */
 export function FileDropzone({
@@ -27,6 +28,7 @@ export function FileDropzone({
   inputClassName = '',
   previewUrl,
   validate = true,
+  compact = false,
 }: Props) {
   const id = useId();
   const [dragging, setDragging] = useState(false);
@@ -122,7 +124,10 @@ export function FileDropzone({
           <span>
             {busy
               ? 'Import en cours…'
-              : name || 'Glissez une image ici ou choisissez-la dans vos fichiers'}
+              : name ||
+                (compact
+                  ? 'Choisir une image'
+                  : 'Glissez une image ici ou choisissez-la dans vos fichiers')}
           </span>
           <small id={`${id}-hint`}>{hint}</small>
         </span>

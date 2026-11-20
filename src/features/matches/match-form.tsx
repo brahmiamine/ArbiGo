@@ -23,7 +23,9 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
     competition: initial?.competition ?? '',
     category: initial?.category ?? '',
   });
-  const [weatherLocation, setWeatherLocation] = useState(initial?.weatherLocation);
+  const [weatherLocation, setWeatherLocation] = useState(
+    initial ? initial.weatherLocation : (app.profile?.preferences.weatherLocation ?? undefined),
+  );
   const [designation, setDesignation] = useState<MatchInput['designation']>(initial?.designation);
   const [homeLogo, setHomeLogo] = useState<TeamLogoDraft>({ id: initial?.homeLogoId });
   const [awayLogo, setAwayLogo] = useState<TeamLogoDraft>({ id: initial?.awayLogoId });
@@ -101,13 +103,13 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
   }
   return (
     <form onSubmit={submit} className="form match-form">
-      <p className="muted">Une rencontre, un sac et un parcours qui vous sont propres.</p>
       <section className="match-designation-import" aria-label="Importer une désignation">
         <FileDropzone
           label="Lire une désignation depuis une image"
+          compact
           onFile={ocr.read}
           disabled={disabled}
-          hint="Capture ou photo · lecture sur cet appareil · noms, date, heure et logos si repérables"
+          hint="Équipes, date et logos détectés sur cet appareil"
         />
         {ocr.status && <p role={ocr.failed ? 'alert' : 'status'}>{ocr.status}</p>}
         {ocr.busy && <Progress value={ocr.progress} label="Lecture de la désignation" />}

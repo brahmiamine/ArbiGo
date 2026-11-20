@@ -16,6 +16,7 @@ import { api } from '@/lib/api';
 import { ProfileAvatar } from './media';
 import { StepSettings } from './step-settings';
 import { ProfileEditor, BriefingEditor } from './profile-settings';
+import { WeatherLocationPicker } from './matches/weather-location-picker';
 import { Button, Badge, Notice, Modal, PageHeader } from '@/components/ui';
 export function Profile() {
   const app = useApp();
@@ -30,6 +31,10 @@ export function Profile() {
     [editing, setEditing] = useState(false),
     [briefings, setBriefings] = useState(false),
     [steps, setSteps] = useState(false);
+  const [weatherLocation, setWeatherLocation] = useState(
+    app.profile?.preferences.weatherLocation ?? undefined,
+  );
+  const [weatherMessage, setWeatherMessage] = useState('');
   useEffect(() => {
     if (!app.demo && app.online)
       void api<typeof devices>('devices')
@@ -136,6 +141,29 @@ export function Profile() {
             <LogOut size={17} />
             Se déconnecter
           </Button>
+        </section>
+        <section className="panel">
+          <h2>Météo des rencontres</h2>
+          <p className="muted">
+            Lieu proposé pour les nouvelles rencontres. Vérifiez qu’il correspond au stade.
+          </p>
+          <WeatherLocationPicker
+            label="Lieu météo par défaut"
+            value={weatherLocation}
+            onChange={setWeatherLocation}
+          />
+          <Button
+            variant="secondary"
+            onClick={() =>
+              void app
+                .updateProfile({ preferences: { weatherLocation: weatherLocation ?? null } })
+                .then(() => setWeatherMessage('Lieu météo enregistré.'))
+                .catch(() => setWeatherMessage('Enregistrement impossible. Réessayez.'))
+            }
+          >
+            Enregistrer le lieu météo
+          </Button>
+          {weatherMessage && <p role="status">{weatherMessage}</p>}
         </section>
         <section className="panel">
           <h2>Mon parcours</h2>

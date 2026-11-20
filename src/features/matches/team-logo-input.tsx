@@ -38,8 +38,9 @@ export function TeamLogoInput({
       <FileDropzone
         key={value.id ?? value.file?.name ?? 'empty'}
         label={label}
+        compact
         previewUrl={value.file && preview?.file === value.file ? preview.url : ''}
-        hint="Facultatif · JPEG, PNG ou WebP · 10 Mo maximum"
+        hint="Facultatif · 10 Mo max."
         disabled={disabled}
         onFile={(file) => onChange({ file, source: 'manual' })}
       />

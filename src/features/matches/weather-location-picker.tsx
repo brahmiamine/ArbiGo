@@ -4,9 +4,11 @@ import type { WeatherLocation } from '@/domain/weather';
 export function WeatherLocationPicker({
   value,
   onChange,
+  label = 'Ville du stade pour la météo',
 }: {
   value?: WeatherLocation;
   onChange: (value?: WeatherLocation) => void;
+  label?: string;
 }) {
   const [query, setQuery] = useState(value?.name ?? ''),
     [locations, setLocations] = useState<WeatherLocation[]>([]),
@@ -39,7 +41,7 @@ export function WeatherLocationPicker({
   return (
     <div className="weather-location-picker">
       <label>
-        Ville du stade pour la météo <span className="optional">facultatif</span>
+        {label} <span className="optional">facultatif</span>
         <input
           value={query}
           placeholder="Rechercher la ville du stade"
@@ -52,6 +54,35 @@ export function WeatherLocationPicker({
           maxLength={100}
         />
       </label>
+      <button
+        type="button"
+        className="button secondary"
+        onClick={() => {
+          if (!navigator.geolocation) {
+            setError('La localisation n’est pas disponible sur cet appareil.');
+            return;
+          }
+          setError('Recherche de votre position…');
+          navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+              const location = {
+                name: 'Position du téléphone',
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+              };
+              onChange(location);
+              setQuery(location.name);
+              setLocations([]);
+              setError('');
+            },
+            () =>
+              setError('Position indisponible ou accès refusé. Vous pouvez rechercher une ville.'),
+            { timeout: 10000, maximumAge: 300000 },
+          );
+        }}
+      >
+        Utiliser ma position
+      </button>
       {locations.length > 0 && (
         <ul aria-label="Lieux météo proposés">
           {locations.map((location) => (

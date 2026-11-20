@@ -1,4 +1,30 @@
 import { test, expect } from '@playwright/test';
+test('weather location from the phone can be saved in settings and reused for a new match', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 48.85, longitude: 2.35 });
+  await page.goto('/demo?page=profile');
+  const panel = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Météo des rencontres' }) });
+  await panel.getByRole('button', { name: 'Utiliser ma position' }).click();
+  await expect(
+    panel.getByText('Lieu retenu : Position du téléphone', { exact: false }),
+  ).toBeVisible();
+  await panel.getByRole('button', { name: 'Enregistrer le lieu météo' }).click();
+  await expect(panel.getByText('Lieu météo enregistré.')).toBeVisible();
+  await page.reload();
+  await page
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('button', { name: 'Accueil', exact: true })
+    .click();
+  await page.getByRole('button', { name: 'Nouveau match', exact: true }).click();
+  await expect(page.getByPlaceholder('Rechercher la ville du stade')).toHaveValue(
+    'Position du téléphone',
+  );
+});
 test('quiz settings, lots, session reload and shared navigation form one app', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/demo?page=quiz');
