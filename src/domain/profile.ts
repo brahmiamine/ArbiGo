@@ -15,6 +15,7 @@ export interface ProfilePreferences {
   timezone: string;
   locale: 'fr';
   avatarPhotoId?: string | null;
+  homeAddress?: string;
   weatherLocation?: WeatherLocation | null;
   briefings?: Partial<BriefingTexts>;
   steps?: StepPreferences;

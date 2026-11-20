@@ -111,6 +111,7 @@ export const profilePatchSchema = z.object({
       timezone: z.string().max(100).optional(),
       locale: z.literal('fr').optional(),
       avatarPhotoId: z.uuid().nullable().optional(),
+      homeAddress: z.string().trim().max(200).optional(),
       weatherLocation: z
         .object({
           name: z.string().trim().min(1).max(200),

@@ -11,8 +11,10 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
   const app = useApp();
   const [initial] = useState({
     name: app.profile?.name ?? '',
+    homeAddress: app.profile?.preferences.homeAddress ?? '',
     photoId: app.profile?.preferences.avatarPhotoId ?? null,
   });
+  const [homeAddress, setHomeAddress] = useState(initial.homeAddress);
   const [name, setName] = useState(initial.name);
   const [photoId, setPhotoId] = useState(app.profile?.preferences.avatarPhotoId ?? null);
   const [busy, setBusy] = useState(false),
@@ -31,6 +33,8 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
           const patch: ProfilePatch = {};
           if (name.trim() !== initial.name) patch.name = name;
           if (photoId !== initial.photoId) patch.preferences = { avatarPhotoId: photoId };
+          if (homeAddress.trim() !== initial.homeAddress)
+            patch.preferences = { ...patch.preferences, homeAddress: homeAddress.trim() };
           if (patch.name !== undefined || patch.preferences) await app.updateProfile(patch);
           onDone();
         } catch (e) {
@@ -50,6 +54,16 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
             maxLength={100}
             autoComplete="name"
           />
+        </label>
+        <label>
+          Adresse de départ par défaut
+          <input
+            value={homeAddress}
+            onChange={(event) => setHomeAddress(event.target.value)}
+            maxLength={200}
+            placeholder="Rue, code postal et ville"
+          />
+          <small>Utilisée pour calculer vos trajets vers les rencontres.</small>
         </label>
         <div className="profile-photo-editor">
           <ProfileAvatar name={name} photoId={photoId} large />

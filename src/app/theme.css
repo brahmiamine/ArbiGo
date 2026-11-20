@@ -812,3 +812,35 @@ textarea:focus-visible {
   line-height: 1.4;
   color: var(--muted);
 }
+
+.match-card {
+  position: relative;
+}
+.match-card-open {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+  z-index: 1;
+}
+.match-journey {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--muted);
+}
+.match-journey > div {
+  display: flex;
+}
+.match-journey a {
+  position: relative;
+  z-index: 2;
+  color: var(--primary);
+}
+.match-journey small {
+  font-size: 11px;
+  line-height: 1.45;
+}

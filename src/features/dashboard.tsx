@@ -1,4 +1,5 @@
 'use client';
+import { MatchJourney } from './matches/match-journey';
 import { MatchWeather } from './matches/match-weather';
 import { TeamIdentity } from '@/components/team-identity';
 import { useState } from 'react';
@@ -72,7 +73,13 @@ const dateLabel = (m: Match) =>
 export function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void }) {
   const packed = match.bag.filter((i) => i.packed).length;
   return (
-    <button className="match-card" onClick={onOpen}>
+    <article className="match-card">
+      <button
+        type="button"
+        className="match-card-open"
+        aria-label={`Ouvrir la rencontre ${match.homeTeam} – ${match.awayTeam}`}
+        onClick={onOpen}
+      />
       <div className="match-card-top">
         <span className="eyebrow">{dateLabel(match)}</span>
         {match.status !== 'DRAFT' && (
@@ -103,12 +110,13 @@ export function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void 
         </span>
         <span>
           <MapPin size={15} />
-          {match.stadium || 'Stade à préciser'}
+          {match.stadium || 'Adresse à préciser'}
         </span>
         <ChevronRight size={20} />
       </div>
       {['DRAFT', 'ACTIVE'].includes(match.status) && <MatchCountdown kickoffAt={match.kickoffAt} />}
       <MatchWeather match={match} />
+      <MatchJourney match={match} />
       <div className="bag-mini">
         <Backpack size={15} />
         <span>
@@ -118,7 +126,7 @@ export function MatchCard({ match, onOpen }: { match: Match; onOpen: () => void 
           <span style={{ width: `${(packed / match.bag.length) * 100}%` }} />
         </div>
       </div>
-    </button>
+    </article>
   );
 }
 export function Dashboard() {

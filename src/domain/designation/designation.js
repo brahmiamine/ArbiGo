@@ -446,7 +446,12 @@ export function extractDesignationFields(rawText = '') {
   const { homeTeam, awayTeam } = findTeams(lines);
   const { assistant1, assistant2 } = findAssistants(lines);
 
+  const address = text.match(
+    /(?:^|\n|Adresse\s*[:：]\s*)[ \t]*(\d{1,5}(?:\s*(?:bis|ter))?\s*[, ]*\s*(?:rue|avenue|av\.|boulevard|bd\.?|allée|chemin|route|place|impasse|quai|passage|voie|cours)\s+[^\n]+?(?:[ ,]+|\n[ \t]*)\d{5}\s+[^\n]+)/iu,
+  )?.[1];
+
   const fields = {
+    ...(address ? { stadium: cleanLine(address.replace(/\s*\n\s*/g, ', ')).slice(0, 200) } : {}),
     matchNumber: findMatchNumber(lines, text),
     homeTeam: restoreInitialDots(trimTeamEdges(homeTeam)),
     awayTeam: restoreInitialDots(trimTeamEdges(awayTeam)),

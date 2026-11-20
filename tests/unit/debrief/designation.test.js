@@ -277,3 +277,11 @@ describe('extractDesignationFields — captures réelles', () => {
     expect(awayTeam).toBe('PARIS XIII E.S.');
   });
 });
+
+it('imports the street and postal address from the itinerary section', () => {
+  expect(
+    extractDesignationFields(
+      `${designationText}\nLIEU/ITINÉRAIRE\nComplexe Sportif de la Plaine\n13 rue du General Guillaumat\n75015 Paris`,
+    ).stadium,
+  ).toBe('13 rue du General Guillaumat, 75015 Paris');
+});
