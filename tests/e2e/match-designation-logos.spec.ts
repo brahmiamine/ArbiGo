@@ -37,7 +37,7 @@ test('manual logos survive creation, editing, cards, stage navigation and offlin
   // Open the complete match list: the dashboard may retain the earlier seeded match.
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   const card = page.locator('.match-card').filter({ hasText: 'Club Alpha' });
   await expect(card.locator('.team-logo img')).toHaveCount(2);

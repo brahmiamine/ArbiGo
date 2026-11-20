@@ -41,6 +41,7 @@ test('personal settings persist for new matches and lead to a full-screen checko
   );
   await page.setViewportSize({ width: 471, height: 844 });
   await page.goto('/demo?page=profile');
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   await page.getByRole('button', { name: 'Personnaliser les étapes' }).click();
   await expect(page.locator('.step-settings-list li')).toHaveCount(13);
   await expect(page.getByRole('checkbox', { name: 'Activer Arrivée au stade' })).toBeChecked();
@@ -53,6 +54,7 @@ test('personal settings persist for new matches and lead to a full-screen checko
   await page.screenshot({ path: 'test-results/custom-steps-471.png', fullPage: true });
   await page.getByRole('button', { name: 'Enregistrer mon parcours' }).click();
   await page.reload();
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   await page.getByRole('button', { name: 'Personnaliser les étapes' }).click();
   await expect(
     page.getByRole('checkbox', { name: 'Activer Échauffement', exact: true }),
@@ -71,7 +73,7 @@ test('personal settings persist for new matches and lead to a full-screen checko
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page
     .getByRole('navigation', { name: 'Navigation mobile' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   await page.locator('.match-card').filter({ hasText: 'Personnalisé' }).click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();

@@ -178,7 +178,7 @@ test('without upcoming matches, home and match list show newest archived matches
   );
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   await expect(page.getByRole('heading', { name: 'Dernier match', exact: true })).toBeVisible();
   await expect(page.locator('.last-match .match-card')).toContainText('Archive 2026-11-01');

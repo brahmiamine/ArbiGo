@@ -91,8 +91,18 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
   const { tab, activeId, matchView, matchFilter } = navigation;
   const matchesRef = useRef<Match[]>([]);
   const replaceNavigation = useRef(false);
-  const setTab = (tab: Tab) =>
-    setNavigation((n) => ({ ...n, tab, activeId: null, matchView: 'summary' }));
+  const setTab = (tab: Tab) => {
+    const next: AppNavigation = { ...navigation, tab, activeId: null, matchView: 'summary' };
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    params.delete('quiz');
+    if (tab === 'quiz') params.set('quiz', 'home');
+    const search = navigationSearch(next, params.toString());
+    if (search !== window.location.search)
+      window.history.pushState(null, '', `${url.pathname}${search}${url.hash}`);
+    setNavigation(next);
+    if (tab === 'quiz') window.dispatchEvent(new Event('arbigo:quiz-home'));
+  };
   const setActiveId = (id: string | null) =>
     setNavigation((n) => {
       const match = matchesRef.current.find((m) => m.id === id);

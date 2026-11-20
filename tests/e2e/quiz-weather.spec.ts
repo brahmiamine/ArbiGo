@@ -6,6 +6,7 @@ test('weather location from the phone can be saved in settings and reused for a 
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 48.85, longitude: 2.35 });
   await page.goto('/demo?page=profile');
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   const panel = page
     .locator('section')
     .filter({ has: page.getByRole('heading', { name: 'Météo des rencontres' }) });
@@ -30,7 +31,7 @@ test('weather location from the phone can be saved in settings and reused for a 
   await page.getByRole('button', { name: 'Créer la rencontre' }).click();
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   await expect(page.locator('.match-card').filter({ hasText: 'Club A' })).toContainText('Météo');
 });
@@ -81,6 +82,7 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
     }),
   );
   await page.goto('/demo?page=profile');
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   await page.getByPlaceholder('Rechercher la ville du stade').fill('Paris');
   await page.getByRole('button', { name: 'Paris, France', exact: true }).click();
   await page.getByRole('button', { name: 'Enregistrer le lieu météo' }).click();
@@ -99,7 +101,7 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
   await page.getByRole('button', { name: 'Créer la rencontre', exact: true }).click();
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   const card = page.locator('.match-card').filter({ hasText: 'Météo domicile' });
   await expect(card).toContainText('12 °C');
@@ -109,13 +111,14 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
     .getByRole('navigation', { name: 'Navigation principale' })
     .getByRole('button', { name: 'Profil', exact: true })
     .click();
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   await page.getByPlaceholder('Rechercher la ville du stade').fill('Lyon');
   await page.getByRole('button', { name: 'Lyon, France', exact: true }).click();
   await page.getByRole('button', { name: 'Enregistrer le lieu météo' }).click();
   await expect(page.getByText('Lieu météo enregistré.')).toBeVisible();
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   await expect(card).toContainText('Lyon, France');
 });
@@ -162,7 +165,11 @@ test('training corrections, favorites, results and statistics persist across vie
 test('documents, pitch zoom and quiz-local dark settings remain inside ArbiGo', async ({
   page,
 }) => {
-  await page.goto('/demo?page=quiz&quiz=documents');
+  await page.goto('/demo');
+  await page
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('button', { name: 'Documents du quiz', exact: true })
+    .click();
   await page
     .getByRole('button', { name: 'Lire Rapport disciplinaire dans l’application', exact: true })
     .click();

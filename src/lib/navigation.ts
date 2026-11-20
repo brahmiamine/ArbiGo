@@ -1,6 +1,6 @@
 import { requiresCheckout } from '@/domain/match';
 import type { Match } from '@/domain/types';
-export type Tab = 'home' | 'matches' | 'bag' | 'profile' | 'quiz';
+export type Tab = 'home' | 'matches' | 'bag' | 'documents' | 'profile' | 'quiz';
 export interface AppNavigation {
   tab: Tab;
   activeId: string | null;
@@ -18,7 +18,7 @@ export function readNavigation(search: string): AppNavigation {
   const page = params.get('page');
   return {
     ...initialNavigation,
-    tab: ['home', 'matches', 'bag', 'profile', 'quiz'].includes(page ?? '')
+    tab: ['home', 'matches', 'bag', 'documents', 'profile', 'quiz'].includes(page ?? '')
       ? (page as Tab)
       : 'home',
     activeId: params.get('match'),

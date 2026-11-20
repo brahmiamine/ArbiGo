@@ -5,7 +5,7 @@ import { Button, Notice } from '@/components/ui';
 import {
   Home,
   CalendarDays,
-  Backpack,
+  FileText,
   UserRound,
   BookOpenCheck,
   ArrowUpRight,
@@ -25,8 +25,8 @@ import { History } from './history/history';
 const PROFILE_QUIZ_SCREENS = new Set(['settings', 'answers', 'statistics', 'documents']);
 const navigation = [
   { id: 'home', label: 'Accueil', icon: Home },
-  { id: 'matches', label: 'Mes matchs', icon: CalendarDays },
-  { id: 'bag', label: 'Mon sac', icon: Backpack },
+  { id: 'matches', label: 'Matches', icon: CalendarDays },
+  { id: 'documents', label: 'Documents du quiz', icon: FileText },
   { id: 'quiz', label: 'Quiz', icon: BookOpenCheck },
   { id: 'profile', label: 'Profil', icon: UserRound },
 ] as const;
@@ -83,10 +83,20 @@ function Shell() {
         <Tunnel match={active} />
       </>
     );
+  const profileQuiz = PROFILE_QUIZ_SCREENS.has(
+    new URLSearchParams(window.location.search).get('quiz') ?? '',
+  );
   return (
     <div className="app-layout">
       <aside className="sidebar">
-        <Link href={app.demo ? '/demo' : '/app'} className="brand">
+        <Link
+          href={app.demo ? '/demo' : '/app'}
+          className="brand"
+          onNavigate={(event) => {
+            event.preventDefault();
+            app.setTab('home');
+          }}
+        >
           ArbiGo<span>.</span>
         </Link>
         <span className="sidebar-caption">VOTRE AVANT-MATCH</span>
@@ -96,12 +106,7 @@ function Shell() {
               key={n.id}
               className={app.tab === n.id ? 'active' : ''}
               aria-current={app.tab === n.id ? 'page' : undefined}
-              onClick={() => {
-                if (n.id === 'quiz' && app.tab === 'quiz')
-                  window.dispatchEvent(new Event('arbigo:quiz-home'));
-                app.setActiveId(null);
-                app.setTab(n.id);
-              }}
+              onClick={() => app.setTab(n.id)}
             >
               <n.icon size={21} />
               <span>{n.label}</span>
@@ -151,17 +156,17 @@ function Shell() {
           ) : app.tab === 'matches' ? (
             <Matches />
           ) : app.tab === 'quiz' ? (
-            PROFILE_QUIZ_SCREENS.has(
-              new URLSearchParams(window.location.search).get('quiz') ?? '',
-            ) ? (
-              <Profile initialSection="quiz" />
+            profileQuiz ? (
+              <Profile key="quiz-profile" initialSection="quiz" />
             ) : (
               <QuizScreen />
             )
+          ) : app.tab === 'documents' ? (
+            <QuizScreen key="documents" area="documents" />
           ) : app.tab === 'bag' ? (
             <InventoryScreen />
           ) : (
-            <Profile />
+            <Profile initialSection={profileQuiz ? 'quiz' : 'account'} />
           )}
         </main>
       </div>
@@ -171,12 +176,7 @@ function Shell() {
             key={n.id}
             aria-current={app.tab === n.id ? 'page' : undefined}
             className={app.tab === n.id ? 'active' : ''}
-            onClick={() => {
-              if (n.id === 'quiz' && app.tab === 'quiz')
-                window.dispatchEvent(new Event('arbigo:quiz-home'));
-              app.setActiveId(null);
-              app.setTab(n.id);
-            }}
+            onClick={() => app.setTab(n.id)}
           >
             <n.icon size={21} />
             <span>{n.label}</span>

@@ -182,7 +182,7 @@ export function Dashboard() {
                   : 'Prochaine rencontre'}
             </h2>
             <button className="text-button" onClick={() => app.setTab('matches')}>
-              Tous mes matchs
+              Tous les matches
               <ArrowRight size={16} />
             </button>
           </div>
@@ -208,6 +208,20 @@ export function Dashboard() {
               <strong>Les bons réflexes, au bon moment.</strong>
               <p>Votre parcours vous guide sans prendre de décision à votre place.</p>
             </div>
+          </div>
+        </section>
+        <section>
+          <div className="prep-list">
+            <button onClick={() => app.setTab('bag')}>
+              <span className="prep-number">
+                <Backpack size={18} />
+              </span>
+              <div>
+                <strong>Sacs</strong>
+                <p>Gérer mon matériel et mes articles.</p>
+              </div>
+              <ChevronRight size={20} />
+            </button>
           </div>
         </section>
         <section>
@@ -275,7 +289,7 @@ export function Matches() {
       : undefined;
   return (
     <>
-      <PageHeader title="Mes matchs">
+      <PageHeader title="Matches">
         <Button onClick={() => setCreating(true)}>
           <Plus size={18} />
           Nouveau match

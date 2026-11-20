@@ -139,6 +139,11 @@ function loadLastScreen() {
 
 function restoreLastScreen(baseState) {
   const lastScreen = new URLSearchParams(window.location.search).get('quiz') || loadLastScreen();
+  if (lastScreen === 'home') {
+    return baseState.screen === 'results'
+      ? freshState()
+      : { ...pauseTimedState(baseState), screen: 'home' };
+  }
   if (STATIC_SCREENS.has(lastScreen)) return { ...baseState, screen: lastScreen };
   if (['quiz', 'results'].includes(lastScreen) && baseState.quizQuestions.length > 0) {
     return { ...baseState, screen: lastScreen };
@@ -395,7 +400,7 @@ export default function App({ ownerId, area = 'play' }) {
   function navigateTo(screen) {
     const url = new URL(window.location.href);
     url.searchParams.set('quiz', screen);
-    window.history.pushState(window.history.state, '', url);
+    window.history.pushState(null, '', url);
     window.scrollTo(0, 0);
     setState((current) => ({ ...current, screen }));
   }
@@ -450,12 +455,23 @@ export default function App({ ownerId, area = 'play' }) {
     setState(freshState());
   }
 
+  const resumable = state.quizQuestions.length > 0 && state.screen === 'home';
+  const allowed = area === 'profile' ? PROFILE_SCREENS : PLAY_SCREENS;
+  const homeScreen = area === 'profile' ? 'settings' : 'home';
+  const activeScreen =
+    allowed.has(state.screen) || (area === 'play' && ['quiz', 'results'].includes(state.screen))
+      ? state.screen
+      : homeScreen;
+  const screen = area === 'documents' ? 'documents' : activeScreen;
   useEffect(() => {
+    if (area === 'documents') return;
     const url = new URL(window.location.href);
-    url.searchParams.set('quiz', state.screen);
-    window.history.replaceState(window.history.state, '', url);
-  }, [state.screen]);
+    if (url.searchParams.get('quiz') === screen) return;
+    url.searchParams.set('quiz', screen);
+    window.history.replaceState(null, '', url);
+  }, [area, screen]);
   useEffect(() => {
+    if (area === 'documents') return;
     const back = () => {
       const screen = new URLSearchParams(window.location.search).get('quiz') || 'home';
       if (NAV_SCREENS.has(screen) || ['quiz', 'results'].includes(screen))
@@ -467,23 +483,18 @@ export default function App({ ownerId, area = 'play' }) {
     };
     window.addEventListener('popstate', back);
     return () => window.removeEventListener('popstate', back);
-  }, []);
+  }, [area]);
   useEffect(() => {
     if (area !== 'play') return;
     const goHome = () =>
       setState((current) =>
-        ['quiz', 'results'].includes(current.screen) ? current : { ...current, screen: 'home' },
+        current.screen === 'results'
+          ? freshState()
+          : { ...pauseTimedState(current), screen: 'home' },
       );
     window.addEventListener('arbigo:quiz-home', goHome);
     return () => window.removeEventListener('arbigo:quiz-home', goHome);
   }, [area]);
-  const resumable = state.quizQuestions.length > 0 && state.screen === 'home';
-  const allowed = area === 'profile' ? PROFILE_SCREENS : PLAY_SCREENS;
-  const homeScreen = area === 'profile' ? 'settings' : 'home';
-  const screen =
-    allowed.has(state.screen) || (area === 'play' && ['quiz', 'results'].includes(state.screen))
-      ? state.screen
-      : homeScreen;
   const profileTabs = [
     ['settings', 'Paramètres du quiz'],
     ['statistics', 'Statistiques'],
