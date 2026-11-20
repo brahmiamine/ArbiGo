@@ -26,7 +26,7 @@ test('mobile preparation, issue and postponed match keep independent state', asy
   await page.getByRole('button', { name: 'Clôturer la préparation' }).click();
   await page
     .getByRole('navigation', { name: 'Navigation mobile' })
-    .getByRole('button', { name: 'Mes matchs' })
+    .getByRole('button', { name: 'Matches' })
     .click();
   await page.getByRole('button', { name: 'Historique', exact: true }).click();
   await page.locator('.match-card').first().click();
@@ -88,7 +88,7 @@ test('create match with free teams and optional stadium', async ({ page }) => {
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Mes matchs' })
+    .getByRole('button', { name: 'Matches' })
     .click();
   await expect(page.getByText('Mon équipe libre', { exact: true })).toBeVisible();
   await page.locator('.match-card').first().click();

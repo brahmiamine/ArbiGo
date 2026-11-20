@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 async function history(page: Page) {
   await page
     .getByRole('navigation', { name: 'Navigation mobile' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   await page.getByRole('button', { name: 'Historique', exact: true }).click();
   await page.locator('.match-card').first().click();

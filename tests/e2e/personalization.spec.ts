@@ -15,6 +15,7 @@ test('profile name and custom briefings persist and appear in the tunnel; shirt 
   await expect(
     page.getByRole('heading', { name: 'Arbitre personnalisé', exact: true }),
   ).toBeVisible();
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   await page.getByRole('button', { name: 'Modifier les consignes', exact: true }).click();
   await page
     .getByLabel('Consignes aux capitaines', { exact: true })
@@ -25,6 +26,7 @@ test('profile name and custom briefings persist and appear in the tunnel; shirt 
   await page.screenshot({ path: 'test-results/briefing-editor-471.png' });
   await page.getByRole('button', { name: 'Enregistrer les consignes' }).click();
   await page.reload();
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   await page.getByRole('button', { name: 'Modifier les consignes', exact: true }).click();
   await expect(page.getByLabel('Consignes aux capitaines', { exact: true })).toHaveValue(
     'Bonjour capitaines.\nGardons un dialogue calme.',

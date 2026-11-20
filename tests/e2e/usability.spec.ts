@@ -13,7 +13,7 @@ test('all app pages use compact headers with reachable actions across mobile and
     await page.setViewportSize({ width, height: 844 });
     for (const [query, title] of [
       ['', 'Accueil'],
-      ['?page=matches', 'Mes matchs'],
+      ['?page=matches', 'Matches'],
       ['?page=bag&view=outfits', 'Mon sac'],
       ['?page=profile', 'Profil'],
     ]) {
@@ -45,7 +45,7 @@ test('inventory spacing, revised equipment and every navigation view survive rel
 }) => {
   await page.setViewportSize({ width: 471, height: 844 });
   await page.goto('/demo');
-  await mobileNav(page).getByRole('button', { name: 'Mon sac', exact: true }).click();
+  await page.getByRole('button', { name: /^Sacs/ }).click();
   await reloadOn(page, /page=bag/);
   await expect(page.getByRole('heading', { name: 'Mon sac' })).toBeVisible();
   for (const color of ['jaune', 'rouge', 'violet', 'noir'])
@@ -86,7 +86,7 @@ test('inventory spacing, revised equipment and every navigation view survive rel
   await expect(
     mobileNav(page).getByRole('button', { name: 'Profil', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
-  await mobileNav(page).getByRole('button', { name: 'Mes matchs', exact: true }).click();
+  await mobileNav(page).getByRole('button', { name: 'Matches', exact: true }).click();
   await page.getByRole('button', { name: 'Historique', exact: true }).click();
   await reloadOn(page, /page=matches&filter=history/);
   await expect(page.getByRole('button', { name: 'Historique', exact: true })).toHaveAttribute(
@@ -98,8 +98,67 @@ test('inventory spacing, revised equipment and every navigation view survive rel
   await reloadOn(page, /page=matches&match=/);
   await expect(page.getByRole('heading', { name: 'Sac du match', exact: true })).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole('heading', { name: 'Mes matchs' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Matches' })).toBeVisible();
 });
+
+for (const [width, name] of [
+  [320, 'Navigation mobile'],
+  [1280, 'Navigation principale'],
+] as const) {
+  test(`main navigation opens bags, quiz documents and quiz play at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/demo');
+    const nav = page.getByRole('navigation', { name });
+    const button = (label: string) => nav.getByRole('button', { name: label, exact: true });
+    await expect(nav.getByRole('button')).toHaveText([
+      'Accueil',
+      'Matches',
+      'Documents du quiz',
+      'Quiz',
+      'Profil',
+    ]);
+    await page.getByRole('button', { name: /^Sacs/ }).click();
+    await reloadOn(page, /page=bag$/);
+    await expect(page.getByRole('heading', { name: 'Mon sac', exact: true })).toBeVisible();
+    await button('Matches').click();
+    await expect(page.getByRole('heading', { name: 'Matches', exact: true })).toBeVisible();
+    await button('Documents du quiz').click();
+    await reloadOn(page, /page=documents$/);
+    await expect(page.getByRole('heading', { name: 'Mes documents', exact: true })).toBeVisible();
+    await expect(button('Documents du quiz')).toHaveAttribute('aria-current', 'page');
+    await button('Quiz').click();
+    await expect(page.getByRole('heading', { name: 'Quiz Arbitrage', exact: true })).toBeVisible();
+    await page.goBack();
+    await expect(page.getByRole('heading', { name: 'Mes documents', exact: true })).toBeVisible();
+    await page.goForward();
+    await page.getByRole('button', { name: /Quiz rapide/ }).click();
+    await expect(page.locator('.question-card')).toBeVisible();
+    await page.reload();
+    await expect(page.locator('.question-card')).toBeVisible();
+    await button('Quiz').click();
+    await expect(
+      page.getByRole('button', { name: 'Reprendre le quiz', exact: true }),
+    ).toBeVisible();
+    await button('Profil').click();
+    await expect(page.getByRole('heading', { name: 'Profil', exact: true })).toBeVisible();
+    await page.getByRole('tab', { name: 'Quiz', exact: true }).click();
+    await expect(page.getByLabel('Lot de questions', { exact: true })).toBeVisible();
+    await page.reload();
+    await expect(page.getByLabel('Lot de questions', { exact: true })).toBeVisible();
+    await button('Accueil').click();
+    await expect(page.getByRole('heading', { name: 'Accueil', exact: true })).toBeVisible();
+    if (width === 1280) {
+      await button('Matches').click();
+      await page.getByRole('link', { name: 'ArbiGo.', exact: true }).click();
+      await expect(page.getByRole('heading', { name: 'Accueil', exact: true })).toBeVisible();
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      width,
+    );
+  });
+}
 
 test('modern file zones explain unavailable demo uploads and expose the same accessible picker', async ({
   page,

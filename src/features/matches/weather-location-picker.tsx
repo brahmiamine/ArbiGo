@@ -44,7 +44,7 @@ export function WeatherLocationPicker({
         );
         setBusy(false);
       },
-      { timeout: 10000, maximumAge: 300000 },
+      { timeout: 10000, maximumAge: 0 },
     );
   }
   return (

@@ -23,6 +23,8 @@ export default function Home({
   onResume,
   onReset,
   settings,
+  onNavigate,
+  reviewCount = 0,
 }) {
   const [category, setCategory] = useState('all');
   const [count, setCount] = useState(settings.defaultQuestionCount);
@@ -186,6 +188,36 @@ export default function Home({
         >
           Travailler mes points faibles
         </button>
+      </div>
+      <div className="quiz-hub" aria-label="Révisions et outils">
+        {[
+          [
+            'reviews',
+            '★',
+            'Révisions',
+            `${reviewCount} question${reviewCount > 1 ? 's' : ''} à retravailler : favoris, erreurs, jamais validées`,
+          ],
+          ['terrain', '⚽', 'Terrain', 'Positions et situations de jeu en schémas'],
+          ['notes', '✎', 'Notes', 'Fiches de synthèse et résumés'],
+        ].map(([screen, icon, title, description]) => (
+          <button
+            type="button"
+            className="settings-link-card"
+            key={screen}
+            onClick={() => onNavigate?.(screen)}
+          >
+            <span className="settings-link-icon" aria-hidden="true">
+              {icon}
+            </span>
+            <span className="settings-link-copy">
+              <strong>{title}</strong>
+              <small>{description}</small>
+            </span>
+            <span className="settings-link-arrow" aria-hidden="true">
+              →
+            </span>
+          </button>
+        ))}
       </div>
       <p className="footer-note">
         Questions issues du test théorique CDA — District Parisien de Football, saison 2026/2027. À

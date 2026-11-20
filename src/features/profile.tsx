@@ -17,8 +17,13 @@ import { ProfileAvatar } from './media';
 import { StepSettings } from './step-settings';
 import { ProfileEditor, BriefingEditor } from './profile-settings';
 import { WeatherLocationPicker } from './matches/weather-location-picker';
+import { QuizScreen } from './quiz/quiz-screen';
 import { Button, Badge, Notice, Modal, PageHeader } from '@/components/ui';
-export function Profile() {
+export function Profile({
+  initialSection = 'account',
+}: {
+  initialSection?: 'account' | 'matches' | 'quiz';
+}) {
   const app = useApp();
   const [devices, setDevices] = useState<
       { id: string; label: string; lastSeenAt: string; revokedAt: string | null }[]
@@ -30,7 +35,8 @@ export function Profile() {
     [deleteBusy, setDeleteBusy] = useState(false),
     [editing, setEditing] = useState(false),
     [briefings, setBriefings] = useState(false),
-    [steps, setSteps] = useState(false);
+    [steps, setSteps] = useState(false),
+    [section, setSection] = useState<'account' | 'matches' | 'quiz'>(initialSection);
   const [weatherLocation, setWeatherLocation] = useState(
     app.profile?.preferences.weatherLocation ?? undefined,
   );
@@ -89,17 +95,29 @@ export function Profile() {
   return (
     <>
       <PageHeader title="Profil" />
-      <Button
-        variant="secondary"
-        onClick={() => {
-          app.setActiveId(null);
-          app.setTab('quiz');
-        }}
-      >
-        Ouvrir les quiz et leurs paramètres
-      </Button>
-      <div className="profile-grid">
-        <section className="panel profile-account">
+      <div className="tabs profile-tabs" role="tablist" aria-label="Sections du profil">
+        {(
+          [
+            ['account', 'Mon compte'],
+            ['matches', 'Paramètres des rencontres'],
+            ['quiz', 'Quiz'],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={section === id}
+            className={section === id ? 'selected' : ''}
+            onClick={() => setSection(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {section === 'quiz' && <QuizScreen area="profile" />}
+      <div className="profile-grid" hidden={section === 'quiz'}>
+        <section hidden={section !== 'account'} className="panel profile-account">
           <div className="profile-identity">
             <ProfileAvatar
               name={app.profile?.name ?? ''}
@@ -142,7 +160,7 @@ export function Profile() {
             Se déconnecter
           </Button>
         </section>
-        <section className="panel">
+        <section hidden={section !== 'matches'} className="panel">
           <h2>Météo des rencontres</h2>
           <p className="muted">Position utilisée pour la météo des matchs à venir.</p>
           <WeatherLocationPicker value={weatherLocation} onChange={setWeatherLocation} />
@@ -159,21 +177,21 @@ export function Profile() {
           </Button>
           {weatherMessage && <p role="status">{weatherMessage}</p>}
         </section>
-        <section className="panel">
+        <section hidden={section !== 'matches'} className="panel">
           <h2>Mon parcours</h2>
           <Button variant="secondary" onClick={() => setSteps(true)}>
             <Pencil size={17} />
             Personnaliser les étapes
           </Button>
         </section>
-        <section className="panel">
+        <section hidden={section !== 'matches'} className="panel">
           <h2>Mes consignes</h2>
           <Button variant="secondary" onClick={() => setBriefings(true)}>
             <Pencil size={17} />
             Modifier les consignes
           </Button>
         </section>
-        <section className="panel">
+        <section hidden={section !== 'matches'} className="panel">
           <h2>Avant et pendant la rencontre</h2>
           <div className="setting">
             <Volume2 />
@@ -216,7 +234,7 @@ export function Profile() {
           </p>
           {message && <Notice>{message}</Notice>}
         </section>
-        <section className="panel">
+        <section hidden={section !== 'account'} className="panel">
           <h2>
             <Smartphone size={21} />
             Mes appareils
@@ -252,7 +270,7 @@ export function Profile() {
             ))
           )}
         </section>
-        <section className="panel">
+        <section hidden={section !== 'account'} className="panel">
           <h2>
             <ShieldCheck size={21} />
             Votre carnet, vos décisions

@@ -9,6 +9,7 @@ test('weather location from the phone can be saved in settings and reused for a 
     route.fulfill({ json: { address: '13 rue du Général Guillaumat, 75015 Paris' } }),
   );
   await page.goto('/demo?page=profile');
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   const panel = page
     .locator('section')
     .filter({ has: page.getByRole('heading', { name: 'Météo des rencontres' }) });
@@ -33,7 +34,7 @@ test('weather location from the phone can be saved in settings and reused for a 
   await page.getByRole('button', { name: 'Créer la rencontre' }).click();
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   await expect(page.locator('.match-card').filter({ hasText: 'Club A' })).toContainText('Météo');
 });
@@ -41,12 +42,15 @@ test('quiz settings, lots, session reload and shared navigation form one app', a
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/demo?page=quiz');
   await expect(page.getByRole('heading', { name: 'Quiz Arbitrage', exact: true })).toBeVisible();
-  const nav = page.getByRole('navigation', { name: 'Navigation du quiz' });
-  await nav.getByRole('button', { name: 'Paramètres', exact: true }).click();
+  await expect(page.getByRole('navigation', { name: 'Navigation du quiz' })).toHaveCount(0);
+  await page.goto('/demo?page=quiz&quiz=settings');
   await page.getByLabel('Lot de questions', { exact: true }).selectOption('lot2');
   await page.reload();
   await expect(page.getByLabel('Lot de questions', { exact: true })).toHaveValue('lot2');
-  await nav.getByRole('button', { name: 'Accueil', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Navigation mobile' })
+    .getByRole('button', { name: 'Quiz', exact: true })
+    .click();
   await page.getByRole('button', { name: /Quiz rapide/ }).click();
   await expect(page.locator('.question-card')).toBeVisible();
   await page.reload();
@@ -56,8 +60,8 @@ test('quiz settings, lots, session reload and shared navigation form one app', a
     .getByRole('button', { name: 'Profil', exact: true })
     .click();
   await expect(page.getByRole('heading', { name: 'Profil', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Ouvrir les quiz et leurs paramètres' }).click();
-  await expect(page.locator('.question-card')).toBeVisible();
+  await page.getByRole('tab', { name: 'Quiz', exact: true }).click();
+  await expect(page.getByLabel('Lot de questions', { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 test('weather uses selected stadium coordinates and kickoff, and never blocks match creation', async ({
@@ -84,6 +88,7 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
     }),
   );
   await page.goto('/demo?page=profile');
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   await expect(page.locator('.weather-location-picker input')).toHaveCount(0);
   await page.getByRole('button', { name: 'Utiliser ma position' }).click();
   await expect(page.locator('.weather-detected-address')).toContainText('Paris, France');
@@ -103,7 +108,7 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
   await page.getByRole('button', { name: 'Créer la rencontre', exact: true }).click();
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   const card = page.locator('.match-card').filter({ hasText: 'Météo domicile' });
   await expect(card).toContainText('12 °C');
@@ -115,6 +120,7 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
     .getByRole('navigation', { name: 'Navigation principale' })
     .getByRole('button', { name: 'Profil', exact: true })
     .click();
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   await context.setGeolocation({ latitude: 45.76, longitude: 4.84 });
   await page.getByRole('button', { name: 'Utiliser ma position' }).click();
   await expect(page.locator('.weather-detected-address')).toContainText('Lyon, France');
@@ -122,7 +128,7 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
   await expect(page.getByText('Lieu météo enregistré.')).toBeVisible();
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   await expect(card.locator('.match-weather')).toHaveCSS('font-size', '11px');
   await card.click();
@@ -156,8 +162,11 @@ test('training corrections, favorites, results and statistics persist across vie
     .click();
   await page.goto('/demo?page=quiz&quiz=statistics');
   await expect(page.locator('.screen')).toContainText(/10|quiz/);
-  const nav = page.getByRole('navigation', { name: 'Navigation du quiz' });
-  await nav.getByRole('button', { name: 'Révisions', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('button', { name: 'Quiz', exact: true })
+    .click();
+  await page.getByRole('button', { name: /Révisions/ }).click();
   await page.getByRole('button', { name: /Mes favoris/ }).click();
   await expect(page.locator('.screen')).toContainText('1 question');
   await page.getByRole('button', { name: /Retour/ }).click();
@@ -169,7 +178,11 @@ test('training corrections, favorites, results and statistics persist across vie
 test('documents, pitch zoom and quiz-local dark settings remain inside ArbiGo', async ({
   page,
 }) => {
-  await page.goto('/demo?page=quiz&quiz=documents');
+  await page.goto('/demo');
+  await page
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('button', { name: 'Documents du quiz', exact: true })
+    .click();
   await page
     .getByRole('button', { name: 'Lire Rapport disciplinaire dans l’application', exact: true })
     .click();
@@ -225,8 +238,8 @@ test('timed exam supports pause, resume, previous navigation and final correctio
     .click();
   await page.getByRole('checkbox', { name: /Chrono par défaut/ }).check();
   await page
-    .getByRole('navigation', { name: 'Navigation du quiz' })
-    .getByRole('button', { name: 'Accueil', exact: true })
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('button', { name: 'Quiz', exact: true })
     .click();
   await page.getByRole('button', { name: /Examen rapide/ }).click();
   await expect(page.locator('.timer-badge')).toBeVisible();

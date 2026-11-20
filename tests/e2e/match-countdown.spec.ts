@@ -44,7 +44,7 @@ test('upcoming cards count down independently on home and match list, update aft
   await page.screenshot({ path: 'test-results/home-countdown-471.png' });
   await page
     .getByRole('navigation', { name: 'Navigation mobile' })
-    .getByRole('button', { name: 'Mes matchs', exact: true })
+    .getByRole('button', { name: 'Matches', exact: true })
     .click();
   const close = page.locator('.match-card').filter({ hasText: 'Décompte proche' });
   const tomorrow = page.locator('.match-card').filter({ hasText: 'Décompte demain' });

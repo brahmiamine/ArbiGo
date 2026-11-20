@@ -80,6 +80,7 @@ test('real account: SMTP verification, authentication, match, reset, export and 
   await expect(
     page.getByRole('heading', { name: 'Arbitre personnalisé', exact: true }),
   ).toBeVisible();
+  await page.getByRole('tab', { name: 'Paramètres des rencontres', exact: true }).click();
   await page.getByRole('button', { name: 'Modifier les consignes', exact: true }).click();
   await page
     .getByLabel('Consignes aux capitaines', { exact: true })
