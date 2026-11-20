@@ -26,7 +26,7 @@ const PROFILE_QUIZ_SCREENS = new Set(['settings', 'answers', 'statistics', 'docu
 const navigation = [
   { id: 'home', label: 'Accueil', icon: Home },
   { id: 'matches', label: 'Matches', icon: CalendarDays },
-  { id: 'documents', label: 'Documents du quiz', icon: FileText },
+  { id: 'documents', label: 'Documents', icon: FileText },
   { id: 'quiz', label: 'Quiz', icon: BookOpenCheck },
   { id: 'profile', label: 'Profil', icon: UserRound },
 ] as const;

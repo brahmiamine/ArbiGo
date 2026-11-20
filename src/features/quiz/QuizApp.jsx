@@ -110,8 +110,10 @@ const NAV_SCREENS = new Set([
   'statistics',
   'answers',
 ]);
-const PROFILE_SCREENS = new Set(['settings', 'answers', 'statistics', 'documents']);
-const PLAY_SCREENS = new Set([...NAV_SCREENS].filter((id) => !PROFILE_SCREENS.has(id)));
+const PROFILE_SCREENS = new Set(['settings', 'answers', 'statistics']);
+const PLAY_SCREENS = new Set(
+  [...NAV_SCREENS].filter((id) => !PROFILE_SCREENS.has(id) && id !== 'documents'),
+);
 const STATIC_SCREENS = new Set(NAV_SCREENS);
 const LAST_SCREEN_KEY = 'cda-paris-quiz:last-screen';
 
@@ -498,7 +500,6 @@ export default function App({ ownerId, area = 'play' }) {
   const profileTabs = [
     ['settings', 'Paramètres du quiz'],
     ['statistics', 'Statistiques'],
-    ['documents', 'Mes documents'],
   ];
 
   return (

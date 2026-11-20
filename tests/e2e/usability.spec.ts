@@ -115,7 +115,7 @@ for (const [width, name] of [
     await expect(nav.getByRole('button')).toHaveText([
       'Accueil',
       'Matches',
-      'Documents du quiz',
+      'Documents',
       'Quiz',
       'Profil',
     ]);
@@ -124,10 +124,10 @@ for (const [width, name] of [
     await expect(page.getByRole('heading', { name: 'Mon sac', exact: true })).toBeVisible();
     await button('Matches').click();
     await expect(page.getByRole('heading', { name: 'Matches', exact: true })).toBeVisible();
-    await button('Documents du quiz').click();
+    await button('Documents').click();
     await reloadOn(page, /page=documents$/);
     await expect(page.getByRole('heading', { name: 'Mes documents', exact: true })).toBeVisible();
-    await expect(button('Documents du quiz')).toHaveAttribute('aria-current', 'page');
+    await expect(button('Documents')).toHaveAttribute('aria-current', 'page');
     await button('Quiz').click();
     await expect(page.getByRole('heading', { name: 'Quiz Arbitrage', exact: true })).toBeVisible();
     await page.goBack();
@@ -144,6 +144,7 @@ for (const [width, name] of [
     await button('Profil').click();
     await expect(page.getByRole('heading', { name: 'Profil', exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Quiz', exact: true }).click();
+    await expect(page.getByRole('tab', { name: 'Mes documents', exact: true })).toHaveCount(0);
     await expect(page.getByLabel('Lot de questions', { exact: true })).toBeVisible();
     await page.reload();
     await expect(page.getByLabel('Lot de questions', { exact: true })).toBeVisible();

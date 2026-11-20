@@ -181,7 +181,7 @@ test('documents, pitch zoom and quiz-local dark settings remain inside ArbiGo', 
   await page.goto('/demo');
   await page
     .getByRole('navigation', { name: 'Navigation principale' })
-    .getByRole('button', { name: 'Documents du quiz', exact: true })
+    .getByRole('button', { name: 'Documents', exact: true })
     .click();
   await page
     .getByRole('button', { name: 'Lire Rapport disciplinaire dans l’application', exact: true })
@@ -200,6 +200,8 @@ test('documents, pitch zoom and quiz-local dark settings remain inside ArbiGo', 
     timeout: 20000,
   });
   await expect(page.locator('.document-page-controls')).toContainText('276');
+  await expect(page.locator('.document-viewer-heading h1')).toHaveCSS('color', 'rgb(26, 26, 26)');
+  expect((await page.locator('.document-viewer-header').boundingBox())!.height).toBeLessThan(110);
   await page.getByRole('button', { name: 'Page suivante', exact: true }).click();
   await expect(page.locator('canvas[aria-label*="page 2"]')).toBeVisible();
   await expect(page.locator('.document-viewer-loading')).toHaveCount(0, { timeout: 20000 });

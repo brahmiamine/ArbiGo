@@ -775,3 +775,40 @@ textarea:focus-visible {
   border-radius: 8px;
   background: var(--surface-muted);
 }
+
+/* PDF headings use the same compact, readable light surfaces as the app. */
+.quiz-app .document-viewer-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-bottom: 8px;
+  padding: 0;
+  background: transparent;
+}
+.quiz-app .document-viewer-back {
+  flex-shrink: 0;
+  min-height: 40px;
+  font-size: 12px;
+}
+.quiz-app .document-viewer-heading {
+  flex: 1 1 180px;
+  min-width: 0;
+  gap: 8px;
+}
+.quiz-app .document-viewer-heading .document-icon {
+  font-size: 22px;
+}
+.quiz-app .document-viewer-heading h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--text);
+}
+.quiz-app .document-viewer-heading p {
+  margin: 3px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+}
