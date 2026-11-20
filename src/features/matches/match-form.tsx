@@ -189,13 +189,14 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
           </label>
         </div>
         <label>
-          Stade <span className="optional">facultatif</span>
+          Adresse de la rencontre <span className="optional">facultatif</span>
           <input
             name="stadium"
             value={fields.stadium}
             onChange={(e) => change('stadium', e.target.value)}
             maxLength={200}
-            placeholder="Nom du stade"
+            placeholder="Rue, code postal et ville"
+            autoComplete="street-address"
           />
         </label>
         <div className="form-grid">
