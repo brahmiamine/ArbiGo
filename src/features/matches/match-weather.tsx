@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { CloudSun } from 'lucide-react';
+import { CloudSun, Droplets, Wind } from 'lucide-react';
 import { weatherLabel, type WeatherHour } from '@/domain/weather';
 import type { Match } from '@/domain/types';
 import { useApp } from '../app-provider';
@@ -41,33 +41,52 @@ export function MatchWeather({ match, compact = true }: { match: Match; compact?
     dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(match.kickoffAt));
+  const time = (iso: string) =>
+    new Intl.DateTimeFormat('fr', {
+      timeZone: match.timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(iso));
   return (
     <span className="match-weather">
-      <span>
-        <CloudSun size={16} /> Météo · {date}
+      <span className="weather-head">
+        <CloudSun size={18} aria-hidden="true" />
+        <span>
+          <strong>Météo</strong>
+          <small>
+            {location ? `${location.name} · ` : ''}
+            {date}
+          </small>
+        </span>
       </span>
       {!location ? (
-        <small>Définissez votre lieu météo dans les paramètres du profil.</small>
+        <small className="weather-note">
+          Définissez votre lieu météo dans Profil › Paramètres des rencontres.
+        </small>
       ) : !result ? (
-        <small>Chargement des prévisions…</small>
+        <small className="weather-note">Chargement des prévisions…</small>
       ) : result.hours.length ? (
         <>
-          <span>{location.name}</span>
-          <span>
+          <span className="weather-hours">
             {result.hours.map((hour) => (
-              <small key={hour.at}>
-                {new Intl.DateTimeFormat('fr', {
-                  timeZone: match.timezone,
-                  hour: '2-digit',
-                  minute: '2-digit',
-                }).format(new Date(hour.at))}{' '}
-                · {Math.round(hour.temperature)} °C · {weatherLabel(hour.code)}
-                {hour.rain !== null ? ` · pluie ${hour.rain} %` : ''}
-                {hour.wind !== null ? ` · rafales ${Math.round(hour.wind)} km/h` : ''}
-              </small>
+              <span className="weather-hour" key={hour.at}>
+                <small className="weather-time">{time(hour.at)}</small>
+                <strong>{Math.round(hour.temperature)} °C</strong>
+                <span className="weather-label">{weatherLabel(hour.code)}</span>
+                {hour.rain !== null && (
+                  <span className="weather-meta">
+                    <Droplets size={13} aria-hidden="true" /> pluie {hour.rain} %
+                  </span>
+                )}
+                {hour.wind !== null && (
+                  <span className="weather-meta">
+                    <Wind size={13} aria-hidden="true" /> rafales {Math.round(hour.wind)} km/h
+                  </span>
+                )}
+              </span>
             ))}
           </span>
-          <small>
+          <small className="weather-note">
             Prévisions horaires · Source{' '}
             {compact ? (
               'Open-Meteo'
@@ -79,7 +98,7 @@ export function MatchWeather({ match, compact = true }: { match: Match; compact?
           </small>
         </>
       ) : (
-        <small>{result.reason}</small>
+        <small className="weather-note">{result.reason}</small>
       )}
     </span>
   );

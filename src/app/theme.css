@@ -524,23 +524,75 @@ textarea:focus-visible {
 .match-weather {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 12px 0;
-  border-top: 1px solid var(--border);
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--primary-soft);
+  font-size: 13px;
+  color: var(--muted);
+}
+.match-weather .weather-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--blue);
+}
+.match-weather .weather-head > span {
+  display: flex;
+  flex-direction: column;
+}
+.match-weather .weather-head small {
   font-size: 12px;
   color: var(--muted);
 }
-.match-weather > span:first-child {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  color: var(--blue);
-  font-weight: 700;
+.match-weather .weather-hours {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
 }
-.match-weather small {
-  display: block;
+.match-weather .weather-hour {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.match-weather .weather-hour strong {
+  font-size: 20px;
+  color: var(--text);
+}
+.match-weather .weather-time {
+  font-weight: 700;
+  color: var(--blue);
+}
+.match-weather .weather-label {
+  color: var(--text-secondary);
+}
+.match-weather .weather-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+.match-weather .weather-note {
   font-size: 11px;
-  line-height: 1.7;
+  line-height: 1.5;
+}
+.profile-tabs {
+  overflow-x: auto;
+  gap: 22px;
+}
+.profile-tabs button {
+  white-space: nowrap;
+  font-size: 14px;
+}
+.profile-grid[hidden],
+.profile-grid > [hidden] {
+  display: none !important;
 }
 .weather-location-picker ul {
   list-style: none;

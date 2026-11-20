@@ -11,12 +11,12 @@ import Quiz from './components/Quiz.jsx';
 import Results from './components/Results.jsx';
 import AnswerKey from './components/AnswerKey.jsx';
 import History from './components/History.jsx';
-import BottomNav from './components/BottomNav.jsx';
 import ReviewsHub from './components/ReviewsHub.jsx';
 import FavoriteQuestions from './components/FavoriteQuestions.jsx';
 import MistakeQuestions from './components/MistakeQuestions.jsx';
 import Settings from './components/Settings.jsx';
 import UnvalidatedQuestions from './components/UnvalidatedQuestions.jsx';
+import PageBackButton from './components/PageBackButton.jsx';
 import Documents from './components/Documents.jsx';
 import { prepareQuestions, shuffle } from './utils/shuffle.js';
 import { loadProgress, saveProgress, clearProgress } from './utils/storage.js';
@@ -110,6 +110,8 @@ const NAV_SCREENS = new Set([
   'statistics',
   'answers',
 ]);
+const PROFILE_SCREENS = new Set(['settings', 'answers', 'statistics', 'documents']);
+const PLAY_SCREENS = new Set([...NAV_SCREENS].filter((id) => !PROFILE_SCREENS.has(id)));
 const STATIC_SCREENS = new Set(NAV_SCREENS);
 const LAST_SCREEN_KEY = 'cda-paris-quiz:last-screen';
 
@@ -172,7 +174,7 @@ function prepareSelectedQuestions(pool, learning, count, preset) {
   return prepareQuestions(selected);
 }
 
-export default function App({ ownerId }) {
+export default function App({ ownerId, area = 'play' }) {
   setQuizOwner(ownerId);
   const [settings, setSettings] = useState(loadAvailableSettings);
   const activeLot = settings.questionLot;
@@ -466,13 +468,47 @@ export default function App({ ownerId }) {
     window.addEventListener('popstate', back);
     return () => window.removeEventListener('popstate', back);
   }, []);
+  useEffect(() => {
+    if (area !== 'play') return;
+    const goHome = () =>
+      setState((current) =>
+        ['quiz', 'results'].includes(current.screen) ? current : { ...current, screen: 'home' },
+      );
+    window.addEventListener('arbigo:quiz-home', goHome);
+    return () => window.removeEventListener('arbigo:quiz-home', goHome);
+  }, [area]);
   const resumable = state.quizQuestions.length > 0 && state.screen === 'home';
-  const showBottomNav = NAV_SCREENS.has(state.screen);
+  const allowed = area === 'profile' ? PROFILE_SCREENS : PLAY_SCREENS;
+  const homeScreen = area === 'profile' ? 'settings' : 'home';
+  const screen =
+    allowed.has(state.screen) || (area === 'play' && ['quiz', 'results'].includes(state.screen))
+      ? state.screen
+      : homeScreen;
+  const profileTabs = [
+    ['settings', 'Paramètres du quiz'],
+    ['statistics', 'Statistiques'],
+    ['documents', 'Mes documents'],
+  ];
 
   return (
-    <div className={`app-shell ${showBottomNav ? 'has-bottom-nav' : ''}`}>
-      {showBottomNav && <BottomNav activeScreen={state.screen} onNavigate={navigateTo} />}
-      {state.screen === 'home' && (
+    <div className="app-shell">
+      {area === 'profile' && screen !== 'answers' && (
+        <div className="quiz-subtabs" role="tablist" aria-label="Espace quiz">
+          {profileTabs.map(([id, label]) => (
+            <button
+              type="button"
+              role="tab"
+              key={id}
+              aria-selected={screen === id}
+              className={screen === id ? 'active' : ''}
+              onClick={() => navigateTo(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+      {screen === 'home' && (
         <Home
           allQuestions={QUESTIONS}
           onStart={startQuiz}
@@ -480,12 +516,16 @@ export default function App({ ownerId }) {
           resumeIndex={state.currentIndex}
           resumeTotal={state.quizQuestions.length}
           resumeMode={state.mode}
+          onNavigate={navigateTo}
+          reviewCount={
+            learning.favorites.length + mistakeCount + learningSummary.neverValidatedCount
+          }
           onResume={resumeQuiz}
           onReset={resetProgress}
           settings={settings}
         />
       )}
-      {state.screen === 'quiz' && (
+      {screen === 'quiz' && (
         <Quiz
           questions={state.quizQuestions}
           currentIndex={state.currentIndex}
@@ -507,7 +547,7 @@ export default function App({ ownerId }) {
           soundsEnabled={settings.soundsEnabled}
         />
       )}
-      {state.screen === 'results' && (
+      {screen === 'results' && (
         <Results
           questions={state.quizQuestions}
           answers={state.answers}
@@ -520,7 +560,7 @@ export default function App({ ownerId }) {
           soundsEnabled={settings.soundsEnabled}
         />
       )}
-      {state.screen === 'answers' && (
+      {screen === 'answers' && (
         <AnswerKey
           questions={QUESTIONS}
           validatedIds={learning.validated}
@@ -528,7 +568,7 @@ export default function App({ ownerId }) {
           showExplanations={settings.showExplanations}
         />
       )}
-      {state.screen === 'statistics' && (
+      {screen === 'statistics' && (
         <History
           history={history}
           learningSummary={learningSummary}
@@ -536,8 +576,9 @@ export default function App({ ownerId }) {
           onResetLearning={handleResetLearning}
         />
       )}
-      {state.screen === 'reviews' && (
+      {screen === 'reviews' && (
         <ReviewsHub
+          onBack={() => navigateTo('home')}
           favoriteCount={learning.favorites.length}
           mistakeCount={mistakeCount}
           neverValidatedCount={learningSummary.neverValidatedCount}
@@ -546,7 +587,7 @@ export default function App({ ownerId }) {
           onOpenUnvalidated={() => navigateTo('unvalidated')}
         />
       )}
-      {state.screen === 'unvalidated' && (
+      {screen === 'unvalidated' && (
         <UnvalidatedQuestions
           questions={QUESTIONS}
           validatedIds={learning.validated}
@@ -555,10 +596,20 @@ export default function App({ ownerId }) {
           onBack={() => navigateTo('reviews')}
         />
       )}
-      {state.screen === 'terrain' && <Terrain />}
-      {state.screen === 'notes' && <Notes />}
-      {state.screen === 'documents' && <Documents />}
-      {state.screen === 'settings' && (
+      {screen === 'terrain' && (
+        <>
+          <PageBackButton onBack={() => navigateTo('home')} />
+          <Terrain />
+        </>
+      )}
+      {screen === 'notes' && (
+        <>
+          <PageBackButton onBack={() => navigateTo('home')} />
+          <Notes />
+        </>
+      )}
+      {screen === 'documents' && <Documents />}
+      {screen === 'settings' && (
         <Settings
           settings={settings}
           questionLots={QUESTION_LOT_OPTIONS}
@@ -567,7 +618,7 @@ export default function App({ ownerId }) {
           onResetAll={handleResetAllData}
         />
       )}
-      {state.screen === 'favorites' && (
+      {screen === 'favorites' && (
         <FavoriteQuestions
           questions={QUESTIONS}
           favoriteIds={learning.favorites}
@@ -576,23 +627,13 @@ export default function App({ ownerId }) {
           onBack={() => navigateTo('reviews')}
         />
       )}
-      {state.screen === 'mistakes' && (
+      {screen === 'mistakes' && (
         <MistakeQuestions
           questions={QUESTIONS}
           learningSummary={learningSummary}
           onStart={startQuiz}
           onBack={() => navigateTo('reviews')}
         />
-      )}
-      {showBottomNav && (
-        <div className="quiz-extra-nav">
-          <button className="button secondary" onClick={() => navigateTo('terrain')}>
-            Terrain
-          </button>
-          <button className="button secondary" onClick={() => navigateTo('notes')}>
-            Mes notes
-          </button>
-        </div>
       )}
     </div>
   );

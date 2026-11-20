@@ -22,6 +22,7 @@ import { SportcashCheckout } from './tunnel/checkout';
 import { requiresCheckout } from '@/domain/match';
 import { QuizScreen } from './quiz/quiz-screen';
 import { History } from './history/history';
+const PROFILE_QUIZ_SCREENS = new Set(['settings', 'answers', 'statistics', 'documents']);
 const navigation = [
   { id: 'home', label: 'Accueil', icon: Home },
   { id: 'matches', label: 'Mes matchs', icon: CalendarDays },
@@ -96,6 +97,8 @@ function Shell() {
               className={app.tab === n.id ? 'active' : ''}
               aria-current={app.tab === n.id ? 'page' : undefined}
               onClick={() => {
+                if (n.id === 'quiz' && app.tab === 'quiz')
+                  window.dispatchEvent(new Event('arbigo:quiz-home'));
                 app.setActiveId(null);
                 app.setTab(n.id);
               }}
@@ -148,7 +151,13 @@ function Shell() {
           ) : app.tab === 'matches' ? (
             <Matches />
           ) : app.tab === 'quiz' ? (
-            <QuizScreen />
+            PROFILE_QUIZ_SCREENS.has(
+              new URLSearchParams(window.location.search).get('quiz') ?? '',
+            ) ? (
+              <Profile initialSection="quiz" />
+            ) : (
+              <QuizScreen />
+            )
           ) : app.tab === 'bag' ? (
             <InventoryScreen />
           ) : (
@@ -163,6 +172,8 @@ function Shell() {
             aria-current={app.tab === n.id ? 'page' : undefined}
             className={app.tab === n.id ? 'active' : ''}
             onClick={() => {
+              if (n.id === 'quiz' && app.tab === 'quiz')
+                window.dispatchEvent(new Event('arbigo:quiz-home'));
               app.setActiveId(null);
               app.setTab(n.id);
             }}

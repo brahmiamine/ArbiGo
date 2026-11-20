@@ -1,3 +1,5 @@
+import PageBackButton from './PageBackButton.jsx';
+
 export default function ReviewsHub({
   favoriteCount,
   mistakeCount,
@@ -5,6 +7,7 @@ export default function ReviewsHub({
   onOpenFavorites,
   onOpenMistakes,
   onOpenUnvalidated,
+  onBack,
 }) {
   const items = [
     {
@@ -32,6 +35,7 @@ export default function ReviewsHub({
 
   return (
     <div className="screen collection-screen reviews-hub-screen">
+      {onBack && <PageBackButton onBack={onBack} />}
       <div className="collection-heading">
         <h1 className="app-title">Révisions</h1>
         <p className="app-subtitle">Retrouve tes favoris, tes erreurs et les questions à valider</p>
