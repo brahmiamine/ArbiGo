@@ -133,7 +133,7 @@ export function Dashboard() {
   const app = useApp();
   const [creating, setCreating] = useState(false);
   const upcoming = app.matches.filter((m) => ['DRAFT', 'ACTIVE'].includes(m.status));
-  const now = Date.now();
+  const [now] = useState(Date.now);
   const future = upcoming
     .filter((m) => Date.parse(m.kickoffAt) > now)
     .sort((a, b) => Date.parse(a.kickoffAt) - Date.parse(b.kickoffAt));
@@ -190,11 +190,7 @@ export function Dashboard() {
         <section>
           <div className="section-heading">
             <h2>
-              {next
-                ? 'Prochaine rencontre'
-                : lastMatch
-                  ? 'Dernier match'
-                  : 'Prochaine rencontre'}
+              {next ? 'Prochaine rencontre' : lastMatch ? 'Dernier match' : 'Prochaine rencontre'}
             </h2>
             <button className="text-button" onClick={() => app.setTab('matches')}>
               Tous les matches
@@ -291,7 +287,7 @@ export function Matches() {
   const history = app.matchFilter === 'history';
   const setHistory = (value: boolean) => app.setMatchFilter(value ? 'history' : 'upcoming');
   const [creating, setCreating] = useState(false);
-  const now = Date.now();
+  const [now] = useState(Date.now);
   const isUpcoming = (m: (typeof app.matches)[number]) =>
     ['DRAFT', 'ACTIVE'].includes(m.status) && Date.parse(m.kickoffAt) > now;
   const filtered = app.matches
