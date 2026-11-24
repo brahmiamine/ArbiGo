@@ -1300,7 +1300,18 @@ textarea:focus-visible {
   align-items: center;
   gap: 6px;
 }
-.detail-hero > .button {
+.detail-hero-badge {
+  display: flex;
+  justify-content: center;
+}
+.detail-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.detail-hero-actions > .button {
   align-self: center;
   min-height: 44px;
   padding: 0 20px;
@@ -1404,7 +1415,7 @@ textarea:focus-visible {
   justify-content: flex-end;
   gap: 10px;
 }
-.detail-hero > .button.delete-match {
+.detail-hero-actions > .button.delete-match {
   min-height: 36px;
   padding: 0 12px;
   align-self: center;

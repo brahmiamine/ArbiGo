@@ -19,6 +19,7 @@ import { useApp } from './app-provider';
 import { Button, Badge, Modal, Progress, Empty, PageHeader } from '@/components/ui';
 import { MatchForm } from './matches/match-form';
 import { DeleteMatchButton } from './delete-match';
+import { MatchHero } from './match-hero';
 import { EquipmentImage } from './media';
 import { MatchCountdown } from '@/components/match-countdown';
 import { equipmentLabel } from '@/domain/equipment';
@@ -360,37 +361,14 @@ export function MatchDetail({ match: m }: { match: Match }) {
       <button className="text-button" onClick={() => app.setActiveId(null)}>
         ← Mes rencontres
       </button>
-      <header className="detail-hero">
-        <h1 className="detail-hero-teams">
-          <TeamIdentity name={m.homeTeam} logoId={m.homeLogoId} />
-          <span className="detail-hero-vs" aria-label="contre">
-            VS
-          </span>
-          <TeamIdentity name={m.awayTeam} logoId={m.awayLogoId} />
-        </h1>
-        <p className="detail-hero-meta">
-          <span>
-            <CalendarDays size={15} aria-hidden="true" />
-            {dateLabel(m)}
-          </span>
-          <span>
-            <Clock3 size={15} aria-hidden="true" />
-            {formatTime(m.kickoffAt, m.timezone)}
-          </span>
-          {m.stadium && (
-            <span>
-              <MapPin size={15} aria-hidden="true" />
-              {m.stadium}
-            </span>
-          )}
-        </p>
+      <MatchHero match={m}>
         {m.status === 'DRAFT' && (
           <Button variant="secondary" disabled={starting} onClick={() => setEditing(true)}>
             Modifier la rencontre
           </Button>
         )}
         <DeleteMatchButton match={m} />
-      </header>
+      </MatchHero>
       {editing && (
         <Modal title="Modifier la rencontre" onClose={() => setEditing(false)}>
           <MatchForm initial={m} onDone={() => setEditing(false)} />

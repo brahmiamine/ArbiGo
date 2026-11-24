@@ -1,15 +1,15 @@
 'use client';
-import { TeamIdentity } from '@/components/team-identity';
 import dynamic from 'next/dynamic';
 import { useState, useEffect, type FormEvent } from 'react';
 import { Flag, Clock3, Check, AlertTriangle } from 'lucide-react';
 import { useApp } from '../app-provider';
 import { api } from '@/lib/api';
-import { Button, Badge, Modal, Notice, PageHeader } from '@/components/ui';
+import { Button, Badge, Modal, Notice } from '@/components/ui';
 import type { Match, OperationInput } from '@/domain/types';
 import { formatTime, parseLocalKickoff } from '@/domain/time';
 import { summarize } from '@/domain/match';
 import { DeleteMatchButton } from '../delete-match';
+import { MatchHero } from '../match-hero';
 const Debrief = dynamic(() => import('../debrief/debrief'), {
   loading: () => <p>Chargement du débrief…</p>,
 });
@@ -85,34 +85,24 @@ export function History({ match: m }: { match: Match }) {
       <button className="text-button" onClick={() => app.setActiveId(null)}>
         ← Mes rencontres
       </button>
-      <PageHeader
-        title={
-          <>
-            <TeamIdentity name={m.homeTeam} logoId={m.homeLogoId} />{' '}
-            <span className="muted">/</span>{' '}
-            <TeamIdentity name={m.awayTeam} logoId={m.awayLogoId} />
-          </>
-        }
-        meta={
-          <>
-            {new Date(m.kickoffAt).toLocaleDateString('fr-FR')} ·{' '}
-            {formatTime(m.kickoffAt, m.timezone)}
-          </>
+      <MatchHero
+        match={m}
+        badge={
+          <Badge tone={m.status === 'COMPLETED' ? 'green' : 'amber'}>
+            {m.status === 'COMPLETED'
+              ? m.finishedAt
+                ? 'Match terminé'
+                : 'Coup d’envoi effectué'
+              : m.status === 'POSTPONED'
+                ? 'Reportée'
+                : m.status === 'CANCELED'
+                  ? 'Annulée'
+                  : 'Non débutée'}
+          </Badge>
         }
       >
-        <Badge tone={m.status === 'COMPLETED' ? 'green' : 'amber'}>
-          {m.status === 'COMPLETED'
-            ? m.finishedAt
-              ? 'Match terminé'
-              : 'Coup d’envoi effectué'
-            : m.status === 'POSTPONED'
-              ? 'Reportée'
-              : m.status === 'CANCELED'
-                ? 'Annulée'
-                : 'Non débutée'}
-        </Badge>
         <DeleteMatchButton match={m} />
-      </PageHeader>
+      </MatchHero>
       {m.status === 'COMPLETED' && (
         <section className="panel debrief-entry">
           <div>
