@@ -134,11 +134,7 @@ hr {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 5px 9px;
-  font-size: 11px;
   line-height: 1.6;
-  font-weight: 800;
-  border-radius: 5px;
   white-space: nowrap;
   letter-spacing: 0.1px;
 }
@@ -163,23 +159,15 @@ hr {
   color: var(--muted);
 }
 .progress {
-  height: 5px;
-  background: #e9edf3;
-  border-radius: 10px;
   overflow: hidden;
 }
 .progress > span {
   display: block;
-  background: var(--blue);
   height: 100%;
-  border-radius: 10px;
   transition: width 0.25s;
 }
 .brand {
-  font-family: var(--font-display);
   font-size: 40px;
-  font-weight: 700;
-  letter-spacing: -0.7px;
   line-height: 1;
   color: var(--blue);
 }
@@ -262,8 +250,6 @@ hr {
   width: 238px;
   position: fixed;
   inset: 0 auto 0 0;
-  background: var(--surface);
-  border-right: 1px solid var(--line);
   display: flex;
   flex-direction: column;
   padding: 38px 23px 20px;
@@ -275,9 +261,6 @@ hr {
 .sidebar-caption {
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 1.7px;
-  color: var(--muted);
-  margin: 48px 14px 15px;
 }
 .sidebar nav {
   display: flex;
@@ -292,31 +275,19 @@ hr {
   padding: 12px 15px;
   border: 0;
   background: none;
-  border-radius: 9px;
   text-align: left;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
 }
 .sidebar nav button.active {
-  background: var(--primary-soft);
-  color: var(--blue);
   font-weight: 800;
 }
 .nav-dot {
-  width: 5px;
-  height: 5px;
-  background: var(--blue);
-  border-radius: 50%;
   margin-left: auto;
 }
 .sidebar-bottom {
   margin-top: auto;
 }
 .sidebar-card {
-  background: var(--surface-muted);
   border-radius: 12px;
-  margin: 35px 4px 26px;
   padding: 23px 18px;
   display: flex;
   flex-direction: column;
@@ -325,17 +296,11 @@ hr {
 .sidebar-card > svg {
   color: var(--gold);
 }
-.sidebar-card strong {
-  font-size: 14px;
-  line-height: 1.7;
-}
 .sidebar-card > span {
   font-size: 11px;
-  color: var(--muted);
   line-height: 1.9;
 }
 .sidebar-user {
-  border-top: 1px solid var(--line);
   padding-top: 20px;
   display: flex;
   align-items: center;
@@ -345,16 +310,11 @@ hr {
   display: flex;
   flex-direction: column;
 }
-.sidebar-user strong {
-  font-size: 11px;
-}
 .sidebar-user span {
   font-size: 11px;
-  color: var(--muted);
 }
 .sidebar-user > svg {
   margin-left: auto;
-  color: var(--muted);
 }
 .app-main {
   margin-left: 238px;
@@ -498,8 +458,6 @@ hr {
 }
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
   margin: 24px 0 32px;
 }
 .stats > div {
@@ -537,13 +495,8 @@ hr {
 }
 .stats strong {
   font-family: var(--font-display);
-  font-size: 31px;
-  line-height: 1.1;
-  font-weight: 600;
 }
 .stats span:not(.stat-icon) {
-  font-size: 11px;
-  color: var(--muted);
   margin-top: 5px;
 }
 .dashboard-grid {
@@ -559,9 +512,6 @@ hr {
   gap: 12px;
   margin-bottom: 16px;
   min-height: 25px;
-}
-.section-heading h2 {
-  font-size: 16px;
 }
 .section-heading .eyebrow {
   font-size: 11px;
@@ -729,23 +679,14 @@ hr {
 }
 .tabs {
   display: flex;
-  gap: 30px;
-  border-bottom: 1px solid var(--line);
   margin-bottom: 25px;
 }
 .tabs button {
-  padding: 13px 0;
-  border: 0;
-  border-bottom: 2px solid transparent;
   background: none;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  min-height: 46px;
 }
 .tabs button.selected {
   border-bottom-color: var(--blue);
-  color: var(--blue);
 }
 .matches-grid {
   display: grid;
@@ -809,9 +750,6 @@ hr {
   display: flex;
   gap: 12px;
   align-items: center;
-  min-height: 53px;
-  border-bottom: 1px solid #eef1f5;
-  font-size: 12px;
   position: relative;
   cursor: pointer;
 }
@@ -824,10 +762,6 @@ hr {
   margin: 0;
 }
 .check-visual {
-  border: 1px solid #d7dfea;
-  border-radius: 5px;
-  width: 22px;
-  height: 22px;
   display: grid;
   place-items: center;
   color: transparent;
@@ -844,9 +778,6 @@ hr {
 }
 .bag-checks .tiny {
   margin-left: auto;
-}
-.bag-checks .checked > .bag-item-label {
-  color: var(--muted);
 }
 .inventory-list {
   margin-top: 20px;
@@ -1114,11 +1045,9 @@ select {
 .modal {
   border: 0;
   border-radius: 18px;
-  padding: 27px;
   max-width: 600px;
   width: calc(100% - 32px);
   max-height: 90dvh;
-  overflow: auto;
   color: var(--ink);
   box-shadow: 0 20px 80px #001c4f26;
 }
@@ -1130,11 +1059,7 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
   gap: 10px;
-}
-.modal-head h2 {
-  font-size: 22px;
 }
 .color-picker {
   padding: 0;
@@ -1975,9 +1900,6 @@ select {
   .topbar {
     padding: 0 27px;
   }
-  .page-heading h1 {
-    font-size: 39px;
-  }
   .page-heading {
     gap: 17px;
   }
@@ -1996,9 +1918,6 @@ select {
     right: -25px;
     opacity: 0.7;
   }
-  .stats {
-    gap: 10px;
-  }
   .stats > div {
     padding: 16px 12px;
     gap: 10px;
@@ -2006,12 +1925,6 @@ select {
   .stat-icon {
     width: 34px;
     height: 34px;
-  }
-  .stats span:not(.stat-icon) {
-    font-size: 11px;
-  }
-  .stats strong {
-    font-size: 28px;
   }
   .dashboard-grid {
     gap: 18px;
@@ -2024,9 +1937,6 @@ select {
   }
   .match-teams strong {
     font-size: 23px;
-  }
-  .section-heading h2 {
-    font-size: 14px;
   }
   .section-heading .text-button {
     font-size: 11px;
@@ -2075,7 +1985,6 @@ select {
     padding: 30px 25px 40px;
   }
   .page-heading h1 {
-    font-size: 42px;
     max-width: 450px;
   }
   .bottom-nav {
@@ -2190,7 +2099,6 @@ select {
     margin-bottom: 23px;
   }
   .page-heading h1 {
-    font-size: 38px;
     max-width: 360px;
     margin: 9px 0;
   }
@@ -2240,7 +2148,6 @@ select {
     gap: 10px;
   }
   .stats {
-    gap: 8px;
     margin: 17px 0 28px;
   }
   .stats > div {
@@ -2257,11 +2164,7 @@ select {
   .stat-icon svg {
     width: 16px;
   }
-  .stats strong {
-    font-size: 29px;
-  }
   .stats span:not(.stat-icon) {
-    font-size: 11px;
     line-height: 1.5;
     max-width: 90px;
   }
@@ -2271,9 +2174,6 @@ select {
   }
   .section-heading {
     margin-bottom: 14px;
-  }
-  .section-heading h2 {
-    font-size: 17px;
   }
   .section-heading .text-button {
     font-size: 11px;
@@ -2319,9 +2219,6 @@ select {
   }
   .panel {
     padding: 21px;
-  }
-  .panel > h2 {
-    font-size: 18px;
   }
   .profile-grid {
     grid-template-columns: 1fr;
@@ -2383,12 +2280,8 @@ select {
     gap: 14px;
   }
   .modal {
-    padding: 22px 19px;
     border-radius: 14px;
     max-height: 88dvh;
-  }
-  .modal-head h2 {
-    font-size: 21px;
   }
   .form input,
   .form textarea,
@@ -2638,9 +2531,6 @@ select {
   .hero h2 {
     font-size: 34px;
   }
-  .stats {
-    gap: 6px;
-  }
   .stats > div {
     padding: 12px 9px;
   }
@@ -2750,9 +2640,6 @@ select {
 .equipment-image .jersey-art {
   width: 100%;
   height: 100%;
-}
-.bag-checks > label {
-  padding: 8px 0;
 }
 .bag-checks .equipment-image {
   pointer-events: none;
@@ -3037,8 +2924,6 @@ select {
   margin-top: 10px;
 }
 .detail .bag-checks > label {
-  min-height: 46px;
-  padding: 5px 0;
   gap: 10px;
 }
 .detail .bag-checks .equipment-image {
@@ -3432,12 +3317,7 @@ select {
   font-size: 17px;
 }
 .modal-head {
-  margin-bottom: 16px;
   gap: 12px;
-}
-.modal-head h2 {
-  font-size: 22px;
-  line-height: 1.2;
 }
 .auth-layout {
   display: flex;
@@ -3544,9 +3424,6 @@ select {
   .page-content .compact-heading > .badge {
     font-size: 10px;
     padding: 4px 6px;
-  }
-  .modal-head h2 {
-    font-size: 20px;
   }
   .auth-panel {
     padding: 20px;

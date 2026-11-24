@@ -243,10 +243,6 @@ textarea:focus-visible {
 .panel > h2 {
   color: var(--blue);
 }
-.panel > h2 {
-  font-size: 17px;
-  line-height: 1.4;
-}
 .match-teams strong,
 .dashboard-home .match-teams strong {
   font-family: var(--font-sans);
