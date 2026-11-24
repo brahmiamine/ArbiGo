@@ -359,27 +359,36 @@ export function MatchDetail({ match: m }: { match: Match }) {
       <button className="text-button" onClick={() => app.setActiveId(null)}>
         ← Mes rencontres
       </button>
-      <PageHeader
-        title={
-          <>
-            <TeamIdentity name={m.homeTeam} logoId={m.homeLogoId} />{' '}
-            <span className="muted">/</span>{' '}
-            <TeamIdentity name={m.awayTeam} logoId={m.awayLogoId} />
-          </>
-        }
-        meta={
-          <>
-            {dateLabel(m)} · {formatTime(m.kickoffAt, m.timezone)}
-            {m.stadium ? ` · ${m.stadium}` : ''}
-          </>
-        }
-      >
+      <header className="detail-hero">
+        <h1 className="detail-hero-teams">
+          <TeamIdentity name={m.homeTeam} logoId={m.homeLogoId} />
+          <span className="detail-hero-vs" aria-label="contre">
+            VS
+          </span>
+          <TeamIdentity name={m.awayTeam} logoId={m.awayLogoId} />
+        </h1>
+        <p className="detail-hero-meta">
+          <span>
+            <CalendarDays size={15} aria-hidden="true" />
+            {dateLabel(m)}
+          </span>
+          <span>
+            <Clock3 size={15} aria-hidden="true" />
+            {formatTime(m.kickoffAt, m.timezone)}
+          </span>
+          {m.stadium && (
+            <span>
+              <MapPin size={15} aria-hidden="true" />
+              {m.stadium}
+            </span>
+          )}
+        </p>
         {m.status === 'DRAFT' && (
           <Button variant="secondary" disabled={starting} onClick={() => setEditing(true)}>
             Modifier la rencontre
           </Button>
         )}
-      </PageHeader>
+      </header>
       {editing && (
         <Modal title="Modifier la rencontre" onClose={() => setEditing(false)}>
           <MatchForm initial={m} onDone={() => setEditing(false)} />
