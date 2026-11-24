@@ -133,7 +133,13 @@ export function Dashboard() {
   const app = useApp();
   const [creating, setCreating] = useState(false);
   const upcoming = app.matches.filter((m) => ['DRAFT', 'ACTIVE'].includes(m.status));
-  const next = upcoming.find((m) => m.status === 'ACTIVE') ?? upcoming[0];
+  const now = Date.now();
+  const future = upcoming
+    .filter((m) => Date.parse(m.kickoffAt) >= now)
+    .sort((a, b) => Date.parse(a.kickoffAt) - Date.parse(b.kickoffAt));
+  const next = upcoming.find((m) => m.status === 'ACTIVE') ?? future[0];
+  // Aucun match à venir : on affiche le dernier match (le plus récent), même non archivé.
+  const last = [...app.matches].sort((a, b) => Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt))[0];
   const finished = app.matches
     .filter((m) => !['DRAFT', 'ACTIVE'].includes(m.status))
     .sort((a, b) => Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt));
@@ -185,7 +191,7 @@ export function Dashboard() {
             <h2>
               {next
                 ? 'Prochaine rencontre'
-                : finished.length
+                : last
                   ? 'Dernier match'
                   : 'Prochaine rencontre'}
             </h2>
@@ -196,11 +202,9 @@ export function Dashboard() {
           </div>
           {next ? (
             <MatchCard match={next} onOpen={() => app.setActiveId(next.id)} />
-          ) : finished.length ? (
+          ) : last ? (
             <div className="recent-matches">
-              {finished.slice(0, 1).map((m) => (
-                <MatchCard key={m.id} match={m} onOpen={() => app.setActiveId(m.id)} />
-              ))}
+              <MatchCard match={last} onOpen={() => app.setActiveId(last.id)} />
             </div>
           ) : (
             <Empty
