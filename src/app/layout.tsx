@@ -6,7 +6,6 @@ import './globals.css';
 import '@/features/debrief/debrief.css';
 import '@/features/quiz/quiz.css';
 import './theme.css';
-import './sport.css';
 export const metadata: Metadata = {
   title: 'ArbiGo — Le terrain en tête',
   description: 'Votre carnet d’arbitre : préparation, sac, contrôles et débrief d’après-match.',
