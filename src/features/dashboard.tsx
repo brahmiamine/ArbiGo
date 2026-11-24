@@ -286,9 +286,11 @@ export function Matches() {
   const history = app.matchFilter === 'history';
   const setHistory = (value: boolean) => app.setMatchFilter(value ? 'history' : 'upcoming');
   const [creating, setCreating] = useState(false);
-  const filtered = app.matches.filter((m) =>
-    history ? !['DRAFT', 'ACTIVE'].includes(m.status) : ['DRAFT', 'ACTIVE'].includes(m.status),
-  );
+  const filtered = app.matches
+    .filter((m) =>
+      history ? !['DRAFT', 'ACTIVE'].includes(m.status) : ['DRAFT', 'ACTIVE'].includes(m.status),
+    )
+    .sort((a, b) => (history ? Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt) : 0));
   const last =
     !history && !filtered.length
       ? app.matches
