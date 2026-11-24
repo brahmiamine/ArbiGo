@@ -291,17 +291,12 @@ export function Matches() {
   const history = app.matchFilter === 'history';
   const setHistory = (value: boolean) => app.setMatchFilter(value ? 'history' : 'upcoming');
   const [creating, setCreating] = useState(false);
+  const now = Date.now();
+  const isUpcoming = (m: (typeof app.matches)[number]) =>
+    ['DRAFT', 'ACTIVE'].includes(m.status) && Date.parse(m.kickoffAt) > now;
   const filtered = app.matches
-    .filter((m) =>
-      history ? !['DRAFT', 'ACTIVE'].includes(m.status) : ['DRAFT', 'ACTIVE'].includes(m.status),
-    )
+    .filter((m) => (history ? !isUpcoming(m) : isUpcoming(m)))
     .sort((a, b) => (history ? Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt) : 0));
-  const last =
-    !history && !filtered.length
-      ? app.matches
-          .filter((m) => !['DRAFT', 'ACTIVE'].includes(m.status))
-          .sort((a, b) => Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt))[0]
-      : undefined;
   return (
     <>
       <PageHeader title="Matches">
@@ -331,13 +326,7 @@ export function Matches() {
           <MatchCard key={m.id} match={m} onOpen={() => app.setActiveId(m.id)} />
         ))}
       </div>
-      {last && (
-        <section className="last-match">
-          <h2>Dernier match</h2>
-          <MatchCard match={last} onOpen={() => app.setActiveId(last.id)} />
-        </section>
-      )}
-      {!filtered.length && !last && (
+      {!filtered.length && (
         <Empty
           title={history ? 'Votre journal commence ici' : 'Aucune rencontre à venir'}
           description={
