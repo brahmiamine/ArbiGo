@@ -1063,7 +1063,9 @@ textarea:focus-visible {
 
 /* Dialog header. */
 .modal {
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0;
 }
 .modal > :not(.modal-head) {
@@ -1074,6 +1076,9 @@ textarea:focus-visible {
   margin-bottom: 22px;
 }
 .modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   margin: 0 0 20px;
   padding: 18px 22px;
   background: var(--blue);
