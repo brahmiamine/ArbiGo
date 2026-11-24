@@ -9,6 +9,7 @@ import { Button, Badge, Modal, Notice, PageHeader } from '@/components/ui';
 import type { Match, OperationInput } from '@/domain/types';
 import { formatTime, parseLocalKickoff } from '@/domain/time';
 import { summarize } from '@/domain/match';
+import { DeleteMatchButton } from '../delete-match';
 const Debrief = dynamic(() => import('../debrief/debrief'), {
   loading: () => <p>Chargement du débrief…</p>,
 });
@@ -110,6 +111,7 @@ export function History({ match: m }: { match: Match }) {
                 ? 'Annulée'
                 : 'Non débutée'}
         </Badge>
+        <DeleteMatchButton match={m} />
       </PageHeader>
       {m.status === 'COMPLETED' && (
         <section className="panel debrief-entry">

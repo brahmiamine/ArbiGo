@@ -18,6 +18,7 @@ import {
 import { useApp } from './app-provider';
 import { Button, Badge, Modal, Progress, Empty, PageHeader } from '@/components/ui';
 import { MatchForm } from './matches/match-form';
+import { DeleteMatchButton } from './delete-match';
 import { EquipmentImage } from './media';
 import { MatchCountdown } from '@/components/match-countdown';
 import { equipmentLabel } from '@/domain/equipment';
@@ -388,6 +389,7 @@ export function MatchDetail({ match: m }: { match: Match }) {
             Modifier la rencontre
           </Button>
         )}
+        <DeleteMatchButton match={m} />
       </header>
       {editing && (
         <Modal title="Modifier la rencontre" onClose={() => setEditing(false)}>

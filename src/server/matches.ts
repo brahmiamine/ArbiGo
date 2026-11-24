@@ -21,6 +21,14 @@ export async function ownedMatch(userId: string, id: string) {
   if (!row) throw new Error('NOT_FOUND');
   return row;
 }
+export async function deleteMatch(userId: string, id: string) {
+  await ownedMatch(userId, id);
+  await db.$transaction([
+    db.syncOperation.deleteMany({ where: { userId, matchId: id } }),
+    db.match.deleteMany({ where: { id, userId } }),
+  ]);
+  return { deleted: true };
+}
 export async function newMatch(userId: string, input: unknown) {
   const parsed = matchInputSchema.parse(input);
   await assertMatchLogosOwned(userId, parsed);

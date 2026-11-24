@@ -56,6 +56,7 @@ interface AppContextType {
   conflicts: Awaited<ReturnType<LocalStore['conflicts']>>;
   dispatch: (id: string, a: OperationInput) => Promise<void>;
   create: (i: MatchInput) => Promise<Match>;
+  remove: (id: string) => Promise<void>;
   saveInventory: (v: Inventory) => Promise<void>;
   updateProfile: (patch: ProfilePatch) => Promise<void>;
   sync: () => Promise<void>;
@@ -377,6 +378,14 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
     await refresh();
     return m;
   };
+  const remove = async (id: string) => {
+    if (!storeRef.current) throw new Error('NOT_READY');
+    if (!navigator.onLine && !demo)
+      throw new Error('La suppression d’un match nécessite une connexion.');
+    if (!demo) await api(`matches/${id}`, 'DELETE');
+    await storeRef.current.deleteMatch(id);
+    await refresh();
+  };
   const saveInventory = async (inv: Inventory) => {
     const current = upgradeInventory(inv);
     const saved = !demo ? await api<Inventory>('inventory', 'PUT', current) : current;
@@ -465,6 +474,7 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
         conflicts,
         dispatch,
         create,
+        remove,
         saveInventory,
         updateProfile,
         sync,

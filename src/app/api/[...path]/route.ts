@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { ok, fail, userId, sameOrigin, jsonBody } from '@/server/http';
 import {
   newMatch,
+  deleteMatch,
   ownedMatch,
   syncOne,
   transferTunnel,
@@ -169,6 +170,7 @@ async function mutate(r: Request, c: Context, method: string) {
     }
     if (path[0] === 'matches') {
       if (!path[1] && method === 'POST') return ok(await newMatch(uid, b));
+      if (path[1] && !path[2] && method === 'DELETE') return ok(await deleteMatch(uid, path[1]));
       if (path[2] === 'create-rematch') {
         const { kickoffAt } = z.object({ kickoffAt: z.iso.datetime({ offset: true }) }).parse(b);
         return ok(await rematch(uid, path[1], kickoffAt));

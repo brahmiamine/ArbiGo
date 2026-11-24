@@ -1396,3 +1396,25 @@ textarea:focus-visible {
   margin: 0;
   font-size: 11px;
 }
+
+/* Delete match. */
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.detail-hero > .button.delete-match {
+  min-height: 36px;
+  padding: 0 12px;
+  align-self: center;
+  color: var(--on-primary-muted);
+  border: 0;
+  background: transparent;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+}
+.page-heading .button.delete-match {
+  color: var(--error);
+}

@@ -33,6 +33,14 @@ export class LocalStore {
     const db = await this.database;
     await db.put('matches', m);
   }
+  async deleteMatch(id: string) {
+    const db = await this.database;
+    const tx = db.transaction(['matches', 'operations'], 'readwrite');
+    await tx.objectStore('matches').delete(id);
+    for (const q of await tx.objectStore('operations').getAll())
+      if (q.operation.matchId === id) await tx.objectStore('operations').delete(q.id);
+    await tx.done;
+  }
   async matches() {
     return (await this.database).getAll('matches');
   }
@@ -124,6 +132,12 @@ export class LocalStore {
         .map((q) => q.operation.matchId),
     );
     for (const m of matches) if (!pending.has(m.id)) await this.putMatch(m);
+    // Matches deleted from another device disappear here too (the server list is capped at 200).
+    if (matches.length < 200) {
+      const known = new Set(matches.map((m) => m.id));
+      for (const local of await this.matches())
+        if (!known.has(local.id) && !pending.has(local.id)) await this.deleteMatch(local.id);
+    }
   }
   async inventory() {
     const value = await (await this.database).get('meta', 'inventory');
