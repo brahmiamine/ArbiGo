@@ -1232,92 +1232,88 @@ textarea:focus-visible {
   }
 }
 
-/* Match detail: scoreboard header. */
+/* Match detail: compact header (teams, one meta line, small actions). */
 .detail-hero {
-  position: relative;
-  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 14px;
-  padding: 20px 18px 18px;
-  border-radius: 16px;
-  color: var(--on-primary);
-  background:
-    repeating-linear-gradient(90deg, rgb(255 255 255 / 3.5%) 0 60px, transparent 60px 120px),
-    linear-gradient(135deg, var(--blue) 0%, var(--navy) 100%);
-  border-bottom: 4px solid var(--gold);
-}
-.detail .detail-hero-teams {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 4px 10px;
+  margin: 2px 0 12px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-hero .detail-hero-teams {
+  order: 1;
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
   margin: 0;
-  color: var(--on-primary);
-  font-size: clamp(22px, 6vw, 34px);
-  line-height: 1.05;
+  color: var(--blue);
+  font-size: 24px;
+  line-height: 1.1;
 }
-.detail-hero-teams .team-identity {
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 8px;
-  text-align: center;
+.detail-hero .team-identity {
+  flex-direction: row;
+  gap: 7px;
 }
-.detail-hero-teams .team-logo {
-  width: 52px;
-  height: 52px;
-  flex-basis: 52px;
-  border-radius: 12px;
-  background: var(--surface);
+.detail-hero .team-logo {
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+  border-radius: 7px;
+  background: var(--surface-muted);
 }
 .detail-hero-vs {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgb(255 255 255 / 12%);
-  color: var(--gold);
-  font-size: 14px;
+  color: var(--gold-ink);
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 1px;
 }
 .detail-hero-meta {
+  order: 2;
+  flex: 1 1 auto;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 16px;
+  gap: 2px 12px;
   margin: 0;
-  padding-top: 12px;
-  border-top: 1px solid rgb(255 255 255 / 18%);
-  color: var(--on-primary-muted);
-  font-size: 14px;
-  font-weight: 600;
+  color: var(--muted);
+  font-size: 13px;
 }
 .detail-hero-meta > span {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 .detail-hero-badge {
+  order: 3;
   display: flex;
-  justify-content: center;
+}
+.detail-hero-badge .badge {
+  font-size: 11px;
+  padding: 3px 9px;
 }
 .detail-hero-actions {
+  order: 4;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  margin-left: auto;
 }
 .detail-hero-actions > .button {
-  align-self: center;
-  min-height: 44px;
-  padding: 0 20px;
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+.detail-hero-actions > .button.delete-match {
+  padding: 0 8px;
   background: transparent;
-  color: var(--on-primary);
-  border: 1px solid rgb(255 255 255 / 45%);
+  border: 0;
+  color: var(--error);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 /* Match detail: hourly forecast strip. */
@@ -1414,18 +1410,4 @@ textarea:focus-visible {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
-}
-.detail-hero-actions > .button.delete-match {
-  min-height: 36px;
-  padding: 0 12px;
-  align-self: center;
-  color: var(--on-primary-muted);
-  border: 0;
-  background: transparent;
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 13px;
-}
-.page-heading .button.delete-match {
-  color: var(--error);
 }
