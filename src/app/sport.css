@@ -1,0 +1,322 @@
+/* Sport UI: FFF identity layered on the shared theme (blue #003287, red #e60028, gold #be965a).
+   Imported last so it only restyles; no palette is redefined here. */
+:root {
+  --sport-bevel: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+
+/* Headings: condensed uppercase, blue. */
+.page-heading h1,
+.brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.page-heading h1 {
+  font-size: clamp(38px, 6vw, 56px);
+  line-height: 1;
+  color: var(--blue);
+}
+.section-heading h2,
+.panel > h2,
+.modal-head h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+/* Primary page action: beveled red button. */
+.page-heading > .button.primary {
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: 0;
+  border: 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  clip-path: var(--sport-bevel);
+}
+.button {
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.button.primary:hover:not(:disabled) {
+  background: var(--fff-red-dark);
+}
+
+/* Sidebar: navy, red active rule, gold diamond marker. */
+.sidebar {
+  background: var(--navy);
+  color: var(--on-primary);
+  border-right: 0;
+  overflow-y: auto;
+  gap: 8px;
+}
+.sidebar::before {
+  content: '';
+  position: absolute;
+  right: -60px;
+  top: -40px;
+  width: 200px;
+  height: 200px;
+  border: 2px solid rgb(255 255 255 / 8%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.sidebar .brand {
+  color: var(--on-primary);
+  font-size: 34px;
+}
+.sidebar-caption {
+  color: var(--gold);
+  letter-spacing: 2px;
+  margin: 0 14px 10px;
+}
+.sidebar nav button {
+  color: var(--on-primary-muted);
+  font-size: 15px;
+  font-weight: 700;
+  border-left: 4px solid transparent;
+  border-radius: 11px;
+}
+.sidebar nav button:hover {
+  background: rgb(255 255 255 / 12%);
+}
+.sidebar nav button.active {
+  color: var(--on-primary);
+  background: rgb(255 255 255 / 14%);
+  border-left-color: var(--red);
+}
+.nav-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 0;
+  transform: rotate(45deg);
+  background: var(--gold);
+}
+.sidebar-card {
+  background: rgb(255 255 255 / 8%);
+  border-top: 3px solid var(--gold);
+  color: var(--on-primary);
+  margin: 24px 0 14px;
+}
+.sidebar-card strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.sidebar-card > span {
+  color: var(--on-primary-muted);
+}
+.sidebar-user {
+  border-top: 0;
+}
+.sidebar-user strong {
+  font-size: 14px;
+  color: var(--on-primary);
+}
+.sidebar-user span,
+.sidebar-user > svg {
+  color: var(--on-primary-muted);
+}
+
+/* Mobile bottom navigation: red top rule. */
+@media (max-width: 850px) {
+  .bottom-nav {
+    border-top: 3px solid var(--red);
+  }
+  .bottom-nav button {
+    min-height: 48px;
+  }
+  .bottom-nav button.active {
+    color: var(--blue);
+    background: var(--primary-soft);
+  }
+  .bottom-nav button.active svg {
+    color: var(--red);
+  }
+  .app-layout {
+    padding-bottom: 96px;
+  }
+}
+
+/* Stat tiles: big condensed numerals with a colored base rule. */
+.stats {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+.stats > div {
+  border-bottom: 4px solid var(--blue);
+}
+.stats > div:nth-child(2) {
+  border-bottom-color: var(--gold);
+}
+.stats > div:nth-child(3) {
+  border-bottom-color: var(--green);
+}
+.stats strong {
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--blue);
+}
+.stats > div:nth-child(2) strong {
+  color: var(--gold-ink);
+}
+.stats > div:nth-child(3) strong {
+  color: var(--green);
+}
+.stats span:not(.stat-icon) {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* Cards: gold top rule on match cards, bag and notices stay on the shared surfaces. */
+.badge {
+  border-radius: 99px;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 5px 11px;
+}
+
+/* Segmented tabs. */
+.tabs {
+  gap: 4px;
+  padding: 5px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+}
+.tabs button {
+  flex: 1;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.tabs button.selected {
+  background: var(--blue);
+  color: var(--on-primary);
+}
+
+/* Progress: blue to red. */
+.progress {
+  height: 10px;
+  background: var(--primary-soft);
+  border-radius: 99px;
+}
+.progress > span {
+  background: linear-gradient(90deg, var(--blue), var(--red));
+  border-radius: 99px;
+}
+
+/* Dialog header. */
+.modal {
+  overflow: hidden;
+  padding: 0;
+}
+.modal > :not(.modal-head) {
+  margin-left: 22px;
+  margin-right: 22px;
+}
+.modal > :last-child {
+  margin-bottom: 22px;
+}
+.modal-head {
+  margin: 0 0 20px;
+  padding: 18px 22px;
+  background: var(--blue);
+  color: var(--on-primary);
+  border-bottom: 4px solid var(--gold);
+}
+.modal-head h2 {
+  color: var(--on-primary);
+  font-size: 28px;
+}
+.modal-head .icon-button {
+  color: var(--on-primary);
+}
+
+/* Next-match hero on the home screen. */
+.dashboard-home .dashboard-grid > section:first-child > .match-card {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: 16px;
+  color: var(--on-primary);
+  padding: clamp(22px, 4vw, 32px);
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 3.5%) 0 60px, transparent 60px 120px),
+    linear-gradient(135deg, var(--blue) 0%, var(--navy) 100%);
+}
+.dashboard-home .dashboard-grid > section:first-child > .match-card::after {
+  content: '';
+  position: absolute;
+  right: -70px;
+  top: 50%;
+  width: 260px;
+  height: 260px;
+  margin-top: -130px;
+  border: 2px solid rgb(255 255 255 / 18%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.dashboard-home .dashboard-grid > section:first-child > .match-card > :not(.match-card-open) {
+  position: relative;
+  z-index: 1;
+}
+.dashboard-home .match-card .eyebrow,
+.dashboard-home .match-card .match-teams,
+.dashboard-home .match-card .match-teams strong,
+.dashboard-home .match-card .match-meta,
+.dashboard-home .match-card .match-journey,
+.dashboard-home .match-card .bag-mini {
+  color: var(--on-primary);
+}
+.dashboard-home .match-card .match-teams {
+  border-top-color: rgb(255 255 255 / 18%);
+}
+.dashboard-home .match-card .match-teams strong {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+.dashboard-home .match-card .match-teams > span {
+  color: var(--gold);
+}
+.dashboard-home .match-card .match-journey a {
+  color: var(--on-primary);
+  text-decoration: underline;
+}
+.dashboard-home .match-card .match-countdown {
+  background: rgb(255 255 255 / 10%);
+  color: var(--on-primary);
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-top: 3px solid var(--gold);
+}
+.dashboard-home .match-card .match-countdown strong {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+}
+.dashboard-home .match-card .match-weather {
+  background: rgb(255 255 255 / 10%);
+  color: var(--on-primary-muted);
+  padding: 8px 10px;
+}
+.dashboard-home .match-card .mini-track {
+  background: rgb(255 255 255 / 20%);
+}
+.dashboard-home .match-card .mini-track > span {
+  background: var(--gold);
+}
