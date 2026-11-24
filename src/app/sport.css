@@ -320,3 +320,63 @@
 .dashboard-home .match-card .mini-track > span {
   background: var(--gold);
 }
+
+/* Bag items: bordered, tappable rows; blue when packed. */
+.bag-checks {
+  display: grid;
+  gap: 8px;
+}
+.bag-checks > label,
+.detail .bag-checks > label {
+  padding: 8px 14px;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 700;
+}
+.bag-checks > label.checked {
+  border-color: var(--blue);
+  background: var(--primary-soft);
+}
+.bag-checks .checked > .bag-item-label {
+  color: var(--text);
+}
+.check-visual {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 0;
+  background: var(--field-border);
+}
+
+/* Hero: quieter inner borders. */
+.dashboard-home .match-card .match-weather {
+  border-color: rgb(255 255 255 / 15%);
+}
+.dashboard-home .match-card .match-card-top .badge {
+  background: var(--red);
+  color: var(--on-primary);
+}
+
+/* Tunnel step cards and primary full-width action. */
+.step-card {
+  border-top: 4px solid var(--gold);
+}
+.match-start .button,
+.tunnel-footer .button.primary {
+  min-height: 52px;
+  letter-spacing: 1px;
+}
+
+.quiz-app .app-title {
+  font-weight: 800;
+  text-transform: uppercase;
+}
+@media (max-width: 600px) {
+  .detail .page-heading h1,
+  .detail h1 {
+    font-size: 28px;
+  }
+}
