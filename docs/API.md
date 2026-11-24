@@ -49,7 +49,7 @@ Erreur : `{ "error": { "code": "...", "message": "..." }, "serverTime": "ISO UTC
 }
 ```
 
-Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `ADD_LOCKER_STEPS`, `ADD_SPORTCASH_STEP`, `LOCKER_ROOMS`, `NAVIGATE`, `BAG`, `SELECT_SHIRT`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `SPORTCASH_CHECKOUT`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`.
+Les identifiants de cet exemple sont des descriptions : utiliser de vrais UUID. Actions : `START`, `ADD_LOCKER_STEPS`, `ADD_SPORTCASH_STEP`, `LOCKER_ROOMS`, `NAVIGATE`, `BAG`, `SELECT_SHIRT`, `ANSWER`, `COMPLETE`, `BRIEFING`, `ISSUE_UPDATE`, `COLORS`, `WARMUP`, `KICKOFF`, `SPORTCASH_CHECKOUT`, `CLOSE`, `NOTE`, `FINISH_MATCH`, `DEBRIEF`, `INDEMNITY` (`amount` en euros, ou `null` pour revenir au tarif de la catégorie ; match `COMPLETED` uniquement, depuis tout appareil du compte). Les tarifs par catégorie sont dans les préférences du profil (`indemnityRates`, ex. `{"SENIORS D4": 40}`).
 
 `BRIEFING` prend `stepCode: "captains" | "assistants"`. Une confirmation marque atomiquement les consignes données : les réponses manquantes du snapshot sont renseignées et l’étape est terminée, sans navigation. Les anciennes réponses et anomalies restent conservées. L’action respecte les mêmes contrôles de propriété de l’appareil, version et idempotence que les autres commandes du tunnel.
 

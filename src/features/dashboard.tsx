@@ -20,6 +20,7 @@ import { Button, Badge, Modal, Progress, Empty, PageHeader } from '@/components/
 import { MatchForm } from './matches/match-form';
 import { DeleteMatchButton } from './delete-match';
 import { MatchHero } from './match-hero';
+import { IndemnityCard } from './indemnity';
 import { EquipmentImage } from './media';
 import { MatchCountdown } from '@/components/match-countdown';
 import { equipmentLabel } from '@/domain/equipment';
@@ -188,6 +189,7 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+      <IndemnityCard />
       <div className="dashboard-grid">
         <section>
           <div className="section-heading">

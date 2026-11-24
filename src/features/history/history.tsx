@@ -10,6 +10,7 @@ import { formatTime, parseLocalKickoff } from '@/domain/time';
 import { summarize } from '@/domain/match';
 import { DeleteMatchButton } from '../delete-match';
 import { MatchHero } from '../match-hero';
+import { MatchIndemnity } from '../indemnity';
 const Debrief = dynamic(() => import('../debrief/debrief'), {
   loading: () => <p>Chargement du débrief…</p>,
 });
@@ -39,6 +40,7 @@ const labels: Record<string, string> = {
   CLOSE: 'Rencontre non débutée',
   TRANSFER: 'Appareil propriétaire transféré',
   NOTE: 'Note ajoutée',
+  INDEMNITY: 'Indemnité modifiée',
   BAG: 'Sac modifié',
   NAVIGATE: 'Fiche consultée',
 };
@@ -134,6 +136,7 @@ export function History({ match: m }: { match: Match }) {
           </Button>
         </section>
       )}
+      {m.status === 'COMPLETED' && <MatchIndemnity match={m} />}
       <div className="dashboard-grid">
         <section className="panel">
           <h2>

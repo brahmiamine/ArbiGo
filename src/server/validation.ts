@@ -47,6 +47,7 @@ export const actionSchema = z.discriminatedUnion('type', [
     comment: z.string().trim().min(1).max(2000),
   }),
   z.object({ type: z.literal('NOTE'), content: z.string().trim().min(1).max(5000) }),
+  z.object({ type: z.literal('INDEMNITY'), amount: z.number().min(0).max(1000).nullable() }),
 ]);
 export const operationSchema = z.object({
   id: z.uuid(),
@@ -112,6 +113,9 @@ export const profilePatchSchema = z.object({
       locale: z.literal('fr').optional(),
       avatarPhotoId: z.uuid().nullable().optional(),
       homeAddress: z.string().trim().max(200).optional(),
+      indemnityRates: z
+        .record(z.string().trim().min(1).max(60), z.number().min(0).max(1000))
+        .optional(),
       weatherLocation: z
         .object({
           name: z.string().trim().min(1).max(200),

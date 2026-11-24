@@ -16,6 +16,8 @@ export interface ProfilePreferences {
   locale: 'fr';
   avatarPhotoId?: string | null;
   homeAddress?: string;
+  /** Indemnité par match (€) selon la catégorie normalisée, ex. « SENIORS D4 ». */
+  indemnityRates?: Record<string, number>;
   weatherLocation?: WeatherLocation | null;
   briefings?: Partial<BriefingTexts>;
   steps?: StepPreferences;

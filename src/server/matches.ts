@@ -90,7 +90,7 @@ export async function syncOne(userId: string, input: unknown) {
     const state = row.state as unknown as Match;
     if (
       state.ownerDeviceId &&
-      !['NOTE', 'DEBRIEF', 'FINISH_MATCH'].includes(op.action.type) &&
+      !['NOTE', 'DEBRIEF', 'FINISH_MATCH', 'INDEMNITY'].includes(op.action.type) &&
       (state.ownerDeviceId !== op.deviceId || state.fencingVersion !== op.fencingVersion)
     ) {
       await tx.syncOperation.create({

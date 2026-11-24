@@ -115,6 +115,8 @@ export interface Match extends MatchInput {
   finishedAt?: string;
   debrief?: DebriefRecord;
   closeComment?: string;
+  /** Montant propre à ce match ; sans lui, le tarif de sa catégorie s’applique. */
+  indemnity?: { amount: number };
   originalMatchId?: string;
   notes: { id: string; content: string; at: string }[];
   appliedOperations: string[];
@@ -145,6 +147,7 @@ export type OperationInput =
   | { type: 'SPORTCASH_CHECKOUT' }
   | { type: 'CLOSE'; reason: 'CANCELED' | 'POSTPONED' | 'OTHER'; comment: string }
   | { type: 'NOTE'; content: string }
+  | { type: 'INDEMNITY'; amount: number | null }
   | { type: 'FINISH_MATCH' }
   | { type: 'DEBRIEF'; changes: Partial<DebriefForm> };
 export interface Operation {

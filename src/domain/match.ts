@@ -122,12 +122,12 @@ export function applyOperation(match: Match, op: Operation): Match {
   if (
     match.status !== 'DRAFT' &&
     match.status !== 'ACTIVE' &&
-    !['NOTE', 'DEBRIEF', 'FINISH_MATCH', 'SPORTCASH_CHECKOUT'].includes(a.type)
+    !['NOTE', 'DEBRIEF', 'FINISH_MATCH', 'SPORTCASH_CHECKOUT', 'INDEMNITY'].includes(a.type)
   )
     throw new Error('CLOSED');
   if (
     match.ownerDeviceId &&
-    !['NOTE', 'DEBRIEF', 'FINISH_MATCH'].includes(a.type) &&
+    !['NOTE', 'DEBRIEF', 'FINISH_MATCH', 'INDEMNITY'].includes(a.type) &&
     (op.deviceId !== match.ownerDeviceId || op.fencingVersion !== match.fencingVersion)
   )
     throw new Error('DEVICE_REVOKED');
@@ -319,6 +319,11 @@ export function applyOperation(match: Match, op: Operation): Match {
       };
       break;
     }
+    case 'INDEMNITY':
+      if (m.status !== 'COMPLETED') throw new Error('INDEMNITY_UNAVAILABLE');
+      if (a.amount === null) delete m.indemnity;
+      else m.indemnity = { amount: a.amount };
+      break;
     case 'NOTE':
       if (['ACTIVE', 'DRAFT'].includes(m.status) || !a.content.trim())
         throw new Error('NOTE_AFTER_CLOSURE');

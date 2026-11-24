@@ -1411,3 +1411,99 @@ textarea:focus-visible {
   justify-content: flex-end;
   gap: 10px;
 }
+
+/* Indemnités : carte d'accueil, fiche de match et réglages. */
+.indemnity-card {
+  margin-bottom: 25px;
+}
+.indemnity-months {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+.indemnity-month {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.indemnity-month.current {
+  border-color: var(--blue);
+  border-top: 4px solid var(--gold);
+}
+.indemnity-month strong {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1.1;
+  color: var(--blue);
+}
+.indemnity-month small,
+.indemnity-month p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.indemnity-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+}
+.indemnity-facts div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+.indemnity-facts dt {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.indemnity-facts dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--blue);
+}
+.indemnity-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.indemnity-categories li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+}
+.indemnity-card .notice {
+  margin-top: 16px;
+}
+.indemnity-rates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.indemnity-add,
+.indemnity-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+}
+.indemnity-add input {
+  flex: 1;
+  min-width: 180px;
+}
+.match-indemnity {
+  margin-bottom: 25px;
+}

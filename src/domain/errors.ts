@@ -27,6 +27,7 @@ export const errorMessages: Record<string, string> = {
   REVIEW_REQUIRED: 'Prenez connaissance du bilan et confirmez votre décision.',
   COMMENT_REQUIRED: 'Précisez le motif de clôture.',
   DEBRIEF_UNAVAILABLE: 'Le débrief est disponible après la fin d’un match joué.',
+  INDEMNITY_UNAVAILABLE: 'L’indemnité se renseigne une fois la rencontre jouée.',
   NOTE_AFTER_CLOSURE: 'Les notes complémentaires sont disponibles après la clôture.',
   ACTIVE_TUNNEL: 'Une autre rencontre est déjà active. Terminez sa préparation.',
   TEMPLATE_UNAPPROVED:
