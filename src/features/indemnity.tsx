@@ -2,9 +2,12 @@
 import { useState } from 'react';
 import { Euro } from 'lucide-react';
 import { useApp } from './app-provider';
-import { Button, Notice, PageHeader } from '@/components/ui';
+import { Button, Notice, PageHeader, Empty } from '@/components/ui';
 import {
   euro,
+  indemnityCategory,
+  monthKey,
+  seasonOf,
   indemnityRates,
   indemnityStats,
   matchIndemnity,
@@ -12,121 +15,157 @@ import {
 } from '@/domain/indemnities';
 import type { Match, PaymentMethod } from '@/domain/types';
 
-const monthName = (key: string, style: 'long' | 'short' = 'long') =>
-  new Intl.DateTimeFormat('fr-FR', { month: style, year: 'numeric', timeZone: 'UTC' }).format(
-    new Date(`${key}-01T00:00:00Z`),
-  );
-const count = (n: number, one: string, many = `${one}s`) => `${n} ${n > 1 ? many : one}`;
-
-function MonthColumn({
-  month,
-  title,
-  future,
-}: {
-  month: MonthIndemnities;
-  title: string;
-  future?: boolean;
-}) {
-  const amount = future ? month.expected : month.earned;
-  return (
-    <div className={`indemnity-month${title === 'Ce mois-ci' ? ' current' : ''}`}>
-      <span className="eyebrow">{title}</span>
-      <strong>{euro(amount)}</strong>
-      <small>{monthName(month.key)}</small>
-      <p>
-        {future
-          ? month.planned
-            ? `${count(month.planned, 'match prévu', 'matchs prévus')}`
-            : 'Aucun match prévu'
-          : `${count(month.done, 'match joué', 'matchs joués')}`}
-        {!future && month.planned > 0 && (
-          <>
-            {' '}
-            · {euro(month.expected)} à venir ({month.planned})
-          </>
-        )}
-      </p>
-    </div>
-  );
-}
-
-/** Page Indemnités : montants du mois précédent, du mois en cours et du mois suivant, et quelques repères. */
-export function IndemnityScreen() {
-  return (
-    <>
-      <PageHeader title="Indemnités" />
-      <IndemnitySummary />
-    </>
-  );
-}
-
-function IndemnitySummary() {
-  const app = useApp();
-  const [now] = useState(Date.now);
-  const rates = indemnityRates(app.profile?.preferences.indemnityRates);
-  const { months, season } = indemnityStats(
-    app.matches,
-    rates,
-    now,
-    app.profile?.preferences.timezone,
-  );
-  const unpriced = months.previous.unpriced + months.current.unpriced + months.next.unpriced;
-  const thisMonth = months.current.done + months.current.planned;
-  return (
-    <section className="panel indemnity-card" aria-labelledby="indemnity-title">
-      <div className="section-heading">
-        <h2 id="indemnity-title">
-          <Euro size={20} /> Saison {season.label}
-        </h2>
-      </div>
-      <div className="indemnity-months">
-        <MonthColumn month={months.previous} title="Mois précédent" />
-        <MonthColumn month={months.current} title="Ce mois-ci" />
-        <MonthColumn month={months.next} title="Mois suivant" future />
-      </div>
-      <dl className="indemnity-facts">
-        <div>
-          <dt>Matchs ce mois-ci</dt>
-          <dd>{thisMonth}</dd>
-        </div>
-        <div>
-          <dt>Matchs arbitrés (saison)</dt>
-          <dd>{season.done}</dd>
-        </div>
-        <div>
-          <dt>Total de la saison</dt>
-          <dd>{euro(season.earned)}</dd>
-        </div>
-        <div>
-          <dt>Moyenne par match</dt>
-          <dd>{season.average === null ? '—' : euro(season.average)}</dd>
-        </div>
-      </dl>
-      {season.byCategory.length > 0 && (
-        <ul className="indemnity-categories" aria-label="Matchs arbitrés par catégorie">
-          {season.byCategory.map((row) => (
-            <li key={row.category}>
-              <span>{row.category}</span>
-              <strong>{row.done}</strong>
-            </li>
-          ))}
-        </ul>
-      )}
-      {unpriced > 0 && (
-        <Notice>
-          {count(unpriced, 'match', 'matchs')} sans montant. Saisissez-le dans la fiche du match,
-          une fois celui-ci joué.
-        </Notice>
-      )}
-    </section>
-  );
-}
-
 const paymentLabels: Record<PaymentMethod, string> = {
   CHECK: 'Chèque',
   CASH: 'Espèces',
   SPORTCASH: 'SPORTCASH',
 };
+
+const monthName = (key: string, style: 'long' | 'short' = 'long') =>
+  new Intl.DateTimeFormat('fr-FR', { month: style, timeZone: 'UTC' }).format(
+    new Date(`${key}-01T00:00:00Z`),
+  );
+const count = (n: number, one: string, many = `${one}s`) => `${n} ${n > 1 ? many : one}`;
+const roundedEuro = (amount: number) => euro(Math.round(amount * 100) / 100);
+
+function MonthTile({ month, future }: { month: MonthIndemnities; future?: boolean }) {
+  const matches = future ? month.planned : month.done;
+  return (
+    <li>
+      <span>{monthName(month.key)}</span>
+      <strong>{euro(future ? month.expected : month.earned)}</strong>
+      <small>{count(matches, future ? 'prévu' : 'joué')}</small>
+      {!future && month.planned > 0 && (
+        <small className="fee-expected">+ {euro(month.expected)} à venir</small>
+      )}
+    </li>
+  );
+}
+
+/** Page Indemnités : total de la saison, trois mois, répartition et détail match par match. */
+export function IndemnityScreen() {
+  const app = useApp();
+  const [now] = useState(Date.now);
+  const rates = indemnityRates(app.profile?.preferences.indemnityRates);
+  const timezone = app.profile?.preferences.timezone;
+  const { months, season } = indemnityStats(app.matches, rates, now, timezone);
+  const played = app.matches
+    .filter(
+      (m) =>
+        m.status === 'COMPLETED' && seasonOf(monthKey(m.kickoffAt, m.timezone)) === season.label,
+    )
+    .sort((a, b) => Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt));
+  const toEnter = played.filter((m) => !m.indemnity?.payment).length;
+  const byPayment = Object.entries(paymentLabels).map(([key, label]) => ({
+    label,
+    amount: played.reduce(
+      (sum, m) => sum + (m.indemnity?.payment === key ? m.indemnity.amount : 0),
+      0,
+    ),
+  }));
+  const groups = new Map<string, Match[]>();
+  for (const match of played) {
+    const key = monthKey(match.kickoffAt, match.timezone);
+    groups.set(key, [...(groups.get(key) ?? []), match]);
+  }
+  const maxCategory = Math.max(1, ...season.byCategory.map((row) => row.earned));
+  return (
+    <div className="fee-page">
+      <PageHeader title="Indemnités" />
+      <section className="fee-total" aria-label={`Saison ${season.label}`}>
+        <span>Saison {season.label}</span>
+        <strong>{euro(season.earned)}</strong>
+        <p>
+          {count(season.done, 'match arbitré', 'matchs arbitrés')}
+          {season.average !== null && ` · ${roundedEuro(season.average)} en moyenne`}
+        </p>
+      </section>
+      <ul className="fee-months">
+        <MonthTile month={months.previous} />
+        <MonthTile month={months.current} />
+        <MonthTile month={months.next} future />
+      </ul>
+      {toEnter > 0 && (
+        <Notice>
+          {count(toEnter, 'match', 'matchs')} à compléter (montant ou mode de paiement). Touchez le
+          match ci-dessous.
+        </Notice>
+      )}
+      {played.length === 0 ? (
+        <Empty
+          title="Aucune indemnité pour l’instant"
+          description="Vos montants apparaîtront après votre premier match arbitré."
+        />
+      ) : (
+        <>
+          <section className="panel">
+            <h2>Détail des matchs</h2>
+            {[...groups].map(([key, matches]) => (
+              <div key={key} className="fee-group">
+                <h3>{monthName(key)}</h3>
+                <ul>
+                  {matches.map((match) => {
+                    const amount = matchIndemnity(match, rates);
+                    const payment = match.indemnity?.payment;
+                    return (
+                      <li key={match.id}>
+                        <button type="button" onClick={() => app.setActiveId(match.id)}>
+                          <span className="fee-day">
+                            {new Intl.DateTimeFormat('fr-FR', {
+                              day: '2-digit',
+                              timeZone: match.timezone,
+                            }).format(new Date(match.kickoffAt))}
+                          </span>
+                          <span className="fee-match">
+                            <strong>
+                              {match.homeTeam} – {match.awayTeam}
+                            </strong>
+                            <small>{indemnityCategory(match)}</small>
+                          </span>
+                          <span className="fee-amount">
+                            <strong>{amount === null ? '—' : euro(amount)}</strong>
+                            <small className={payment ? '' : 'missing'}>
+                              {payment ? paymentLabels[payment] : 'À saisir'}
+                            </small>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </section>
+          <section className="panel">
+            <h2>Par catégorie</h2>
+            <ul className="stat-bars">
+              {season.byCategory.map((row) => (
+                <li key={row.category}>
+                  <span>
+                    {row.category} · {count(row.done, 'match')}
+                  </span>
+                  <strong>{euro(row.earned)}</strong>
+                  <i style={{ width: `${(row.earned / maxCategory) * 100}%` }} aria-hidden="true" />
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section className="panel">
+            <h2>Par mode de paiement</h2>
+            <dl className="stat-tiles">
+              {byPayment.map((row) => (
+                <div key={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>{euro(row.amount)}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        </>
+      )}
+    </div>
+  );
+}
 
 /** Saisie du montant et du mode de paiement d’un match. */
 export function IndemnityForm({ match, onSaved }: { match: Match; onSaved?: () => void }) {

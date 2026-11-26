@@ -1412,96 +1412,11 @@ textarea:focus-visible {
 }
 
 /* Indemnités : carte d'accueil, fiche de match et réglages. */
-.indemnity-card {
-  margin-bottom: 25px;
-}
-.indemnity-months {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 14px;
-}
-.indemnity-month {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.indemnity-month.current {
-  border-color: var(--blue);
-  border-top: 4px solid var(--gold);
-}
-.indemnity-month strong {
-  font-family: var(--font-display);
-  font-size: 34px;
-  line-height: 1.1;
-  color: var(--blue);
-}
-.indemnity-month small,
-.indemnity-month p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.indemnity-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin: 18px 0 0;
-}
-.indemnity-facts div {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 2px;
-}
-.indemnity-facts dt {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-.indemnity-facts dd {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--blue);
-}
-.indemnity-categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.indemnity-categories li {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 5px 11px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 13px;
-}
-.indemnity-card .notice {
-  margin-top: 16px;
-}
-.indemnity-rates {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-}
-.indemnity-add,
 .indemnity-form {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: end;
-}
-.indemnity-add input {
-  flex: 1;
-  min-width: 180px;
 }
 .match-indemnity {
   margin-bottom: 25px;
@@ -1696,4 +1611,139 @@ textarea:focus-visible {
 }
 .stat-period {
   margin-bottom: 14px;
+}
+
+/* Match fees page. */
+.fee-total {
+  margin-bottom: 10px;
+  padding: 18px;
+  border-radius: 16px;
+  border-bottom: 4px solid var(--gold);
+  background: linear-gradient(135deg, var(--blue), var(--navy));
+  color: var(--on-primary);
+  text-align: center;
+}
+.fee-total span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-primary-muted);
+}
+.fee-total strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 1.1;
+}
+.fee-total p {
+  margin: 0;
+  color: var(--on-primary-muted);
+}
+.fee-months {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.fee-months li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  text-align: center;
+}
+.fee-months li:nth-child(2) {
+  border-color: var(--blue);
+  border-top: 3px solid var(--gold);
+}
+.fee-months span {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--muted);
+}
+.fee-months strong {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--blue);
+}
+.fee-months small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.fee-months .fee-expected {
+  color: var(--gold-ink);
+  font-weight: 700;
+}
+.fee-page .panel,
+.fee-page .notice {
+  margin-bottom: 14px;
+}
+.fee-group h3 {
+  margin: 12px 0 4px;
+  font-size: 13px;
+  text-transform: capitalize;
+  color: var(--muted);
+}
+.fee-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fee-group li + li {
+  border-top: 1px solid var(--border);
+}
+.fee-group button {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.fee-day {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--primary-soft);
+  color: var(--blue);
+  font-weight: 800;
+}
+.fee-match,
+.fee-amount {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.fee-match strong {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.fee-group small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.fee-amount {
+  align-items: flex-end;
+}
+.fee-amount strong {
+  color: var(--blue);
+  font-size: 15px;
+}
+.fee-group small.missing {
+  color: var(--amber);
+  font-weight: 700;
 }
