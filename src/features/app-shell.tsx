@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Notice } from '@/components/ui';
 import {
   Home,
@@ -43,6 +43,11 @@ function Shell() {
   const app = useApp();
   const active = app.matches.find((m) => m.id === app.activeId);
   const [indemnityFor, setIndemnityFor] = useState<string | null>(null);
+  // Chaque nouvel écran commence en haut : le défilement de la page précédente ne suit pas.
+  const { tab, activeId, matchView, matchFilter, ready } = app;
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [tab, activeId, matchView, matchFilter, ready]);
   if (!app.ready)
     return (
       <main className="loading-screen">
