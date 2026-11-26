@@ -1232,52 +1232,80 @@ textarea:focus-visible {
   }
 }
 
-/* Match detail: compact header (teams, one meta line, small actions). */
+/* Match detail: one compact card for upcoming and past matches. */
 .detail-hero {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 10px;
+  flex-direction: column;
+  gap: 10px;
   margin: 2px 0 12px;
-  padding: 0 0 10px;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 12px 12px;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--blue);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.detail-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.detail-hero-top .badge {
+  font-size: 11px;
+  padding: 3px 9px;
+}
+.detail-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.detail-hero-actions > .button {
+  min-height: 32px;
+  padding: 0 10px;
+  gap: 5px;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.detail-hero-actions > .button.delete-match {
+  border: 0;
+  background: transparent;
+  color: var(--error);
 }
 .detail-hero .detail-hero-teams {
-  order: 1;
-  flex: 1 0 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
   margin: 0;
   color: var(--blue);
-  font-size: 24px;
+  font-size: 19px;
   line-height: 1.1;
+  text-align: center;
 }
 .detail-hero .team-identity {
-  flex-direction: row;
-  gap: 7px;
+  flex-direction: column;
+  gap: 6px;
 }
 .detail-hero .team-logo {
-  width: 28px;
-  height: 28px;
-  flex-basis: 28px;
-  border-radius: 7px;
-  background: var(--surface-muted);
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
 }
 .detail-hero-vs {
+  margin-top: 12px;
   color: var(--gold-ink);
   font-size: 13px;
   font-weight: 800;
-  letter-spacing: 1px;
 }
 .detail-hero-meta {
-  order: 2;
-  flex: 1 1 auto;
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 12px;
+  justify-content: center;
+  gap: 4px 12px;
   margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
   color: var(--muted);
   font-size: 13px;
 }
@@ -1285,35 +1313,6 @@ textarea:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-}
-.detail-hero-badge {
-  order: 3;
-  display: flex;
-}
-.detail-hero-badge .badge {
-  font-size: 11px;
-  padding: 3px 9px;
-}
-.detail-hero-actions {
-  order: 4;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-}
-.detail-hero-actions > .button {
-  min-height: 32px;
-  padding: 0 12px;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-.detail-hero-actions > .button.delete-match {
-  padding: 0 8px;
-  background: transparent;
-  border: 0;
-  color: var(--error);
-  text-transform: none;
-  letter-spacing: 0;
 }
 
 /* Match detail: hourly forecast strip. */
@@ -1506,4 +1505,57 @@ textarea:focus-visible {
 }
 .match-indemnity {
   margin-bottom: 25px;
+}
+
+/* Match fee. */
+.payment-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.payment-choice legend {
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.form .payment-choice label {
+  flex: 1 1 90px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-control);
+}
+.form .payment-choice label.selected {
+  border-color: var(--blue);
+  background: var(--primary-soft);
+}
+.form .payment-choice input {
+  width: auto;
+  min-height: 0;
+}
+.match-indemnity .indemnity-form,
+.step-card .indemnity-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.indemnity-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+}
+.indemnity-summary strong {
+  margin-left: auto;
+}
+.arrival-position {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
 }

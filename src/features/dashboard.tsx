@@ -12,6 +12,7 @@ import {
   Check,
   ClipboardCheck,
   Backpack,
+  Pencil,
   Euro,
   Flag,
   ChevronRight,
@@ -372,10 +373,16 @@ export function MatchDetail({ match: m }: { match: Match }) {
       <button className="text-button" onClick={() => app.setActiveId(null)}>
         ← Mes rencontres
       </button>
-      <MatchHero match={m}>
+      <MatchHero match={m} badge={<Badge tone="blue">À préparer</Badge>}>
         {m.status === 'DRAFT' && (
-          <Button variant="secondary" disabled={starting} onClick={() => setEditing(true)}>
-            Modifier la rencontre
+          <Button
+            variant="secondary"
+            disabled={starting}
+            aria-label="Modifier la rencontre"
+            onClick={() => setEditing(true)}
+          >
+            <Pencil size={14} aria-hidden="true" />
+            Modifier
           </Button>
         )}
         <DeleteMatchButton match={m} />

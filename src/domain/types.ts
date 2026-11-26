@@ -90,6 +90,12 @@ export interface MatchInput {
   competition?: string;
   category?: string;
 }
+export type PaymentMethod = 'CHECK' | 'CASH' | 'SPORTCASH';
+export interface GeoPosition {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+}
 export interface Match extends MatchInput {
   id: string;
   version: number;
@@ -116,7 +122,9 @@ export interface Match extends MatchInput {
   debrief?: DebriefRecord;
   closeComment?: string;
   /** Montant propre à ce match ; sans lui, le tarif de sa catégorie s’applique. */
-  indemnity?: { amount: number };
+  indemnity?: { amount: number; payment?: PaymentMethod };
+  /** Position GPS relevée à la confirmation de l’arrivée au stade. */
+  arrivalPosition?: GeoPosition & { at: string };
   originalMatchId?: string;
   notes: { id: string; content: string; at: string }[];
   appliedOperations: string[];
@@ -138,7 +146,7 @@ export type OperationInput =
       comment?: string;
       photoId?: string;
     }
-  | { type: 'COMPLETE'; stepCode: string }
+  | { type: 'COMPLETE'; stepCode: string; position?: GeoPosition }
   | { type: 'BRIEFING'; stepCode: 'captains' | 'assistants' }
   | { type: 'ISSUE_UPDATE'; issueId: string; status: Issue['status']; comment?: string }
   | { type: 'COLORS'; colors: KitColors; selectedOutfitId?: string }
@@ -147,7 +155,7 @@ export type OperationInput =
   | { type: 'SPORTCASH_CHECKOUT' }
   | { type: 'CLOSE'; reason: 'CANCELED' | 'POSTPONED' | 'OTHER'; comment: string }
   | { type: 'NOTE'; content: string }
-  | { type: 'INDEMNITY'; amount: number | null }
+  | { type: 'INDEMNITY'; amount: number | null; payment?: PaymentMethod }
   | { type: 'FINISH_MATCH' }
   | { type: 'DEBRIEF'; changes: Partial<DebriefForm> };
 export interface Operation {

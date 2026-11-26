@@ -7,6 +7,7 @@ import { ControlIllustration } from '@/components/control-illustration';
 import { JerseyPreview } from './jersey-preview';
 import { Briefing } from './briefing';
 import { LockerRooms } from './locker-rooms';
+import { ArrivalPosition, currentPosition } from './arrival-position';
 import { preparationTiming, stageTiming } from '@/domain/preparation-timing';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import {
@@ -454,6 +455,7 @@ function TunnelContent({ match: m }: { match: Match }) {
                     <p className="muted">
                       {m.stadium || 'Votre stade'} · Prenez le temps de vous présenter.
                     </p>
+                    {m.arrivalPosition && <ArrivalPosition position={m.arrivalPosition} />}
                   </div>
                 )}
                 {step.kind === 'final' ? (
@@ -462,13 +464,27 @@ function TunnelContent({ match: m }: { match: Match }) {
                   <Button
                     className="validate-step"
                     disabled={!!m.runs[step.code].completedAt || busy || readonly}
-                    onClick={() =>
-                      void act(
-                        briefing
-                          ? { type: 'BRIEFING', stepCode: step.code as 'captains' | 'assistants' }
-                          : { type: 'COMPLETE', stepCode: step.code },
-                      )
-                    }
+                    onClick={async () => {
+                      if (briefing)
+                        return void act({
+                          type: 'BRIEFING',
+                          stepCode: step.code as 'captains' | 'assistants',
+                        });
+                      if (step.kind !== 'arrival')
+                        return void act({ type: 'COMPLETE', stepCode: step.code });
+                      setBusy(true);
+                      const position = await currentPosition();
+                      // A missing GPS fix never blocks the preparation.
+                      const done = await act({
+                        type: 'COMPLETE',
+                        stepCode: step.code,
+                        ...(position ? { position } : {}),
+                      });
+                      if (done && !position)
+                        app.setError(
+                          'Arrivée confirmée, mais la position GPS n’a pas pu être relevée.',
+                        );
+                    }}
                   >
                     <Check size={19} />
                     {m.runs[step.code].completedAt

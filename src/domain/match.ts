@@ -48,6 +48,11 @@ export const lockerRoomsSchema = z.union([
   z.object({ referee: roomNumber }).strict(),
   z.object({ home: roomNumber, away: roomNumber }).strict(),
 ]);
+/** Le vestiaire de l’arbitre et ceux des deux équipes sont tous différents. */
+export function hasDuplicateRooms(rooms: Match['lockerRooms']) {
+  const numbers = Object.values(rooms ?? {}).map((room) => room.replace(/\s+/g, '').toUpperCase());
+  return new Set(numbers).size !== numbers.length;
+}
 export function needsLockerSteps(match: Match) {
   return (
     !match.stepPreferences &&
@@ -150,6 +155,7 @@ export function applyOperation(match: Match, op: Operation): Match {
         throw new Error('STEP_UNKNOWN');
       assertStepEditable(m, code);
       m.lockerRooms = { ...m.lockerRooms, ...rooms };
+      if (hasDuplicateRooms(m.lockerRooms)) throw new Error('LOCKER_ROOMS_DUPLICATE');
       m.runs[code].completedAt = at;
       break;
     }
@@ -235,6 +241,7 @@ export function applyOperation(match: Match, op: Operation): Match {
       if (step.kind === 'warmup' && m.warmup.some((p) => p.status !== 'FINISHED'))
         throw new Error('WARMUP_REQUIRED');
       m.runs[step.code].completedAt = at;
+      if (step.kind === 'arrival' && a.position) m.arrivalPosition = { ...a.position, at };
       break;
     }
     case 'ISSUE_UPDATE': {
@@ -322,7 +329,7 @@ export function applyOperation(match: Match, op: Operation): Match {
     case 'INDEMNITY':
       if (m.status !== 'COMPLETED') throw new Error('INDEMNITY_UNAVAILABLE');
       if (a.amount === null) delete m.indemnity;
-      else m.indemnity = { amount: a.amount };
+      else m.indemnity = { amount: a.amount, ...(a.payment ? { payment: a.payment } : {}) };
       break;
     case 'NOTE':
       if (['ACTIVE', 'DRAFT'].includes(m.status) || !a.content.trim())

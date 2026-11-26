@@ -4,20 +4,9 @@ import type { Match } from './types';
 /**
  * Barème par défaut (€ par match, arbitre central), par catégorie normalisée.
  * À compléter avec l’annexe financière du District de Paris (75). Tant qu’une catégorie n’y
- * figure pas, elle n’a pas de tarif : l’arbitre le saisit dans Profil › Mes indemnités.
+ * figure pas, elle n’a pas de tarif : l’arbitre saisit le montant sur la fiche du match.
  */
 export const defaultIndemnityRates: Record<string, number> = {};
-
-/** Catégories toujours proposées dans les réglages, en plus de celles des matchs enregistrés. */
-export const standardIndemnityCategories = [
-  'SENIORS D1',
-  'SENIORS D2',
-  'SENIORS D3',
-  'SENIORS D4',
-  'ANCIENS D1',
-  'ANCIENS D2',
-  'CDM D1',
-];
 
 export const uncategorized = 'SANS CATÉGORIE';
 
@@ -43,16 +32,6 @@ export const indemnityRates = (saved?: Record<string, number>) => ({
 /** Montant propre au match, sinon tarif de sa catégorie ; `null` quand aucun tarif n’est connu. */
 export function matchIndemnity(match: Match, rates: Record<string, number>) {
   return match.indemnity?.amount ?? rates[indemnityCategory(match)] ?? null;
-}
-
-/** Catégories à tarifer : standards, celles des matchs enregistrés et celles déjà tarifées. */
-export function categoriesToPrice(matches: Match[], rates: Record<string, number>) {
-  const found = [
-    ...standardIndemnityCategories,
-    ...matches.map(indemnityCategory).filter((c) => c !== uncategorized),
-    ...Object.keys(rates),
-  ];
-  return [...new Set(found)].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
 }
 
 export const euro = (amount: number) =>

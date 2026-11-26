@@ -21,7 +21,10 @@ export function MatchHero({
 }) {
   return (
     <header className="detail-hero">
-      {badge && <div className="detail-hero-badge">{badge}</div>}
+      <div className="detail-hero-top">
+        <div>{badge}</div>
+        {children && <div className="detail-hero-actions">{children}</div>}
+      </div>
       <h1 className="detail-hero-teams">
         <TeamIdentity name={m.homeTeam} logoId={m.homeLogoId} />
         <span className="detail-hero-vs" aria-label="contre">
@@ -45,7 +48,6 @@ export function MatchHero({
           </span>
         )}
       </p>
-      {children && <div className="detail-hero-actions">{children}</div>}
     </header>
   );
 }

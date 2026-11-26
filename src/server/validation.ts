@@ -26,7 +26,17 @@ export const actionSchema = z.discriminatedUnion('type', [
     comment: z.string().max(2000).optional(),
     photoId: z.uuid().optional(),
   }),
-  z.object({ type: z.literal('COMPLETE'), stepCode: z.string().max(40) }),
+  z.object({
+    type: z.literal('COMPLETE'),
+    stepCode: z.string().max(40),
+    position: z
+      .object({
+        latitude: z.number().min(-90).max(90),
+        longitude: z.number().min(-180).max(180),
+        accuracy: z.number().min(0).max(1_000_000),
+      })
+      .optional(),
+  }),
   z.object({ type: z.literal('BRIEFING'), stepCode: z.enum(['captains', 'assistants']) }),
   z.object({
     type: z.literal('ISSUE_UPDATE'),
@@ -47,7 +57,11 @@ export const actionSchema = z.discriminatedUnion('type', [
     comment: z.string().trim().min(1).max(2000),
   }),
   z.object({ type: z.literal('NOTE'), content: z.string().trim().min(1).max(5000) }),
-  z.object({ type: z.literal('INDEMNITY'), amount: z.number().min(0).max(1000).nullable() }),
+  z.object({
+    type: z.literal('INDEMNITY'),
+    amount: z.number().min(0).max(1000).nullable(),
+    payment: z.enum(['CHECK', 'CASH', 'SPORTCASH']).optional(),
+  }),
 ]);
 export const operationSchema = z.object({
   id: z.uuid(),

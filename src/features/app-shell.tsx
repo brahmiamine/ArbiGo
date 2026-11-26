@@ -41,6 +41,7 @@ export function AppRoot({ demo = false }: { demo?: boolean }) {
 function Shell() {
   const app = useApp();
   const active = app.matches.find((m) => m.id === app.activeId);
+  const [indemnityFor, setIndemnityFor] = useState<string | null>(null);
   if (!app.ready)
     return (
       <main className="loading-screen">
@@ -70,11 +71,15 @@ function Shell() {
       </button>
     </div>
   );
-  if (active && requiresCheckout(active))
+  if (active && (requiresCheckout(active) || indemnityFor === active.id))
     return (
       <>
         {toast}
-        <SportcashCheckout match={active} />
+        <SportcashCheckout
+          match={active}
+          onConfirm={() => setIndemnityFor(active.id)}
+          onDone={() => setIndemnityFor(null)}
+        />
       </>
     );
   if (active?.status === 'ACTIVE')

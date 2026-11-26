@@ -15,7 +15,7 @@ import { useApp } from './app-provider';
 import { api } from '@/lib/api';
 import { ProfileAvatar } from './media';
 import { StepSettings } from './step-settings';
-import { ProfileEditor, BriefingEditor, IndemnityEditor } from './profile-settings';
+import { ProfileEditor, BriefingEditor } from './profile-settings';
 import { WeatherLocationPicker } from './matches/weather-location-picker';
 import { QuizScreen } from './quiz/quiz-screen';
 import { Button, Badge, Notice, Modal, PageHeader } from '@/components/ui';
@@ -36,7 +36,6 @@ export function Profile({
     [editing, setEditing] = useState(false),
     [briefings, setBriefings] = useState(false),
     [steps, setSteps] = useState(false),
-    [indemnities, setIndemnities] = useState(false),
     [section, setSection] = useState<'account' | 'matches' | 'quiz'>(initialSection);
   const [weatherLocation, setWeatherLocation] = useState(
     app.profile?.preferences.weatherLocation ?? undefined,
@@ -190,13 +189,6 @@ export function Profile({
           <Button variant="secondary" onClick={() => setBriefings(true)}>
             <Pencil size={17} />
             Modifier les consignes
-          </Button>
-        </section>
-        <section hidden={section !== 'matches'} className="panel">
-          <h2>Mes indemnités</h2>
-          <Button variant="secondary" onClick={() => setIndemnities(true)}>
-            <Pencil size={17} />
-            Tarifs par catégorie
           </Button>
         </section>
         <section hidden={section !== 'matches'} className="panel">
@@ -359,11 +351,6 @@ export function Profile({
               {deleteBusy ? 'Suppression…' : 'Supprimer définitivement'}
             </Button>
           </form>
-        </Modal>
-      )}
-      {indemnities && (
-        <Modal title="Mes indemnités" onClose={() => setIndemnities(false)}>
-          <IndemnityEditor onDone={() => setIndemnities(false)} />
         </Modal>
       )}
       {steps && (

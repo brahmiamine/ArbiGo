@@ -1,5 +1,6 @@
 'use client';
-import { type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
+import { hasDuplicateRooms } from '@/domain/match';
 import { Button } from '@/components/ui';
 import { Check } from 'lucide-react';
 import type { Match, OperationInput } from '@/domain/types';
@@ -21,6 +22,7 @@ export function LockerRooms({
         { key: 'away' as const, label: `Vestiaire · ${match.awayTeam}` },
       ];
   const completed = !!match.runs[code].completedAt;
+  const [duplicate, setDuplicate] = useState(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (completed) return;
@@ -28,7 +30,9 @@ export function LockerRooms({
     const rooms = referee
       ? { referee: String(data.get('referee')).trim() }
       : { home: String(data.get('home')).trim(), away: String(data.get('away')).trim() };
-    await act({ type: 'LOCKER_ROOMS', rooms });
+    const clash = hasDuplicateRooms({ ...match.lockerRooms, ...rooms });
+    setDuplicate(clash);
+    if (!clash) await act({ type: 'LOCKER_ROOMS', rooms });
   }
   return (
     <form className="form locker-rooms" onSubmit={submit}>
@@ -47,6 +51,14 @@ export function LockerRooms({
           />
         </label>
       ))}
+      {!referee && match.lockerRooms?.referee && (
+        <p className="muted">Mon vestiaire : {match.lockerRooms.referee}</p>
+      )}
+      {duplicate && (
+        <p role="alert" className="form-error">
+          Les trois vestiaires doivent être différents.
+        </p>
+      )}
       <Button type="submit" disabled={completed}>
         <Check size={19} />
         {completed ? 'Étape validée' : 'Valider cette étape'}

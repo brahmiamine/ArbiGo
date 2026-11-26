@@ -6,12 +6,6 @@ import { FileDropzone } from '@/components/file-dropzone';
 import { Button } from '@/components/ui';
 import type { BriefingTexts, ProfilePatch } from '@/domain/profile';
 import { defaultBriefings } from '@/domain/profile';
-import {
-  categoriesToPrice,
-  indemnityRates,
-  normalizeCategory,
-  uncategorized,
-} from '@/domain/indemnities';
 
 export function ProfileEditor({ onDone }: { onDone: () => void }) {
   const app = useApp();
@@ -191,91 +185,6 @@ export function BriefingEditor({ onDone }: { onDone: () => void }) {
         </div>
       </fieldset>
       {offline && <p className="muted">Connectez-vous pour modifier vos consignes.</p>}
-      {error && (
-        <p role="alert" className="form-error">
-          {error}
-        </p>
-      )}
-    </form>
-  );
-}
-
-export function IndemnityEditor({ onDone }: { onDone: () => void }) {
-  const app = useApp();
-  const saved = indemnityRates(app.profile?.preferences.indemnityRates);
-  const [categories, setCategories] = useState(() => categoriesToPrice(app.matches, saved));
-  const [values, setValues] = useState(() =>
-    Object.fromEntries(Object.entries(saved).map(([key, value]) => [key, String(value)])),
-  );
-  const [extra, setExtra] = useState('');
-  const [busy, setBusy] = useState(false),
-    [error, setError] = useState('');
-  const offline = !app.demo && !app.online;
-  const addCategory = () => {
-    const category = normalizeCategory(extra);
-    if (!extra.trim() || category === uncategorized) return;
-    setCategories((current) => (current.includes(category) ? current : [...current, category]));
-    setExtra('');
-  };
-  return (
-    <form
-      className="form"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        setBusy(true);
-        setError('');
-        try {
-          const rates = Object.fromEntries(
-            categories
-              .map((category) => [category, Number(values[category]?.replace(',', '.'))] as const)
-              .filter(([category, amount]) => values[category]?.trim() && Number.isFinite(amount)),
-          );
-          await app.updateProfile({ preferences: { indemnityRates: rates } });
-          onDone();
-        } catch (e) {
-          setError(e instanceof Error ? e.message : 'Enregistrement impossible.');
-        } finally {
-          setBusy(false);
-        }
-      }}
-    >
-      <p className="muted">
-        Montant par défaut pour un match d’une catégorie, en euros. Il peut être ajusté match par
-        match.
-      </p>
-      <fieldset className="settings-fieldset" disabled={busy || offline}>
-        <div className="indemnity-rates">
-          {categories.map((category) => (
-            <label key={category}>
-              {category}
-              <input
-                inputMode="decimal"
-                pattern="[0-9]+([.,][0-9]{1,2})?"
-                maxLength={7}
-                placeholder="— €"
-                value={values[category] ?? ''}
-                onChange={(event) =>
-                  setValues((current) => ({ ...current, [category]: event.target.value }))
-                }
-              />
-            </label>
-          ))}
-        </div>
-        <div className="indemnity-add">
-          <input
-            aria-label="Nouvelle catégorie"
-            placeholder="Nouvelle catégorie (ex. U14 D2)"
-            maxLength={60}
-            value={extra}
-            onChange={(event) => setExtra(event.target.value)}
-          />
-          <Button type="button" variant="secondary" onClick={addCategory}>
-            Ajouter
-          </Button>
-        </div>
-        <Button type="submit">Enregistrer les indemnités</Button>
-      </fieldset>
-      {offline && <p className="muted">Connectez-vous pour modifier vos indemnités.</p>}
       {error && (
         <p role="alert" className="form-error">
           {error}

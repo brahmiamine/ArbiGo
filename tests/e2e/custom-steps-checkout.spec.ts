@@ -143,6 +143,7 @@ test('personal settings persist for new matches and lead to a full-screen checko
     page.getByRole('heading', { name: 'Check-out SPORTCASH', exact: true }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Confirmer mon check-out', exact: true }).click();
+  await page.getByRole('button', { name: 'Saisir plus tard', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Check-out SPORTCASH', exact: true })).toHaveCount(
     0,
   );

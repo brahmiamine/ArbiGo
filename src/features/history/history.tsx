@@ -10,6 +10,7 @@ import { formatTime, parseLocalKickoff } from '@/domain/time';
 import { summarize } from '@/domain/match';
 import { DeleteMatchButton } from '../delete-match';
 import { MatchHero } from '../match-hero';
+import { ArrivalPosition } from '../tunnel/arrival-position';
 import { MatchIndemnity } from '../indemnity';
 const Debrief = dynamic(() => import('../debrief/debrief'), {
   loading: () => <p>Chargement du débrief…</p>,
@@ -145,6 +146,7 @@ export function History({ match: m }: { match: Match }) {
           </h2>
           <p>Clôturée le {m.closedAt ? new Date(m.closedAt).toLocaleString('fr-FR') : ''}</p>
           {m.closeComment && <Notice>{m.closeComment}</Notice>}
+          {m.arrivalPosition && <ArrivalPosition position={m.arrivalPosition} />}
           <div className="review-steps">
             {m.template.steps.map((s) => (
               <div key={s.code}>
