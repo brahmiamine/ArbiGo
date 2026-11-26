@@ -16,6 +16,7 @@ import { AppProvider, useApp } from './app-provider';
 import { Dashboard, Matches, MatchDetail } from './dashboard';
 import { InventoryScreen } from './bag/inventory';
 import { IndemnityScreen } from './indemnity';
+import { StatsScreen } from './stats';
 import { Profile } from './profile';
 import { ProfileAvatar } from './media';
 import { Tunnel } from './tunnel/tunnel';
@@ -171,6 +172,8 @@ function Shell() {
             <QuizScreen key="documents" area="documents" />
           ) : app.tab === 'bag' ? (
             <InventoryScreen />
+          ) : app.tab === 'stats' ? (
+            <StatsScreen />
           ) : app.tab === 'indemnity' ? (
             <IndemnityScreen />
           ) : (

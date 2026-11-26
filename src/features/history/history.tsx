@@ -1,86 +1,29 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { useState, useEffect, type FormEvent } from 'react';
-import { Flag, Clock3, Check, AlertTriangle } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { Flag, Check, AlertTriangle } from 'lucide-react';
 import { useApp } from '../app-provider';
 import { api } from '@/lib/api';
 import { Button, Badge, Modal, Notice } from '@/components/ui';
-import type { Match, OperationInput } from '@/domain/types';
-import { formatTime, parseLocalKickoff } from '@/domain/time';
+import type { Match } from '@/domain/types';
+import { parseLocalKickoff } from '@/domain/time';
 import { summarize } from '@/domain/match';
 import { DeleteMatchButton } from '../delete-match';
 import { MatchHero } from '../match-hero';
 import { ArrivalPosition } from '../tunnel/arrival-position';
 import { MatchIndemnity } from '../indemnity';
+import { Journal } from './journal';
 const Debrief = dynamic(() => import('../debrief/debrief'), {
   loading: () => <p>Chargement du débrief…</p>,
 });
-interface Event {
-  id: string;
-  type: string;
-  occurredAt: string;
-  receivedAt: string;
-  payload: OperationInput;
-}
-const labels: Record<string, string> = {
-  START: 'Préparation démarrée',
-  ANSWER: 'Contrôle renseigné',
-  COMPLETE: 'Étape validée',
-  COLORS: 'Couleurs enregistrées',
-  ADD_SPORTCASH_STEP: 'Ajout du check-in SPORTCASH',
-  ADD_LOCKER_STEPS: 'Ajout des étapes de vestiaires',
-  LOCKER_ROOMS: 'Vestiaires renseignés',
-  SELECT_SHIRT: 'Maillot choisi',
-  BRIEFING: 'Consignes données',
-  FINISH_MATCH: 'Match terminé',
-  DEBRIEF: 'Débrief mis à jour',
-  ISSUE_UPDATE: 'Suivi d’anomalie',
-  WARMUP: 'Échauffement',
-  SPORTCASH_CHECKOUT: 'Check-out SPORTCASH confirmé',
-  KICKOFF: 'Coup d’envoi confirmé',
-  CLOSE: 'Rencontre non débutée',
-  TRANSFER: 'Appareil propriétaire transféré',
-  NOTE: 'Note ajoutée',
-  INDEMNITY: 'Indemnité modifiée',
-  BAG: 'Sac modifié',
-  NAVIGATE: 'Fiche consultée',
-};
 export function History({ match: m }: { match: Match }) {
   const app = useApp();
-  const [events, setEvents] = useState<Event[]>([]),
-    [report, setReport] = useState(false),
+  const [report, setReport] = useState(false),
     [finishing, setFinishing] = useState(false),
-    [error, setError] = useState(''),
-    [loading, setLoading] = useState(true);
+    [error, setError] = useState('');
   const debriefOpen = app.matchView === 'debrief';
   const setDebriefOpen = (open: boolean) => app.setMatchView(open ? 'debrief' : 'summary');
   const summary = summarize(m);
-  useEffect(() => {
-    if (debriefOpen) return;
-    let alive = true;
-    async function load() {
-      try {
-        if (app.demo) {
-          setEvents([]);
-          return;
-        }
-        const b = await api<{ events: Event[] }>(`matches/${m.id}/history`);
-        if (alive) setEvents(b.events);
-        await app.store?.cache(`history:${m.id}`, b.events);
-      } catch {
-        const cached = await app.store?.cached<Event[]>(`history:${m.id}`);
-        if (alive && cached) setEvents(cached);
-        else if (alive)
-          setError('Le journal serveur nécessite une connexion. Le bilan local reste disponible.');
-      } finally {
-        if (alive) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      alive = false;
-    };
-  }, [m.id, app.demo, app.store, debriefOpen]);
   if (debriefOpen && m.finishedAt)
     return <Debrief key={m.id} match={m} onBack={() => setDebriefOpen(false)} />;
   return (
@@ -212,32 +155,10 @@ export function History({ match: m }: { match: Match }) {
           </div>
         </section>
       </div>
-      <section className="panel journal">
-        <h2>
-          <Clock3 size={21} />
-          Journal des événements
-        </h2>
-        {loading && <p>Chargement…</p>}
-        {error && <Notice>{error}</Notice>}
-        {app.demo && (
-          <p className="muted">
-            Le journal serveur est disponible avec un compte. Le bilan de démonstration est conservé
-            sur cet appareil.
-          </p>
-        )}
-        {events.map((e) => (
-          <details key={e.id}>
-            <summary>
-              <time>{formatTime(e.occurredAt, m.timezone)}</time>
-              <strong>{labels[e.type] ?? e.type}</strong>
-              <span>{new Date(e.receivedAt).toLocaleTimeString('fr-FR')} reçu</span>
-            </summary>
-            <pre>{JSON.stringify(e.payload, null, 2)}</pre>
-          </details>
-        ))}
-      </section>
+      <Journal match={m} />
       {report && (
         <Modal title="Nouvelle date de la rencontre" onClose={() => setReport(false)}>
+          {error && <Notice>{error}</Notice>}
           <form
             className="form"
             onSubmit={async (e) => {

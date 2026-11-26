@@ -943,32 +943,6 @@ hr {
 .journal {
   margin-top: 25px;
 }
-.journal details {
-  border-bottom: 1px solid var(--line);
-  padding: 15px 0;
-}
-.journal summary {
-  display: flex;
-  gap: 20px;
-  font-size: 11px;
-  cursor: pointer;
-}
-.journal summary time {
-  font-variant-numeric: tabular-nums;
-  color: var(--blue);
-}
-.journal summary > span {
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 11px;
-}
-.journal pre {
-  font-size: 11px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  background: var(--surface-muted);
-  padding: 15px;
-}
 .form {
   display: flex;
   flex-direction: column;
@@ -2499,13 +2473,6 @@ select {
   }
   .review-steps .badge {
     font-size: 11px;
-  }
-  .journal summary {
-    gap: 12px;
-    font-size: 11px;
-  }
-  .journal summary > span {
-    display: none;
   }
   .warmup-actions {
     flex-wrap: wrap;

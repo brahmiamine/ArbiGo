@@ -12,6 +12,7 @@ import {
   Check,
   ClipboardCheck,
   Backpack,
+  ChartColumn,
   Pencil,
   Euro,
   Flag,
@@ -242,6 +243,16 @@ export function Dashboard() {
               <div>
                 <strong>Indemnités</strong>
                 <p>Suivre mes montants par mois et par saison.</p>
+              </div>
+              <ChevronRight size={20} />
+            </button>
+            <button onClick={() => app.setTab('stats')}>
+              <span className="prep-number">
+                <ChartColumn size={18} />
+              </span>
+              <div>
+                <strong>Statistiques</strong>
+                <p>Ponctualité, activité et suivi de ma saison.</p>
               </div>
               <ChevronRight size={20} />
             </button>

@@ -1559,3 +1559,141 @@ textarea:focus-visible {
   gap: 5px;
   font-size: 13px;
 }
+
+/* Match journal timeline. */
+.journal-summary,
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 10px;
+}
+.journal-summary > div,
+.stat-tiles > div {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--primary-soft);
+}
+.journal-summary > div.late {
+  background: var(--warning-soft);
+}
+.journal-summary dt,
+.stat-tiles dt {
+  font-size: 12px;
+  color: var(--muted);
+}
+.journal-summary dd,
+.stat-tiles dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--blue);
+}
+.journal-highlight {
+  margin: 4px 0;
+  font-size: 13px;
+}
+.timeline {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.timeline li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  padding-bottom: 14px;
+  position: relative;
+}
+.timeline li:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 28px;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+.timeline p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.timeline-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--blue);
+}
+.timeline li.late .timeline-icon {
+  background: var(--warning-soft);
+  color: var(--amber);
+}
+.timeline .timeline-head {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+.timeline-head time {
+  color: var(--blue);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.timeline .timeline-timing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.timeline-chip {
+  padding: 1px 8px;
+  border-radius: 99px;
+  background: var(--success-soft);
+  color: var(--green);
+  font-weight: 700;
+  font-size: 12px;
+}
+.timeline-chip.late {
+  background: var(--warning-soft);
+  color: var(--amber);
+}
+.timeline .timeline-since {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Statistics page. */
+.stats-page .panel {
+  margin-bottom: 14px;
+}
+.stat-bars {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stat-bars li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  font-size: 13px;
+}
+.stat-bars li span {
+  overflow-wrap: anywhere;
+}
+.stat-bars li i {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--blue);
+}
+.stat-period {
+  margin-bottom: 14px;
+}
