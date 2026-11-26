@@ -1,7 +1,10 @@
-import { AlertTriangle, Check, Clock3, Flag, Play, StickyNote, XCircle } from 'lucide-react';
+import { AlertTriangle, Check, Flag, Play, StickyNote, XCircle } from 'lucide-react';
 import { buildJournal, duration, journalSummary, type JournalEntry } from '@/domain/journal';
 import { formatTime } from '@/domain/time';
 import type { Match } from '@/domain/types';
+import type { ReactNode } from 'react';
+import { Notice } from '@/components/ui';
+import { ArrivalPosition } from '../tunnel/arrival-position';
 
 const icons: Record<JournalEntry['kind'], typeof Check> = {
   start: Play,
@@ -13,15 +16,22 @@ const icons: Record<JournalEntry['kind'], typeof Check> = {
   after: StickyNote,
 };
 
-export function Journal({ match }: { match: Match }) {
+/** Bilan et journal d’une rencontre passée, réunis dans une seule carte. */
+export function Journal({ match, children }: { match: Match; children?: ReactNode }) {
   const entries = buildJournal(match);
   const summary = journalSummary(match);
+  const open = match.issues.filter((issue) => issue.status !== 'RESOLVED');
   return (
     <section className="panel journal">
       <h2>
-        <Clock3 size={21} />
-        Journal des événements
+        <Flag size={21} />
+        Bilan du match
       </h2>
+      {match.closedAt && (
+        <p className="muted">Clôturée le {new Date(match.closedAt).toLocaleString('fr-FR')}</p>
+      )}
+      {match.closeComment && <Notice>{match.closeComment}</Notice>}
+      {match.arrivalPosition && <ArrivalPosition position={match.arrivalPosition} />}
       <dl className="journal-summary">
         <div>
           <dt>Préparation</dt>
@@ -51,6 +61,10 @@ export function Journal({ match }: { match: Match }) {
       {summary.missed.length > 0 && (
         <p className="journal-highlight">Non validées : {summary.missed.join(', ')}</p>
       )}
+      {open.length > 0 && (
+        <p className="journal-highlight">{open.length} anomalie(s) restée(s) ouverte(s).</p>
+      )}
+      <h3>Journal des événements</h3>
       {entries.length === 0 && <p className="muted">Aucun événement enregistré.</p>}
       <ol className="timeline">
         {entries.map((entry, index) => {
@@ -86,6 +100,7 @@ export function Journal({ match }: { match: Match }) {
           );
         })}
       </ol>
+      {children}
     </section>
   );
 }

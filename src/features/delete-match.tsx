@@ -22,9 +22,14 @@ export function DeleteMatchButton({ match }: { match: Match }) {
   }
   return (
     <>
-      <Button variant="ghost" className="delete-match" onClick={() => setOpen(true)}>
-        <Trash2 size={16} aria-hidden="true" />
-        Supprimer
+      <Button
+        variant="ghost"
+        className="delete-match"
+        aria-label="Supprimer"
+        title="Supprimer la rencontre"
+        onClick={() => setOpen(true)}
+      >
+        <Trash2 size={18} aria-hidden="true" />
       </Button>
       {open && (
         <Modal title="Supprimer la rencontre" onClose={() => !busy && setOpen(false)}>

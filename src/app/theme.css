@@ -1246,9 +1246,7 @@ textarea:focus-visible {
 }
 .detail-hero-top {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
 }
 .detail-hero-top .badge {
   font-size: 11px;
@@ -1256,16 +1254,16 @@ textarea:focus-visible {
 }
 .detail-hero-actions {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
 }
 .detail-hero-actions > .button {
-  min-height: 32px;
-  padding: 0 10px;
-  gap: 5px;
-  font-size: 12px;
-  letter-spacing: 0;
-  text-transform: none;
+  width: 44px;
+  min-height: 40px;
+  padding: 0;
+  justify-content: center;
 }
 .detail-hero-actions > .button.delete-match {
   border: 0;
@@ -1426,7 +1424,8 @@ textarea:focus-visible {
 .payment-choice {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
@@ -1436,12 +1435,15 @@ textarea:focus-visible {
   font-weight: 700;
 }
 .form .payment-choice label {
-  flex: 1 1 90px;
-  flex-direction: row;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 44px;
+  gap: 4px;
+  min-height: 56px;
+  padding: 6px 2px;
+  font-size: 12px;
   border: 1px solid var(--field-border);
   border-radius: var(--radius-control);
 }
@@ -1749,4 +1751,12 @@ textarea:focus-visible {
 .fee-group small.missing {
   color: var(--amber);
   font-weight: 700;
+}
+
+/* The whole match card opens the match; only real links stay clickable above it. */
+.match-card > :not(.match-card-open) {
+  pointer-events: none;
+}
+.match-card > :not(.match-card-open) a {
+  pointer-events: auto;
 }

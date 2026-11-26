@@ -1,16 +1,13 @@
 'use client';
 import dynamic from 'next/dynamic';
 import { useState, type FormEvent } from 'react';
-import { Flag, Check, AlertTriangle } from 'lucide-react';
 import { useApp } from '../app-provider';
 import { api } from '@/lib/api';
 import { Button, Badge, Modal, Notice } from '@/components/ui';
 import type { Match } from '@/domain/types';
 import { parseLocalKickoff } from '@/domain/time';
-import { summarize } from '@/domain/match';
 import { DeleteMatchButton } from '../delete-match';
 import { MatchHero } from '../match-hero';
-import { ArrivalPosition } from '../tunnel/arrival-position';
 import { MatchIndemnity } from '../indemnity';
 import { Journal } from './journal';
 const Debrief = dynamic(() => import('../debrief/debrief'), {
@@ -23,7 +20,6 @@ export function History({ match: m }: { match: Match }) {
     [error, setError] = useState('');
   const debriefOpen = app.matchView === 'debrief';
   const setDebriefOpen = (open: boolean) => app.setMatchView(open ? 'debrief' : 'summary');
-  const summary = summarize(m);
   if (debriefOpen && m.finishedAt)
     return <Debrief key={m.id} match={m} onBack={() => setDebriefOpen(false)} />;
   return (
@@ -81,41 +77,12 @@ export function History({ match: m }: { match: Match }) {
         </section>
       )}
       {m.status === 'COMPLETED' && <MatchIndemnity match={m} />}
+      <Journal match={m}>
+        {m.status === 'POSTPONED' && (
+          <Button onClick={() => setReport(true)}>Créer la nouvelle rencontre liée</Button>
+        )}
+      </Journal>
       <div className="dashboard-grid">
-        <section className="panel">
-          <h2>
-            <Flag size={21} />
-            Le bilan conservé
-          </h2>
-          <p>Clôturée le {m.closedAt ? new Date(m.closedAt).toLocaleString('fr-FR') : ''}</p>
-          {m.closeComment && <Notice>{m.closeComment}</Notice>}
-          {m.arrivalPosition && <ArrivalPosition position={m.arrivalPosition} />}
-          <div className="review-steps">
-            {m.template.steps.map((s) => (
-              <div key={s.code}>
-                <span>{s.title}</span>
-                <Badge tone={m.runs[s.code].completedAt ? 'green' : 'gray'}>
-                  {m.runs[s.code].completedAt ? 'Validée' : 'Non validée'}
-                </Badge>
-              </div>
-            ))}
-          </div>
-          <p>{summary.openIssues.length} anomalie(s) restée(s) ouverte(s).</p>
-          {m.issues.map((i) => (
-            <div className="history-issue" key={i.id}>
-              {i.status === 'RESOLVED' ? <Check size={18} /> : <AlertTriangle size={18} />}
-              <div>
-                <strong>{i.reason}</strong>
-                <p>
-                  {i.comment} · {i.status === 'RESOLVED' ? 'Résolue' : 'Non résolue'}
-                </p>
-              </div>
-            </div>
-          ))}
-          {m.status === 'POSTPONED' && (
-            <Button onClick={() => setReport(true)}>Créer la nouvelle rencontre liée</Button>
-          )}
-        </section>
         <section>
           <div className="panel">
             <h2>Notes après clôture</h2>
@@ -155,7 +122,6 @@ export function History({ match: m }: { match: Match }) {
           </div>
         </section>
       </div>
-      <Journal match={m} />
       {report && (
         <Modal title="Nouvelle date de la rencontre" onClose={() => setReport(false)}>
           {error && <Notice>{error}</Notice>}

@@ -390,10 +390,10 @@ export function MatchDetail({ match: m }: { match: Match }) {
             variant="secondary"
             disabled={starting}
             aria-label="Modifier la rencontre"
+            title="Modifier la rencontre"
             onClick={() => setEditing(true)}
           >
-            <Pencil size={14} aria-hidden="true" />
-            Modifier
+            <Pencil size={18} aria-hidden="true" />
           </Button>
         )}
         <DeleteMatchButton match={m} />
