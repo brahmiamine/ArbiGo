@@ -1778,3 +1778,94 @@ textarea:focus-visible {
 .match-card .match-teams strong .team-name {
   max-width: 100%;
 }
+
+/* Searchable club lists: one full-width field per team, logo beside each name. */
+.club-fields {
+  display: grid;
+  gap: 16px;
+}
+.club-select {
+  position: relative;
+  min-width: 0;
+}
+.club-select-control {
+  position: relative;
+  margin-top: 4px;
+}
+.match-form .club-select-control input {
+  margin: 0;
+  width: 100%;
+  padding-inline: 50px 44px;
+}
+.club-select-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  translate: 0 -50%;
+  pointer-events: none;
+}
+.club-select-icon .team-name {
+  display: none;
+}
+.club-select-toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.club-select ul {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  max-height: 264px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-dialog);
+}
+.club-select li {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+.club-select li:hover,
+.club-select li[aria-selected='true'] {
+  background: var(--primary-soft);
+}
+.club-select li .team-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.club-select li .team-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.club-select-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--blue);
+}

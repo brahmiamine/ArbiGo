@@ -9,6 +9,8 @@ import type { Match, MatchInput } from '@/domain/types';
 import { useMatchDesignation } from './designation/use-match-designation';
 import { TeamLogoInput } from './team-logo-input';
 import { saveTeamLogo, type TeamLogoDraft } from './team-logo-files';
+import { ClubSelect } from './club-select';
+import { knownClubs, pickClubLogo, typedClubLogo } from '@/domain/clubs';
 
 export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: Match }) {
   const app = useApp();
@@ -51,7 +53,7 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
       ['away', setAwayLogo],
     ] as const) {
       update((current) =>
-        current.source === 'manual' || current.id
+        current.source === 'manual' || (current.id && current.source !== 'club')
           ? current
           : logos[side]
             ? { file: logos[side], source: 'automatic' }
@@ -62,6 +64,7 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
   const disabled = busy || ocr.busy;
   const change = (key: keyof typeof fields, value: string) =>
     setFields((current) => ({ ...current, [key]: value }));
+  const clubs = knownClubs(app.matches);
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (disabled) return;
@@ -119,38 +122,30 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
         )}
       </section>
       <fieldset className="match-form-fields" disabled={disabled}>
-        <datalist id="old-teams">
-          {[...new Set(app.matches.flatMap((m) => [m.homeTeam, m.awayTeam]))].map((team) => (
-            <option key={team}>{team}</option>
+        <div className="club-fields">
+          {(
+            [
+              ['homeTeam', 'Équipe domicile', 'Paris 13 Atletico', setHomeLogo],
+              ['awayTeam', 'Équipe visiteuse', 'FC Belleville', setAwayLogo],
+            ] as const
+          ).map(([key, label, placeholder, setLogo]) => (
+            <ClubSelect
+              key={key}
+              name={key}
+              label={label}
+              placeholder={placeholder}
+              value={fields[key]}
+              clubs={clubs}
+              onType={(name) => {
+                change(key, name);
+                setLogo((current) => typedClubLogo(current, clubs, name));
+              }}
+              onPick={(club) => {
+                change(key, club.name);
+                setLogo((current) => pickClubLogo(current, club));
+              }}
+            />
           ))}
-        </datalist>
-        <div className="form-grid">
-          <label>
-            Équipe domicile
-            <input
-              name="homeTeam"
-              value={fields.homeTeam}
-              onChange={(e) => change('homeTeam', e.target.value)}
-              list="old-teams"
-              autoComplete="off"
-              maxLength={100}
-              required
-              placeholder="Paris 13 Atletico"
-            />
-          </label>
-          <label>
-            Équipe visiteuse
-            <input
-              name="awayTeam"
-              value={fields.awayTeam}
-              onChange={(e) => change('awayTeam', e.target.value)}
-              list="old-teams"
-              autoComplete="off"
-              maxLength={100}
-              required
-              placeholder="FC Belleville"
-            />
-          </label>
         </div>
         <div className="form-grid team-logo-fields">
           <TeamLogoInput

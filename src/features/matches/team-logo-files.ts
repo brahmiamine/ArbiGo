@@ -1,10 +1,8 @@
 import type { LocalStore } from '@/lib/local-store';
 
-export interface TeamLogoDraft {
-  id?: string;
-  file?: File;
-  source?: 'manual' | 'automatic';
-}
+import type { ClubLogo } from '@/domain/clubs';
+
+export type TeamLogoDraft = ClubLogo;
 export async function saveTeamLogo(draft: TeamLogoDraft, store: LocalStore, demo: boolean) {
   if (!draft.file) return draft.id;
   const file = draft.file;

@@ -42,7 +42,7 @@ test('manual logos survive creation, editing, cards, stage navigation and offlin
   const card = page.locator('.match-card').filter({ hasText: 'Club Alpha' });
   await expect(card.locator('.team-logo img')).toHaveCount(2);
   await card.click();
-  await expect(page.locator('.page-heading .team-logo img')).toHaveCount(2);
+  await expect(page.locator('.detail-hero .team-logo img')).toHaveCount(2);
   await page.getByRole('button', { name: 'Modifier la rencontre', exact: true }).click();
   const edit = page.getByRole('dialog', { name: 'Modifier la rencontre', exact: true });
   await expect(edit.locator('.saved-logo img')).toHaveCount(2);
@@ -51,7 +51,7 @@ test('manual logos survive creation, editing, cards, stage navigation and offlin
     .fill('Terrain Alpha');
   await edit.getByRole('button', { name: 'Enregistrer la rencontre', exact: true }).click();
   await expect(edit).toBeHidden();
-  await expect(page.locator('.page-heading .team-logo img')).toHaveCount(2);
+  await expect(page.locator('.detail-hero .team-logo img')).toHaveCount(2);
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
   await expect(page.locator('.tunnel-header .team-logo img')).toHaveCount(2);
   await page.getByRole('button', { name: 'Suivant', exact: true }).click();
