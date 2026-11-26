@@ -35,7 +35,7 @@ function MonthTile({ month, future }: { month: MonthIndemnities; future?: boolea
       <span>{monthName(month.key)}</span>
       <strong>{euro(future ? month.expected : month.earned)}</strong>
       <small>{count(matches, future ? 'prévu' : 'joué')}</small>
-      {!future && month.planned > 0 && (
+      {!future && month.expected > 0 && (
         <small className="fee-expected">+ {euro(month.expected)} à venir</small>
       )}
     </li>

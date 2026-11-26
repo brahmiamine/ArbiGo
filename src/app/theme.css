@@ -1869,3 +1869,106 @@ textarea:focus-visible {
   gap: 8px;
   color: var(--blue);
 }
+
+/* Visual audit: alignment, legibility and narrow screens. */
+.match-teams > span,
+.dashboard-home .match-card .match-teams > span {
+  color: var(--gold-ink);
+}
+.match-card .match-meta {
+  flex-wrap: nowrap;
+}
+.match-card .match-meta > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.match-card .match-meta > span:first-child,
+.match-card .match-meta svg {
+  flex-shrink: 0;
+}
+.dashboard-home .match-card .match-meta > svg:last-child {
+  color: var(--on-primary);
+}
+.match-card .match-card-top .eyebrow {
+  display: inline-block;
+  text-transform: none;
+}
+.match-card .match-card-top .eyebrow::first-letter {
+  text-transform: uppercase;
+}
+.match-card .match-teams .team-name {
+  overflow-wrap: break-word;
+}
+.detail-hero-actions > .button.delete-match {
+  border: 1px solid var(--border);
+}
+.history-notes {
+  margin-top: 14px;
+}
+.prep-list .prep-number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+}
+.stats-page h3:not(:first-child) {
+  margin-top: 16px;
+}
+.profile-tabs {
+  gap: 4px;
+}
+.profile-tabs button {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 4px 8px;
+  white-space: normal;
+  line-height: 1.2;
+}
+.match-form .file-zone-copy > span,
+.match-form .file-zone-copy small,
+.match-weather small {
+  font-size: 11px;
+}
+.forgot-link,
+.privacy-hint a {
+  display: inline-block;
+  padding-block: 5px;
+}
+@media (max-width: 600px) {
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 16px 0 24px;
+  }
+  .stats > div {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 12px 6px 10px;
+    text-align: center;
+  }
+  .stats > div > div {
+    align-items: center;
+  }
+  .stats strong {
+    font-size: 34px;
+  }
+  .stats span:not(.stat-icon) {
+    font-size: 12px;
+    line-height: 1.25;
+  }
+  .profile-tabs button {
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+}
+@media (max-width: 420px) {
+  .dashboard-home .match-card .match-teams strong {
+    font-size: clamp(18px, 6vw, 24px);
+  }
+}
+@media (max-width: 359px) {
+  .match-form-fields > .form-grid:not(.team-logo-fields) {
+    grid-template-columns: 1fr;
+  }
+}

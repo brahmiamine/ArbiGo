@@ -82,46 +82,43 @@ export function History({ match: m }: { match: Match }) {
           <Button onClick={() => setReport(true)}>Créer la nouvelle rencontre liée</Button>
         )}
       </Journal>
-      <div className="dashboard-grid">
-        <section>
-          <div className="panel">
-            <h2>Notes après clôture</h2>
-            <p className="muted">Ajoutées séparément, sans modifier le journal d’origine.</p>
-            {m.notes.map((n) => (
-              <div className="history-note" key={n.id}>
-                <p>{n.content}</p>
-                <time>{new Date(n.at).toLocaleString('fr-FR')}</time>
-              </div>
-            ))}
-            <form
-              className="form"
-              onSubmit={async (e: FormEvent<HTMLFormElement>) => {
-                e.preventDefault();
-                const form = e.currentTarget;
-                try {
-                  await app.dispatch(m.id, {
-                    type: 'NOTE',
-                    content: String(new FormData(form).get('note')),
-                  });
-                  form.reset();
-                } catch {}
-              }}
-            >
-              <label>
-                Nouvelle note
-                <textarea name="note" required maxLength={5000} />
-              </label>
-              <Button type="submit" variant="secondary">
-                Ajouter la note
-              </Button>
-            </form>
-          </div>
-          <div className="model-note">
-            Instantané {m.template.code}. Le journal ne se réécrit pas lors d’un changement de
-            modèle.
-          </div>
-        </section>
-      </div>
+      <section className="history-notes">
+        <div className="panel">
+          <h2>Notes après clôture</h2>
+          <p className="muted">Ajoutées séparément, sans modifier le journal d’origine.</p>
+          {m.notes.map((n) => (
+            <div className="history-note" key={n.id}>
+              <p>{n.content}</p>
+              <time>{new Date(n.at).toLocaleString('fr-FR')}</time>
+            </div>
+          ))}
+          <form
+            className="form"
+            onSubmit={async (e: FormEvent<HTMLFormElement>) => {
+              e.preventDefault();
+              const form = e.currentTarget;
+              try {
+                await app.dispatch(m.id, {
+                  type: 'NOTE',
+                  content: String(new FormData(form).get('note')),
+                });
+                form.reset();
+              } catch {}
+            }}
+          >
+            <label>
+              Nouvelle note
+              <textarea name="note" required maxLength={5000} />
+            </label>
+            <Button type="submit" variant="secondary">
+              Ajouter la note
+            </Button>
+          </form>
+        </div>
+        <div className="model-note">
+          Instantané {m.template.code}. Le journal ne se réécrit pas lors d’un changement de modèle.
+        </div>
+      </section>
       {report && (
         <Modal title="Nouvelle date de la rencontre" onClose={() => setReport(false)}>
           {error && <Notice>{error}</Notice>}

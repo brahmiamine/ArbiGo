@@ -7,10 +7,14 @@ import { euro, indemnityRates } from '@/domain/indemnities';
 import { duration } from '@/domain/journal';
 
 const percent = (value: number | null) => (value === null ? '—' : `${value} %`);
-const monthName = (key: string) =>
-  new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
-    new Date(`${key}-01T00:00:00Z`),
-  );
+const monthName = (key: string) => {
+  const name = new Intl.DateTimeFormat('fr-FR', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${key}-01T00:00:00Z`));
+  return name.charAt(0).toLocaleUpperCase('fr') + name.slice(1);
+};
 
 function Tiles({ items }: { items: [string, string | number][] }) {
   return (
