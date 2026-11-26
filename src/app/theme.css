@@ -1252,12 +1252,17 @@ textarea:focus-visible {
   font-size: 11px;
   padding: 3px 9px;
 }
-.detail-hero-actions {
+.detail-hero-footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--border);
+}
+.detail-hero-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
 }
 .detail-hero-actions > .button {
   width: 44px;
@@ -1298,12 +1303,11 @@ textarea:focus-visible {
 }
 .detail-hero-meta {
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 4px 12px;
+  min-width: 0;
   margin: 0;
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
   color: var(--muted);
   font-size: 13px;
 }

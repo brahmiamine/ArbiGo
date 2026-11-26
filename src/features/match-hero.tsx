@@ -29,23 +29,25 @@ export function MatchHero({
         </span>
         <TeamIdentity name={m.awayTeam} logoId={m.awayLogoId} />
       </h1>
-      <p className="detail-hero-meta">
-        <span>
-          <CalendarDays size={15} aria-hidden="true" />
-          {dateLabel(m)}
-        </span>
-        <span>
-          <Clock3 size={15} aria-hidden="true" />
-          {formatTime(m.kickoffAt, m.timezone)}
-        </span>
-        {m.stadium && (
+      <footer className="detail-hero-footer">
+        <p className="detail-hero-meta">
           <span>
-            <MapPin size={15} aria-hidden="true" />
-            {m.stadium}
+            <CalendarDays size={15} aria-hidden="true" />
+            {dateLabel(m)}
           </span>
-        )}
-      </p>
-      {children && <footer className="detail-hero-actions">{children}</footer>}
+          <span>
+            <Clock3 size={15} aria-hidden="true" />
+            {formatTime(m.kickoffAt, m.timezone)}
+          </span>
+          {m.stadium && (
+            <span>
+              <MapPin size={15} aria-hidden="true" />
+              {m.stadium}
+            </span>
+          )}
+        </p>
+        {children && <div className="detail-hero-actions">{children}</div>}
+      </footer>
     </header>
   );
 }
