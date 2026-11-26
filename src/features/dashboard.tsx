@@ -12,6 +12,7 @@ import {
   Check,
   ClipboardCheck,
   Backpack,
+  Euro,
   Flag,
   ChevronRight,
 } from 'lucide-react';
@@ -20,7 +21,6 @@ import { Button, Badge, Modal, Progress, Empty, PageHeader } from '@/components/
 import { MatchForm } from './matches/match-form';
 import { DeleteMatchButton } from './delete-match';
 import { MatchHero } from './match-hero';
-import { IndemnityCard } from './indemnity';
 import { EquipmentImage } from './media';
 import { MatchCountdown } from '@/components/match-countdown';
 import { equipmentLabel } from '@/domain/equipment';
@@ -189,7 +189,6 @@ export function Dashboard() {
           </div>
         </div>
       </div>
-      <IndemnityCard />
       <div className="dashboard-grid">
         <section>
           <div className="section-heading">
@@ -232,6 +231,16 @@ export function Dashboard() {
               <div>
                 <strong>Sacs</strong>
                 <p>Gérer mon matériel et mes articles.</p>
+              </div>
+              <ChevronRight size={20} />
+            </button>
+            <button onClick={() => app.setTab('indemnity')}>
+              <span className="prep-number">
+                <Euro size={18} />
+              </span>
+              <div>
+                <strong>Indemnités</strong>
+                <p>Suivre mes montants par mois et par saison.</p>
               </div>
               <ChevronRight size={20} />
             </button>

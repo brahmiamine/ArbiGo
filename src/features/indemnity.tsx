@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Euro } from 'lucide-react';
 import { useApp } from './app-provider';
-import { Button, Notice } from '@/components/ui';
+import { Button, Notice, PageHeader } from '@/components/ui';
 import {
   euro,
   indemnityCategory,
@@ -51,8 +51,17 @@ function MonthColumn({
   );
 }
 
-/** Accueil : indemnités du mois précédent, du mois en cours et du mois suivant, et quelques repères. */
-export function IndemnityCard() {
+/** Page Indemnités : montants du mois précédent, du mois en cours et du mois suivant, et quelques repères. */
+export function IndemnityScreen() {
+  return (
+    <>
+      <PageHeader title="Indemnités" />
+      <IndemnitySummary />
+    </>
+  );
+}
+
+function IndemnitySummary() {
   const app = useApp();
   const [now] = useState(Date.now);
   const rates = indemnityRates(app.profile?.preferences.indemnityRates);
@@ -68,9 +77,8 @@ export function IndemnityCard() {
     <section className="panel indemnity-card" aria-labelledby="indemnity-title">
       <div className="section-heading">
         <h2 id="indemnity-title">
-          <Euro size={20} /> Mes indemnités
+          <Euro size={20} /> Saison {season.label}
         </h2>
-        <span className="eyebrow">Saison {season.label}</span>
       </div>
       <div className="indemnity-months">
         <MonthColumn month={months.previous} title="Mois précédent" />
