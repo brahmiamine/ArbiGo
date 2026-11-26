@@ -97,6 +97,15 @@ export const parseFrenchDate = (text) => {
   return month ? `${match[3]}-${month}-${day}` : '';
 };
 
+/**
+ * Heure du coup d’envoi : celle de la ligne de la date, puis une heure écrite « 15H00 », puis la
+ * première venue. L’horloge de la barre d’état du téléphone (« 11:12 ») ne doit pas l’emporter.
+ */
+export const parseKickoffTime = (lines, text) =>
+  parseTime(lines.find((line) => parseFrenchDate(line) && parseTime(line)) ?? '') ||
+  parseTime(text.match(/\b\d{1,2}\s*h\s*\d{2}\b/i)?.[0] ?? '') ||
+  parseTime(text);
+
 export const parseTime = (text) => {
   const match = text.match(/\b(\d{1,2})\s*(?:h|:)\s*(\d{2})\b/i);
   if (!match) return '';
@@ -207,8 +216,10 @@ const isTeamCandidate = (line) => {
   // Les pictogrammes collés au nom (« M4 BENFICA… ») ne doivent pas faire écarter la ligne.
   const original = cleanLine(line);
   const value = trimTeamEdges(original);
-  // Un chiffre trahit un bandeau système, un score ou une date, jamais un nom d'équipe.
-  if (TEAM_NOISE.test(value) || /\d/.test(value) || value.length > 42) return false;
+  // Un chiffre trahit un bandeau système, un score ou une date, jamais un nom d'équipe ;
+  // seule exception, l'année de fondation du club (« MFC 1871 »).
+  const digits = value.replace(FOUNDING_YEAR, '');
+  if (TEAM_NOISE.test(value) || /\d/.test(digits) || value.length > 42) return false;
   if (lettersOf(value) < 4 || upperRatio(value) <= 0.55) return false;
 
   // Chaque côté du marqueur doit ressembler à un nom : sinon c'est du bruit autour d'un libellé.
@@ -217,6 +228,7 @@ const isTeamCandidate = (line) => {
 };
 
 const MAX_TEAM_WORDS = 4;
+const FOUNDING_YEAR = /\b1[89]\d{2}\b/g;
 
 /**
  * Retire les bribes d'icônes collées aux noms par la lecture d'image :
@@ -226,6 +238,7 @@ const trimTeamEdges = (value = '') => {
   const words = cleanLine(value).split(' ').filter(Boolean);
   // Un sigle de club est en capitales (« S. », « FC ») : seul un mot sans lettre ou en minuscules est un parasite.
   const isNoise = (word) => {
+    if (/^1[89]\d{2}$/.test(word)) return false;
     const letters = lettersOf(word);
     if (/\d/.test(word) && letters <= 3) return true;
     return letters === 0 || (letters < 4 && word !== word.toUpperCase());
@@ -282,7 +295,10 @@ const findTeamsFromColumns = (lines) => {
 
   const keepRun = () => {
     if (!run.length) return;
-    const columns = run.map(splitColumns);
+    const all = run.map(splitColumns);
+    // Une ligne de deux bribes (« CL ~ QJ ») est un écusson lu comme du texte, pas un nom.
+    const named = all.filter((column) => lettersOf(column.left) > 2 || lettersOf(column.right) > 2);
+    const columns = named.length ? named : all;
     const homeTeam = cleanLine(columns.map((column) => column.left).join(' '));
     const awayTeam = cleanLine(columns.map((column) => column.right).join(' '));
     const total = lettersOf(homeTeam) + lettersOf(awayTeam);
@@ -456,7 +472,7 @@ export function extractDesignationFields(rawText = '') {
     homeTeam: restoreInitialDots(trimTeamEdges(homeTeam)),
     awayTeam: restoreInitialDots(trimTeamEdges(awayTeam)),
     date: parseFrenchDate(text),
-    time: parseTime(text),
+    time: parseKickoffTime(lines, text),
     competition: findCompetition(lines),
     referee: findReferee(lines, text),
     assistant1,

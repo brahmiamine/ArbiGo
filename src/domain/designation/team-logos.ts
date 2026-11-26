@@ -70,8 +70,13 @@ export function detectTeamLogoRegions(
   const mask = new Uint8Array(cols * rows);
   // Text must not become a badge, even when the team name is printed in color.
   const textMask = new Uint8Array(width * height);
+  // OCR sometimes "reads" a badge itself as a short word with a badge-sized box: erasing it
+  // would destroy the logo. Real text stays close to the usual word height.
+  const heights = words.map((word) => word.height).sort((a, b) => a - b);
+  const tallest = heights[Math.floor(heights.length / 2)] * 2.5;
   for (const word of words) {
-    if (normalize(word.text).length < 2) continue;
+    const text = normalize(word.text);
+    if (text.length < 2 || (text.length <= 3 && word.height > tallest)) continue;
     const x1 = Math.max(0, Math.floor(word.left * width) - 2),
       x2 = Math.min(width, Math.ceil((word.left + word.width) * width) + 2);
     const y1 = Math.max(0, Math.floor(word.top * height) - 2),

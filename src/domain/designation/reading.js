@@ -4,7 +4,9 @@ const CORE_FIELDS = ['matchNumber', 'homeTeam', 'awayTeam', 'date', 'time', 'ref
 const MIN_TEAM_LETTERS = 4;
 
 const lettersOf = (value = '') => (value.match(/[A-Za-zÀ-ÖØ-öø-ÿ]/g) || []).length;
-const isPlausibleTeam = (value) => lettersOf(value) >= MIN_TEAM_LETTERS;
+// « MFC 1871 » : un sigle de trois lettres suivi de l’année de fondation est un nom complet.
+const isPlausibleTeam = (value) =>
+  lettersOf(value) >= MIN_TEAM_LETTERS || /[A-Z]{3} 1[89]\d{2}$/.test(value ?? '');
 
 /**
  * Une équipe absente ou réduite à quelques lettres (« HN » à la place de « MAYDAY FC ») trahit
