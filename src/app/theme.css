@@ -1764,3 +1764,17 @@ textarea:focus-visible {
 .match-card > :not(.match-card-open) a {
   pointer-events: auto;
 }
+
+/* Match cards: both teams take the same width, logo and name centred on one axis. */
+.match-card .match-teams strong {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+.match-card .match-teams strong .team-identity {
+  align-items: center;
+  width: 100%;
+}
+.match-card .match-teams strong .team-name {
+  max-width: 100%;
+}
