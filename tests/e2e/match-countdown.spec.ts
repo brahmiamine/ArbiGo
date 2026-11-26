@@ -65,9 +65,13 @@ test('upcoming cards count down independently on home and match list, update aft
     );
   }
   await page.screenshot({ path: 'test-results/matches-countdown-471.png' });
+  // After a reload, a match whose kickoff has passed moves from upcoming to history.
   await page.reload();
-  await expect(close.getByRole('timer')).toContainText('Horaire prévu atteint');
+  await expect(tomorrow.getByRole('timer')).toBeVisible();
+  await expect(close).toHaveCount(0);
   await page.getByRole('button', { name: 'Historique', exact: true }).click();
-  await expect(page.locator('.match-card')).toContainText('Ancien match');
-  await expect(page.getByRole('timer')).toHaveCount(0);
+  const old = page.locator('.match-card').filter({ hasText: 'Ancien match' });
+  await expect(old).toBeVisible();
+  await expect(old.getByRole('timer')).toHaveCount(0);
+  await expect(close.getByRole('timer')).toContainText('Horaire prévu atteint');
 });

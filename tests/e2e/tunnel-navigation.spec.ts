@@ -21,6 +21,8 @@ test('team context, clickable neighbors and final shortcuts stay usable offline 
   page,
   context,
 }) => {
+  // This walks the whole tunnel: it needs more than the default 30 s.
+  test.setTimeout(60000);
   await page.setViewportSize({ width: 471, height: 844 });
   await page.goto('/demo');
   await page.evaluate(() => navigator.serviceWorker.ready);
@@ -33,6 +35,8 @@ test('team context, clickable neighbors and final shortcuts stay usable offline 
   await page.locator('.match-card').click();
   await page.getByRole('button', { name: /Je suis arrivé/ }).click();
   await page.getByRole('button', { name: 'Confirmer mon arrivée' }).click();
+  // The test browser gives no GPS position: dismiss the message, as a referee would.
+  await page.getByRole('button', { name: 'Fermer le message' }).click();
   await expect(page.getByRole('button', { name: /^Étape suivante ·/ })).toContainText(
     'Mon vestiaire',
   );

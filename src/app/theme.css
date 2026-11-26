@@ -1972,3 +1972,19 @@ textarea:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+/* The error message must never cover the tunnel's own navigation. */
+.toast:has(~ .tunnel) {
+  bottom: calc(96px + env(safe-area-inset-bottom));
+}
+/* Room to scroll the last tunnel controls above the message. */
+.toast ~ .tunnel .tunnel-body {
+  padding-bottom: 200px;
+}
+/* The longest title and action must stay on one line on the smallest phones. */
+@media (max-width: 359px) {
+  .page-content .page-heading > .button.primary {
+    padding: 0 14px;
+    letter-spacing: 0.2px;
+  }
+}

@@ -30,7 +30,8 @@ test('mobile preparation, issue and postponed match keep independent state', asy
     .click();
   await page.getByRole('button', { name: 'Historique', exact: true }).click();
   await page.locator('.match-card').first().click();
-  await expect(page.getByText('Terrain impraticable', { exact: true })).toBeVisible();
+  // The reason appears both in the match report and in its event journal.
+  await expect(page.getByText('Terrain impraticable', { exact: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Créer la nouvelle rencontre liée' }).click();
   await page.getByLabel('Date', { exact: true }).fill('2026-12-06');
   await page.getByRole('button', { name: 'Créer le brouillon lié' }).click();

@@ -137,7 +137,7 @@ test('restored shirt preview on a transferred tunnel keeps transfer controls rea
   await expect(page.getByRole('button', { name: 'Options de la rencontre' })).toBeVisible();
 });
 
-test('without upcoming matches, home and match list show newest archived matches in date order', async ({
+test('without upcoming matches, home shows the last match and history lists newest first', async ({
   page,
 }) => {
   await page.goto('/demo');
@@ -180,8 +180,15 @@ test('without upcoming matches, home and match list show newest archived matches
     .getByRole('navigation', { name: 'Navigation principale' })
     .getByRole('button', { name: 'Matches', exact: true })
     .click();
-  await expect(page.getByRole('heading', { name: 'Dernier match', exact: true })).toBeVisible();
-  await expect(page.locator('.last-match .match-card')).toContainText('Archive 2026-11-01');
-  await page.locator('.last-match .match-card').click();
+  await expect(page.getByRole('heading', { name: 'Aucune rencontre à venir' })).toBeVisible();
+  await expect(page.locator('.match-card')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Historique', exact: true }).click();
+  await expect(page.locator('.match-card')).toContainText([
+    'Archive 2026-11-01',
+    'Archive 2026-10-25',
+    'Archive 2026-10-15',
+    'Archive 2026-10-01',
+  ]);
+  await page.locator('.match-card').first().click();
   await expect(page.getByRole('button', { name: 'Ouvrir le débrief', exact: true })).toBeVisible();
 });

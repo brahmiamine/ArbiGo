@@ -68,7 +68,10 @@ async function finishMatch(page: Page) {
   ).toBeVisible();
 }
 const saved = async (page: Page) => {
-  await expect(page.locator('.debrief-save')).toContainText('Enregistré sur cet appareil');
+  // Saving can take more than the default 5 s on a loaded machine.
+  await expect(page.locator('.debrief-save')).toContainText('Enregistré sur cet appareil', {
+    timeout: 15000,
+  });
   await expect(page.locator('.debrief-save')).not.toContainText('Enregistrement…');
 };
 

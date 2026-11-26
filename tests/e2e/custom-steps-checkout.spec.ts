@@ -26,7 +26,11 @@ async function completeVisible(page: Page) {
       .click();
     return;
   }
-  for (const field of await card.locator('.locker-rooms input').all()) await field.fill('2');
+  // The referee's room and both teams' rooms must all be different.
+  for (const field of await card.locator('.locker-rooms input').all()) {
+    const name = await field.getAttribute('name');
+    await field.fill(name === 'home' ? '3' : name === 'away' ? '4' : '2');
+  }
   for (const control of await card.locator('.control').all())
     await control.getByRole('button', { name: 'Conforme / fait', exact: true }).click();
   await page.getByRole('button', { name: 'Valider cette étape', exact: true }).click();

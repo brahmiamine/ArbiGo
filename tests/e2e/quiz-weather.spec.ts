@@ -133,7 +133,8 @@ test('weather uses selected stadium coordinates and kickoff, and never blocks ma
   await expect(card.locator('.match-weather')).toHaveCSS('font-size', '11px');
   await card.click();
   await expect(page.locator('.match-weather')).toContainText('Lyon, France');
-  expect((await page.locator('.match-weather').boundingBox())!.height).toBeLessThan(180);
+  // The detail view adds the hourly forecast strip.
+  expect((await page.locator('.match-weather').boundingBox())!.height).toBeLessThan(240);
 });
 
 test('training corrections, favorites, results and statistics persist across views', async ({

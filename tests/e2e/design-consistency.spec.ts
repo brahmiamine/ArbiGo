@@ -69,7 +69,8 @@ test('login, dashboard, forms and preparation share the debrief visual language'
   expect(
     (await appearance(page.getByRole('button', { name: 'Se connecter', exact: true }))).background,
   ).toBe(reference.action.background);
-  await page.goto('/demo');
+  // The home page highlights its match as a hero; the list keeps the shared card.
+  await page.goto('/demo?page=matches');
   expect(await appearance(page.locator('.match-card').first())).toMatchObject({
     font: reference.card.font,
     color: reference.card.color,
