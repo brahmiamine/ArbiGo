@@ -49,13 +49,13 @@ export function IndemnityScreen() {
   const rates = indemnityRates(app.profile?.preferences.indemnityRates);
   const timezone = app.profile?.preferences.timezone;
   const { months, season } = indemnityStats(app.matches, rates, now, timezone);
-  const played = app.matches
-    .filter(
-      (m) =>
-        m.status === 'COMPLETED' && seasonOf(monthKey(m.kickoffAt, m.timezone)) === season.label,
-    )
+  const history = app.matches
+    .filter((m) => m.status === 'COMPLETED')
     .sort((a, b) => Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt));
-  const toEnter = played.filter((m) => !m.indemnity?.payment).length;
+  const played = history.filter(
+    (m) => seasonOf(monthKey(m.kickoffAt, m.timezone)) === season.label,
+  );
+  const toEnter = history.filter((m) => !m.indemnity?.payment).length;
   const byPayment = Object.entries(paymentLabels).map(([key, label]) => ({
     label,
     amount: played.reduce(
@@ -64,7 +64,7 @@ export function IndemnityScreen() {
     ),
   }));
   const groups = new Map<string, Match[]>();
-  for (const match of played) {
+  for (const match of history) {
     const key = monthKey(match.kickoffAt, match.timezone);
     groups.set(key, [...(groups.get(key) ?? []), match]);
   }
@@ -91,7 +91,7 @@ export function IndemnityScreen() {
           match ci-dessous.
         </Notice>
       )}
-      {played.length === 0 ? (
+      {history.length === 0 ? (
         <Empty
           title="Aucune indemnité pour l’instant"
           description="Vos montants apparaîtront après votre premier match arbitré."
@@ -99,10 +99,17 @@ export function IndemnityScreen() {
       ) : (
         <>
           <section className="panel">
-            <h2>Détail des matchs</h2>
+            <h2>Historique des matchs</h2>
             {[...groups].map(([key, matches]) => (
               <div key={key} className="fee-group">
-                <h3>{monthName(key)}</h3>
+                <h3>
+                  <span>
+                    {monthName(key)} {key.slice(0, 4)}
+                  </span>
+                  <span>
+                    {euro(matches.reduce((sum, m) => sum + (matchIndemnity(m, rates) ?? 0), 0))}
+                  </span>
+                </h3>
                 <ul>
                   {matches.map((match) => {
                     const amount = matchIndemnity(match, rates);
@@ -137,7 +144,7 @@ export function IndemnityScreen() {
             ))}
           </section>
           <section className="panel">
-            <h2>Par catégorie</h2>
+            <h2>Par catégorie · saison</h2>
             <ul className="stat-bars">
               {season.byCategory.map((row) => (
                 <li key={row.category}>
@@ -151,7 +158,7 @@ export function IndemnityScreen() {
             </ul>
           </section>
           <section className="panel">
-            <h2>Par mode de paiement</h2>
+            <h2>Paiements · saison</h2>
             <dl className="stat-tiles">
               {byPayment.map((row) => (
                 <div key={row.label}>

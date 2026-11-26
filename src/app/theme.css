@@ -1685,6 +1685,9 @@ textarea:focus-visible {
   margin-bottom: 14px;
 }
 .fee-group h3 {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
   margin: 12px 0 4px;
   font-size: 13px;
   text-transform: capitalize;
