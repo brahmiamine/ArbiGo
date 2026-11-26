@@ -29,6 +29,15 @@ export function readNavigation(search: string): AppNavigation {
     matchFilter: params.get('filter') === 'history' ? 'history' : 'upcoming',
   };
 }
+/** Screens opened from a home card: they belong to the "Accueil" section. */
+export const HOME_CHILDREN: Tab[] = ['bag', 'indemnity', 'stats'];
+/** Logical parent of a screen, used when there is no in-app page to go back to. */
+export function parentNavigation(navigation: AppNavigation): AppNavigation {
+  if (navigation.matchView === 'debrief') return { ...navigation, matchView: 'summary' };
+  if (navigation.activeId) return { ...navigation, tab: 'matches', activeId: null };
+  if (HOME_CHILDREN.includes(navigation.tab)) return { ...navigation, tab: 'home' };
+  return navigation;
+}
 /** Resolve URLs only against the signed-in account's loaded matches. */
 export function resolveNavigation(navigation: AppNavigation, matches: Match[]): AppNavigation {
   const active = matches.find((m) => m.status === 'ACTIVE' || requiresCheckout(m));

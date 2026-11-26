@@ -71,7 +71,7 @@ export function IndemnityScreen() {
   const maxCategory = Math.max(1, ...season.byCategory.map((row) => row.earned));
   return (
     <div className="fee-page">
-      <PageHeader title="Indemnités" />
+      <PageHeader title="Indemnités" onBack={app.back} />
       <section className="fee-total" aria-label={`Saison ${season.label}`}>
         <span>Saison {season.label}</span>
         <strong>{euro(season.earned)}</strong>

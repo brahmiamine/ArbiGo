@@ -66,10 +66,10 @@ export function InventoryScreen() {
   }
   return (
     <>
-      <PageHeader title="Mon sac">
+      <PageHeader title="Mon sac" onBack={app.back}>
         <Button onClick={() => setEditing('new')}>
           <Plus size={18} />
-          Ajouter un article
+          Ajouter <span className="narrow-hidden">un article</span>
         </Button>
       </PageHeader>
       {failure && <Notice>{failure}</Notice>}
@@ -171,7 +171,11 @@ function ItemForm({ item, onSave }: { item?: Equipment; onSave: (i: Equipment) =
     }
   }
   return (
-    <form onSubmit={submit} className="form">
+    <form
+      onSubmit={submit}
+      className="form"
+      data-dirty={primary !== (item?.colors[0] ?? 'noir') || photoId !== item?.photoId}
+    >
       <label>
         Nom de l’article
         <input name="label" defaultValue={item?.label} maxLength={100} required />

@@ -38,7 +38,7 @@ export default function Privacy() {
         renseignés par l’exploitant avant lancement public. Cette version est destinée à la recette
         privée.
       </p>
-      <Link href="/app">Retour à mon espace →</Link>
+      <Link href="/app">← Retour à mon espace</Link>
     </main>
   );
 }

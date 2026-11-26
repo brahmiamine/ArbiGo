@@ -14,10 +14,12 @@ import {
   initialNavigation,
   readNavigation,
   resolveNavigation,
+  parentNavigation,
   navigationSearch,
   type AppNavigation,
   type Tab,
 } from '@/lib/navigation';
+import { goBack, pushEntry, replaceEntry, rememberScroll, savedScroll } from '@/lib/history';
 import { operationBatch } from '@/lib/operation-batch';
 import { LocalStore } from '@/lib/local-store';
 import { api, ApiError } from '@/lib/api';
@@ -50,6 +52,8 @@ interface AppContextType {
   setMatchFilter: (v: AppNavigation['matchFilter']) => void;
   matchView: AppNavigation['matchView'];
   setMatchView: (v: AppNavigation['matchView']) => void;
+  back: () => void;
+  takeScroll: () => number;
   activeId: string | null;
   setActiveId: (s: string | null) => void;
   demo: boolean;
@@ -92,19 +96,25 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
   const { tab, activeId, matchView, matchFilter } = navigation;
   const matchesRef = useRef<Match[]>([]);
   const replaceNavigation = useRef(false);
+  const restoredScroll = useRef(0);
   const setTab = (tab: Tab) => {
     const next: AppNavigation = { ...navigation, tab, activeId: null, matchView: 'summary' };
+    restoredScroll.current = 0;
+    rememberScroll();
     const url = new URL(window.location.href);
     const params = url.searchParams;
     params.delete('quiz');
+    params.delete('doc');
     if (tab === 'quiz') params.set('quiz', 'home');
     const search = navigationSearch(next, params.toString());
-    if (search !== window.location.search)
-      window.history.pushState(null, '', `${url.pathname}${search}${url.hash}`);
+    if (search !== window.location.search) pushEntry(`${url.pathname}${search}${url.hash}`);
     setNavigation(next);
     if (tab === 'quiz') window.dispatchEvent(new Event('arbigo:quiz-home'));
+    if (tab === 'documents') window.dispatchEvent(new Event('arbigo:documents-home'));
   };
-  const setActiveId = (id: string | null) =>
+  const setActiveId = (id: string | null) => {
+    restoredScroll.current = 0;
+    rememberScroll();
     setNavigation((n) => {
       const match = matchesRef.current.find((m) => m.id === id);
       return {
@@ -122,24 +132,43 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
           : {}),
       };
     });
-  const setMatchFilter = (matchFilter: AppNavigation['matchFilter']) =>
+  };
+  // The upcoming/history switch is a filter, not a new screen: it adds no history entry.
+  const setMatchFilter = (matchFilter: AppNavigation['matchFilter']) => {
+    replaceNavigation.current = true;
     setNavigation((n) => ({ ...n, matchFilter }));
-  const setMatchView = (matchView: AppNavigation['matchView']) =>
+  };
+  const setMatchView = (matchView: AppNavigation['matchView']) => {
+    restoredScroll.current = 0;
+    rememberScroll();
     setNavigation((n) => ({ ...n, matchView }));
+  };
+  const back = () =>
+    goBack(() => {
+      replaceNavigation.current = true;
+      setNavigation(parentNavigation);
+    });
+  const takeScroll = () => {
+    const position = restoredScroll.current;
+    restoredScroll.current = 0;
+    return position;
+  };
   useEffect(() => {
     if (!ready) return;
     const url = new URL(window.location.href);
     const search = navigationSearch(navigation, url.search);
     if (search !== url.search) {
-      const method = replaceNavigation.current ? 'replaceState' : 'pushState';
-      window.history[method](null, '', `${url.pathname}${search}${url.hash}`);
+      const write = replaceNavigation.current ? replaceEntry : pushEntry;
+      write(`${url.pathname}${search}${url.hash}`);
     }
     replaceNavigation.current = false;
   }, [navigation, ready]);
   useEffect(() => {
     if (!ready) return;
+    window.history.scrollRestoration = 'manual';
     const restore = () => {
       replaceNavigation.current = true;
+      restoredScroll.current = savedScroll();
       setNavigation(resolveNavigation(readNavigation(window.location.search), matchesRef.current));
     };
     window.addEventListener('popstate', restore);
@@ -468,6 +497,8 @@ export function AppProvider({ children, demo = false }: { children: ReactNode; d
         setMatchFilter,
         matchView,
         setMatchView,
+        back,
+        takeScroll,
         activeId,
         setActiveId,
         demo,

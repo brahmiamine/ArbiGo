@@ -1988,3 +1988,62 @@ textarea:focus-visible {
     letter-spacing: 0.2px;
   }
 }
+
+/* One "back" control everywhere: same icon, size and top-left place. */
+.back-button,
+.quiz-app .back-button {
+  display: inline-flex;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--blue);
+  cursor: pointer;
+}
+.back-button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.detail > .back-button,
+.page-content > .back-button,
+.debrief-app > .back-button {
+  align-self: flex-start;
+  margin-bottom: 10px;
+}
+.quiz-app .document-viewer-header > .back-button {
+  align-self: flex-start;
+}
+/* Installed app: keep headers below the notch. */
+.app-main {
+  padding-top: env(safe-area-inset-top);
+}
+/* Documents and quiz titles follow the other page headers: left aligned. */
+.quiz-app .app-title,
+.quiz-app .app-subtitle {
+  text-align: left;
+}
+@media (max-width: 420px) {
+  .compact-heading .narrow-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+/* Smallest phones: leave the article name enough room not to break inside a word. */
+@media (max-width: 359px) {
+  .inventory-row .row-actions {
+    gap: 0;
+  }
+  .inventory-row .row-actions .icon-button {
+    width: 34px;
+    min-width: 34px;
+  }
+}

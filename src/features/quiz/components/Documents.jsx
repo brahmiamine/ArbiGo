@@ -2,11 +2,16 @@
 import { quizSessionStorage } from '../utils/accountStorage';
 import { useEffect, useRef, useState } from 'react';
 import DOCUMENTS from '../data/documents.json';
+import { BackButton } from '@/components/back-button';
+import { goBack, pushEntry, replaceEntry } from '@/lib/history';
 
 const SELECTED_DOCUMENT_KEY = 'cda-paris-quiz:selected-document';
 const PDFJS_WORKER_URL = '/quiz/pdf.worker.min.mjs';
 
+const documentParam = () => new URLSearchParams(window.location.search).get('doc');
+
 function loadSelectedDocumentId() {
+  if (documentParam()) return documentParam();
   try {
     return quizSessionStorage.getItem(SELECTED_DOCUMENT_KEY);
   } catch {
@@ -39,6 +44,28 @@ export default function Documents() {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [selectedId]);
+
+  // The reader is a screen of its own: browser and system back return to the list.
+  useEffect(() => {
+    const restore = () => {
+      if (new URLSearchParams(window.location.search).get('page') === 'documents')
+        setSelectedId(documentParam());
+    };
+    const home = () => setSelectedId(null);
+    window.addEventListener('popstate', restore);
+    window.addEventListener('arbigo:documents-home', home);
+    return () => {
+      window.removeEventListener('popstate', restore);
+      window.removeEventListener('arbigo:documents-home', home);
+    };
+  }, []);
+
+  function openDocument(id) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('doc', id);
+    pushEntry(url);
+    setSelectedId(id);
+  }
 
   useEffect(() => {
     const onResize = () => setViewportVersion((value) => value + 1);
@@ -142,9 +169,18 @@ export default function Documents() {
   }, [pdfDocument, pageNumber, zoom, viewportVersion]);
 
   function closeDocument() {
-    setSelectedId(null);
-    setPdfDocument(null);
-    setViewerError('');
+    const close = () => {
+      setSelectedId(null);
+      setPdfDocument(null);
+      setViewerError('');
+    };
+    if (!documentParam()) return close();
+    goBack(() => {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('doc');
+      replaceEntry(url);
+      close();
+    });
   }
 
   if (selectedDocument) {
@@ -153,9 +189,7 @@ export default function Documents() {
     return (
       <div className="screen documents-screen document-viewer-screen">
         <div className="document-viewer-header">
-          <button type="button" className="btn-link document-viewer-back" onClick={closeDocument}>
-            ← Mes documents
-          </button>
+          <BackButton onClick={closeDocument} />
 
           <div className="document-viewer-heading">
             <span className="document-icon" aria-hidden="true">
@@ -259,7 +293,7 @@ export default function Documents() {
             type="button"
             key={document.id}
             className="card document-card"
-            onClick={() => setSelectedId(document.id)}
+            onClick={() => openDocument(document.id)}
             aria-label={`Lire ${document.title} dans l’application`}
           >
             <span className="document-icon" aria-hidden="true">

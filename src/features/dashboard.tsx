@@ -23,6 +23,7 @@ import { Button, Badge, Modal, Progress, Empty, PageHeader } from '@/components/
 import { MatchForm } from './matches/match-form';
 import { DeleteMatchButton } from './delete-match';
 import { MatchHero } from './match-hero';
+import { BackButton } from '@/components/back-button';
 import { EquipmentImage } from './media';
 import { MatchCountdown } from '@/components/match-countdown';
 import { equipmentLabel } from '@/domain/equipment';
@@ -381,9 +382,7 @@ export function MatchDetail({ match: m }: { match: Match }) {
   }
   return (
     <div className="detail">
-      <button className="text-button" onClick={() => app.setActiveId(null)}>
-        ← Mes rencontres
-      </button>
+      <BackButton onClick={app.back} />
       <MatchHero match={m} badge={<Badge tone="blue">À préparer</Badge>}>
         {m.status === 'DRAFT' && (
           <Button

@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Notice } from '@/components/ui';
 import {
   Home,
@@ -22,6 +22,7 @@ import { ProfileAvatar } from './media';
 import { Tunnel } from './tunnel/tunnel';
 import { SportcashCheckout } from './tunnel/checkout';
 import { requiresCheckout } from '@/domain/match';
+import { HOME_CHILDREN } from '@/lib/navigation';
 import { QuizScreen } from './quiz/quiz-screen';
 import { History } from './history/history';
 const PROFILE_QUIZ_SCREENS = new Set(['settings', 'answers', 'statistics', 'documents']);
@@ -43,10 +44,14 @@ function Shell() {
   const app = useApp();
   const active = app.matches.find((m) => m.id === app.activeId);
   const [indemnityFor, setIndemnityFor] = useState<string | null>(null);
-  // Chaque nouvel écran commence en haut : le défilement de la page précédente ne suit pas.
-  const { tab, activeId, matchView, matchFilter, ready } = app;
+  // Un nouvel écran commence en haut ; un retour retrouve la position quittée.
+  const { tab, activeId, matchView, matchFilter, ready, takeScroll } = app;
+  const restore = useRef(takeScroll);
   useEffect(() => {
-    window.scrollTo(0, 0);
+    restore.current = takeScroll;
+  });
+  useEffect(() => {
+    window.scrollTo(0, restore.current());
   }, [tab, activeId, matchView, matchFilter, ready]);
   if (!app.ready)
     return (
@@ -98,6 +103,9 @@ function Shell() {
   const profileQuiz = PROFILE_QUIZ_SCREENS.has(
     new URLSearchParams(window.location.search).get('quiz') ?? '',
   );
+  // Les pages ouvertes depuis l'accueil gardent « Accueil » en surbrillance.
+  const section = HOME_CHILDREN.includes(app.tab) ? 'home' : app.tab;
+  const current = (id: string) => (app.tab === id ? 'page' : section === id ? 'true' : undefined);
   return (
     <div className="app-layout">
       <aside className="sidebar">
@@ -116,13 +124,13 @@ function Shell() {
           {navigation.map((n) => (
             <button
               key={n.id}
-              className={app.tab === n.id ? 'active' : ''}
-              aria-current={app.tab === n.id ? 'page' : undefined}
+              className={section === n.id ? 'active' : ''}
+              aria-current={current(n.id)}
               onClick={() => app.setTab(n.id)}
             >
               <n.icon size={21} />
               <span>{n.label}</span>
-              {app.tab === n.id && <span className="nav-dot" />}
+              {section === n.id && <span className="nav-dot" />}
             </button>
           ))}
         </nav>
@@ -190,8 +198,8 @@ function Shell() {
         {navigation.map((n) => (
           <button
             key={n.id}
-            aria-current={app.tab === n.id ? 'page' : undefined}
-            className={app.tab === n.id ? 'active' : ''}
+            aria-current={current(n.id)}
+            className={section === n.id ? 'active' : ''}
             onClick={() => app.setTab(n.id)}
           >
             <n.icon size={21} />

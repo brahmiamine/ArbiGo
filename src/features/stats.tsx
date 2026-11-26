@@ -60,7 +60,7 @@ export function StatsScreen() {
   );
   return (
     <div className="stats-page">
-      <PageHeader title="Statistiques" />
+      <PageHeader title="Statistiques" onBack={app.back} />
       <div className="tabs stat-period">
         {(['season', 'all'] as const).map((key) => (
           <button

@@ -11,6 +11,7 @@ export function StepSettings({ onDone }: { onDone: () => void }) {
   const [settings, setSettings] = useState(() =>
     normalizeStepPreferences(app.profile?.preferences.steps),
   );
+  const [saved] = useState(() => JSON.stringify(settings));
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   const offline = !app.demo && !app.online;
@@ -25,6 +26,7 @@ export function StepSettings({ onDone }: { onDone: () => void }) {
   return (
     <form
       className="form"
+      data-dirty={JSON.stringify(settings) !== saved}
       onSubmit={async (event) => {
         event.preventDefault();
         setBusy(true);

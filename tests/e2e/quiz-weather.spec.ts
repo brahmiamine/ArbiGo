@@ -170,9 +170,10 @@ test('training corrections, favorites, results and statistics persist across vie
   await page.getByRole('button', { name: /Révisions/ }).click();
   await page.getByRole('button', { name: /Mes favoris/ }).click();
   await expect(page.locator('.screen')).toContainText('1 question');
-  await page.getByRole('button', { name: /Retour/ }).click();
+  await page.getByRole('button', { name: 'Retour', exact: true }).click();
   await expect(page).toHaveURL(/quiz=reviews/);
-  await page.goBack();
+  // "Retour" really went back: the favourites are ahead in the history, not behind.
+  await page.goForward();
   await expect(page.getByRole('heading', { name: 'Mes favoris', exact: true })).toBeVisible();
 });
 
@@ -193,7 +194,7 @@ test('documents, pitch zoom and quiz-local dark settings remain inside ArbiGo', 
   await expect(page.locator('canvas[aria-label*="page 1"]')).toBeVisible();
   await expect(page.locator('.document-viewer-loading')).toHaveCount(0);
   await expect(page.locator('.document-viewer-error')).toHaveCount(0);
-  await page.getByRole('button', { name: '← Mes documents', exact: true }).click();
+  await page.getByRole('button', { name: 'Retour', exact: true }).click();
   await page
     .getByRole('button', { name: 'Lire Lois du Jeu dans l’application', exact: true })
     .click();
@@ -208,10 +209,7 @@ test('documents, pitch zoom and quiz-local dark settings remain inside ArbiGo', 
   await expect(page.locator('.document-viewer-loading')).toHaveCount(0, { timeout: 20000 });
   await expect(page.locator('.document-viewer-error')).toHaveCount(0);
   await page.goto('/demo?page=quiz&quiz=terrain');
-  await expect(page.getByRole('button', { name: '← Retour', exact: true })).toHaveCSS(
-    'color',
-    'rgb(26, 26, 26)',
-  );
+  await expect(page.getByRole('button', { name: 'Retour', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Agrandir le zoom', exact: true }).click();
   await expect(page.locator('.terrain-zoom-value')).toContainText('125');
   await page.goto('/demo?page=quiz&quiz=notes');

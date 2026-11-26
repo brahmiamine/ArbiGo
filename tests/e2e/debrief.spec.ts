@@ -178,7 +178,7 @@ test('complete debrief persists offline, exports PDF with logos, copies and rese
   await page.getByRole('button', { name: 'Oui, tout vider', exact: true }).click();
   await saved(page);
   await expect(page.getByLabel('Mot 1', { exact: true })).toHaveValue('');
-  await page.getByRole('button', { name: 'Bilan de la rencontre' }).click();
+  await page.getByRole('button', { name: 'Retour', exact: true }).click();
   await expect(page.getByRole('heading', { name: /Paris 13 Atletico/ })).toBeVisible();
   await page.getByRole('button', { name: 'Ouvrir le débrief', exact: true }).click();
   await page

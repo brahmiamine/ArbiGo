@@ -15,6 +15,7 @@ import DebriefSections from './components/DebriefSections';
 import ExportCard from './components/ExportCard';
 import { loadLogoDataUrls } from './assets/logos';
 import { copyToClipboard } from './services/clipboard';
+import { BackButton } from '@/components/back-button';
 
 export default function Debrief({ match, onBack }: { match: Match; onBack: () => void }) {
   const editor = useMatchDebrief(match);
@@ -50,15 +51,12 @@ export default function Debrief({ match, onBack }: { match: Match; onBack: () =>
   }
   return (
     <div className="debrief-app">
-      <button
-        className="text-button"
+      <BackButton
         onClick={async () => {
           if (await editor.flush()) onBack();
           else setFailure('Enregistrez à nouveau le débrief avant de quitter.');
         }}
-      >
-        ← Bilan de la rencontre
-      </button>
+      />
       <header className="debrief-heading">
         <div>
           <h1>Débrief d’après-match</h1>

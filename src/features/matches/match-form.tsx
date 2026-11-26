@@ -103,8 +103,15 @@ export function MatchForm({ onDone, initial }: { onDone: () => void; initial?: M
       setBusy(false);
     }
   }
+  // Logos and designation details live outside the visible fields.
+  const dirty =
+    !!homeLogo.file ||
+    !!awayLogo.file ||
+    homeLogo.id !== initial?.homeLogoId ||
+    awayLogo.id !== initial?.awayLogoId ||
+    designation !== initial?.designation;
   return (
-    <form onSubmit={submit} className="form match-form">
+    <form onSubmit={submit} className="form match-form" data-dirty={dirty}>
       <section className="match-designation-import" aria-label="Importer une désignation">
         <FileDropzone
           label="Lire une désignation depuis une image"

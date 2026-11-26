@@ -7,6 +7,7 @@ import { Button, Badge, Modal, Notice } from '@/components/ui';
 import type { Match } from '@/domain/types';
 import { parseLocalKickoff } from '@/domain/time';
 import { DeleteMatchButton } from '../delete-match';
+import { BackButton } from '@/components/back-button';
 import { MatchHero } from '../match-hero';
 import { MatchIndemnity } from '../indemnity';
 import { Journal } from './journal';
@@ -19,14 +20,10 @@ export function History({ match: m }: { match: Match }) {
     [finishing, setFinishing] = useState(false),
     [error, setError] = useState('');
   const debriefOpen = app.matchView === 'debrief';
-  const setDebriefOpen = (open: boolean) => app.setMatchView(open ? 'debrief' : 'summary');
-  if (debriefOpen && m.finishedAt)
-    return <Debrief key={m.id} match={m} onBack={() => setDebriefOpen(false)} />;
+  if (debriefOpen && m.finishedAt) return <Debrief key={m.id} match={m} onBack={app.back} />;
   return (
     <>
-      <button className="text-button" onClick={() => app.setActiveId(null)}>
-        ← Mes rencontres
-      </button>
+      <BackButton onClick={app.back} />
       <MatchHero
         match={m}
         badge={
@@ -61,7 +58,7 @@ export function History({ match: m }: { match: Match }) {
               setFinishing(true);
               try {
                 if (!m.finishedAt) await app.dispatch(m.id, { type: 'FINISH_MATCH' });
-                setDebriefOpen(true);
+                app.setMatchView('debrief');
               } catch {
               } finally {
                 setFinishing(false);

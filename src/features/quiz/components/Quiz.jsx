@@ -1,3 +1,4 @@
+import { BackButton } from '@/components/back-button';
 import { useEffect, useRef, useState } from 'react';
 import ProgressBar from './ProgressBar.jsx';
 import QuestionCard from './QuestionCard.jsx';
@@ -132,9 +133,13 @@ export default function Quiz({
     <div className="screen quiz-screen">
       <div className="quiz-header">
         <div className="quiz-header-actions">
-          <button type="button" className="btn-link" onClick={isFirst ? onReset : onAbort}>
-            ← {isFirst ? 'Retour' : 'Mettre en pause'}
-          </button>
+          {isFirst ? (
+            <BackButton onClick={onReset} />
+          ) : (
+            <button type="button" className="btn-link" onClick={onAbort}>
+              Mettre en pause
+            </button>
+          )}
           {timeLimitSeconds && (
             <span
               className={`timer-badge ${remaining <= 30 ? 'timer-badge-low' : ''} ${remaining <= 10 ? 'timer-badge-critical' : ''}`}

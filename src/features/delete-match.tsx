@@ -14,7 +14,7 @@ export function DeleteMatchButton({ match }: { match: Match }) {
     setError('');
     try {
       await app.remove(match.id);
-      app.setActiveId(null);
+      app.back();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Suppression impossible.');
       setBusy(false);

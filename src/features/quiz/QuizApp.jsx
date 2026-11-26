@@ -17,6 +17,7 @@ import MistakeQuestions from './components/MistakeQuestions.jsx';
 import Settings from './components/Settings.jsx';
 import UnvalidatedQuestions from './components/UnvalidatedQuestions.jsx';
 import PageBackButton from './components/PageBackButton.jsx';
+import { goBack, pushEntry, replaceEntry } from '@/lib/history';
 import Documents from './components/Documents.jsx';
 import { prepareQuestions, shuffle } from './utils/shuffle.js';
 import { loadProgress, saveProgress, clearProgress } from './utils/storage.js';
@@ -402,9 +403,20 @@ export default function App({ ownerId, area = 'play' }) {
   function navigateTo(screen) {
     const url = new URL(window.location.href);
     url.searchParams.set('quiz', screen);
-    window.history.pushState(null, '', url);
+    pushEntry(url);
     window.scrollTo(0, 0);
     setState((current) => ({ ...current, screen }));
+  }
+
+  // « Retour » : l'écran précédent, ou le parent logique après une ouverture directe.
+  function backTo(parent) {
+    goBack(() => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('quiz', parent);
+      replaceEntry(url);
+      window.scrollTo(0, 0);
+      setState((current) => ({ ...current, screen: parent }));
+    });
   }
 
   function handleClearHistory() {
@@ -470,7 +482,7 @@ export default function App({ ownerId, area = 'play' }) {
     const url = new URL(window.location.href);
     if (url.searchParams.get('quiz') === screen) return;
     url.searchParams.set('quiz', screen);
-    window.history.replaceState(null, '', url);
+    replaceEntry(url);
   }, [area, screen]);
   useEffect(() => {
     if (area === 'documents') return;
@@ -576,7 +588,7 @@ export default function App({ ownerId, area = 'play' }) {
         <AnswerKey
           questions={QUESTIONS}
           validatedIds={learning.validated}
-          onBack={() => navigateTo('settings')}
+          onBack={() => backTo('settings')}
           showExplanations={settings.showExplanations}
         />
       )}
@@ -590,7 +602,7 @@ export default function App({ ownerId, area = 'play' }) {
       )}
       {screen === 'reviews' && (
         <ReviewsHub
-          onBack={() => navigateTo('home')}
+          onBack={() => backTo('home')}
           favoriteCount={learning.favorites.length}
           mistakeCount={mistakeCount}
           neverValidatedCount={learningSummary.neverValidatedCount}
@@ -605,18 +617,18 @@ export default function App({ ownerId, area = 'play' }) {
           validatedIds={learning.validated}
           quizCount={unvalidatedQuizCount}
           onStart={startUnvalidatedQuiz}
-          onBack={() => navigateTo('reviews')}
+          onBack={() => backTo('reviews')}
         />
       )}
       {screen === 'terrain' && (
         <>
-          <PageBackButton onBack={() => navigateTo('home')} />
+          <PageBackButton onBack={() => backTo('home')} />
           <Terrain />
         </>
       )}
       {screen === 'notes' && (
         <>
-          <PageBackButton onBack={() => navigateTo('home')} />
+          <PageBackButton onBack={() => backTo('home')} />
           <Notes />
         </>
       )}
@@ -636,7 +648,7 @@ export default function App({ ownerId, area = 'play' }) {
           favoriteIds={learning.favorites}
           onToggleFavorite={handleToggleFavorite}
           onStart={startQuiz}
-          onBack={() => navigateTo('reviews')}
+          onBack={() => backTo('reviews')}
         />
       )}
       {screen === 'mistakes' && (
@@ -644,7 +656,7 @@ export default function App({ ownerId, area = 'play' }) {
           questions={QUESTIONS}
           learningSummary={learningSummary}
           onStart={startQuiz}
-          onBack={() => navigateTo('reviews')}
+          onBack={() => backTo('reviews')}
         />
       )}
     </div>
